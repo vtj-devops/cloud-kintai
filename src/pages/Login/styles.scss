@@ -1,0 +1,29 @@
+$primary-color: #0FA85E;
+
+.amplify-field__show-password {
+  background-color: white !important;
+  color: black !important;
+
+  &:hover {
+    background-color: #f5f5f5 !important;
+  }
+}
+
+.amplify-button {
+  background-color: $primary-color;
+  color: white;
+
+  &:hover {
+    background-color: $primary-color;
+  }
+
+  &--link {
+    background-color: white;
+    color: $primary-color;
+    font-weight: bold;
+
+    &:hover {
+      background-color: #3EB97E;
+    }
+  }
+}

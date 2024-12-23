@@ -1,0 +1,108 @@
+{
+  "MUI Stack": {
+    "prefix": "MUI Stack",
+    "body": [
+      "<Stack direction=\"${1|column,row|}\" spacing={${2|1,2,3|}}>",
+      "  $0",
+      "</Stack>"
+    ],
+    "description": ""
+  },
+  "MUI Box": {
+    "prefix": "MUI Box",
+    "body": ["<Box>", "  $0", "</Box>"],
+    "description": ""
+  },
+  "MUI Import Box": {
+    "prefix": "MUI Import Box",
+    "body": ["import { Box } from \"@mui/material\";"],
+    "description": ""
+  },
+  "MUI Typography": {
+    "prefix": "MUI Typography",
+    "body": [
+      "<Typography variant=\"${1|h1,h2,h3,h4,h5,h6,subtitle1,subtitle2,body1,body2,inhert|}\">",
+      "  $0",
+      "</Typography>"
+    ],
+    "description": ""
+  },
+  "MUI Card": {
+    "prefix": "MUI Card",
+    "body": ["<Card>", "  $0", "</Card>"],
+    "description": ""
+  },
+  "MUI DataGrid": {
+    "prefix": "MUI DataGrid",
+    "body": ["<DataGrid rows={[]} columns={[]} autoHeight />"],
+    "description": ""
+  },
+  "MUI Import DataGrid": {
+    "prefix": "MUI Import DataGrid",
+    "body": ["import { DataGrid } from \"@mui/x-data-grid\";"],
+    "description": ""
+  },
+  "MUI Button": {
+    "prefix": "MUI Button",
+    "body": [
+      "<Button variant=\"${1|text,outlined,contained|}\" size=\"${2|small,medium,large|}\">",
+      "  $0",
+      "</Button>"
+    ],
+    "description": ""
+  },
+  "MUI Chip": {
+    "prefix": "MUI Chip",
+    "body": ["<Chip label=\"$1\" variant=\"${2|filled,outlined|}\" icon={} />"],
+    "description": ""
+  },
+  "MUI Table": {
+    "prefix": "MUI Table",
+    "body": [
+      "<TableContainer>",
+      "  <Table size="small">",
+      "    <TableHead>",
+      "      <TableRow>",
+      "        <TableCell></TableCell>",
+      "        <TableCell></TableCell>",
+      "      </TableRow>",
+      "    </TableHead>",
+      "    <TableBody>",
+      "      <TableRow>",
+      "        <TableCell></TableCell>",
+      "        <TableCell></TableCell>",
+      "      </TableRow>",
+      "    </TableBody>",
+      "  </Table>",
+      "</TableContainer>"
+    ],
+    "description": ""
+  },
+  "MUI Container": {
+    "prefix": "MUI Container",
+    "body": [
+      "<Container maxWidth=\"${1|xs,sm,md,lg,xl|}\">",
+      "  $0",
+      "</Container>"
+    ],
+    "description": ""
+  },
+  "MUI Styled": {
+    "prefix": "MUI Styled",
+    "body": [
+      "const ${1:Component} = styled(${2:Component})(({ theme }) => ({",
+      "  $0",
+      "}));"
+    ],
+    "description": ""
+  }
+  "MUI Icon Button": {
+    "prefix": "MUI Icon Button",
+    "body": [
+      "<IconButton>",
+      "  $0",
+      "</IconButton>"
+    ],
+    "description": ""
+  }
+}

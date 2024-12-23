@@ -1,0 +1,22 @@
+.table-row {
+  background-color: #FFFFFF;
+  font-weight: normal;
+
+  &--today {
+    background-color: #FFFF93;
+    
+    * {
+      font-weight: bold;
+    }
+  }
+
+  &--saturday {
+    background-color: #93FFFF;
+    font-weight: normal;
+  }
+
+  &--sunday {
+    background-color: #FF9393;
+    font-weight: normal;
+  }
+}

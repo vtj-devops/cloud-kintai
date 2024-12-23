@@ -1,0 +1,40 @@
+version: 1
+backend:
+  phases:
+    # IMPORTANT - Please verify your build commands
+    build:
+      commands:
+        - "# Execute Amplify CLI with the helper script"
+        - amplifyPush --simple
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - nvm use 18
+        - npm install -g ulid
+        - REVISION_ID=`ulid`
+        - npm ci
+    build:
+      commands:
+        - APP_REVISION_ID=$REVISION_ID npm run build
+    postBuild:
+      commands:
+        - echo $AWS_APP_ID
+        - echo $AWS_BRANCH
+        - echo $AMPLIFY_BACKEND_APP_ID
+        - echo "Checking if S3 public/ directory exists..."
+        - |
+          if aws s3 ls s3://$BUCKET_NAME/public/; then
+            echo "S3 public/ directory exists."
+          else
+            echo "S3 public/ directory does not exist. Creating..."
+            aws s3 cp --recursive build/ s3://$BUCKET_NAME/public/
+          fi
+        - printf '{"revision":"%s"}' $REVISION_ID | aws s3 cp - s3://$BUCKET_NAME/public/revision.json --content-type "application/json"
+  artifacts:
+    baseDirectory: build
+    files:
+      - "**/*"
+#  cache:
+#    paths:
+#      - node_modules/**/*

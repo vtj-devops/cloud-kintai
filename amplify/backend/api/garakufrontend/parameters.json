@@ -1,0 +1,13 @@
+{
+  "AppSyncApiName": "garakufrontend",
+  "DynamoDBBillingMode": "PAY_PER_REQUEST",
+  "DynamoDBEnableServerSideEncryption": false,
+  "DynamoDBEnablePointInTimeRecovery": true,
+  "AuthCognitoUserPoolId": {
+    "Fn::GetAtt": [
+      "authgarakufrontendbfa3456a",
+      "Outputs.UserPoolId"
+    ]
+  },
+  "AuthModeLastUpdated": "2024-06-06T01:15:06.885Z"
+}

@@ -1,0 +1,10 @@
+amplify-codegen-temp/models
+amplify-codegen-temp/models/models
+src/ui-components
+node_modules
+.vscode
+amplify
+.devcontainer
+buid
+public
+infra

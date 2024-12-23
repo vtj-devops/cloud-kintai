@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+
+    env_file: devcontainer.env
+
+    environment:
+      VITE_BASE_PATH: http://localhost:5173
+
+    volumes:
+      - ../..:/workspaces:cached
+
+    command: sleep infinity
+
+    networks:
+      - default
+      - garaku-shared-network
+
+networks:
+  garaku-shared-network:
+    external: true

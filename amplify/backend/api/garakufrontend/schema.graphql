@@ -1,0 +1,132 @@
+# This "input" configures a global authorization rule to enable public access to
+# all models in this schema. Learn more about authorization rules here: https://docs.amplify.aws/cli/graphql/authorization-rules
+input AMPLIFY {
+  globalAuthRule: AuthRule = { allow: public }
+} # FOR TESTING ONLY!
+type Staff @model @auth(rules: [{ allow: private }]) {
+  id: ID!
+  cognitoUserId: String!
+  familyName: String
+  givenName: String
+  mailAddress: String!
+  role: String!
+  enabled: Boolean!
+  status: String!
+  owner: Boolean
+  usageStartDate: String
+  notifications: Notification
+  sortKey: String
+}
+
+type Notification {
+  workStart: Boolean
+  workEnd: Boolean
+}
+
+type HolidayCalendar @model @auth(rules: [{ allow: private }]) {
+  id: ID!
+  holidayDate: String!
+  name: String!
+}
+
+type CompanyHolidayCalendar @model @auth(rules: [{ allow: private }]) {
+  id: ID!
+  holidayDate: String!
+  name: String!
+}
+
+type CloseDate @model @auth(rules: [{ allow: private }]) {
+  id: ID!
+  closeDate: String!
+  startDate: String!
+  endDate: String!
+}
+
+type SystemComment {
+  comment: String!
+  confirmed: Boolean!
+  createdAt: String!
+}
+
+type Attendance @model @auth(rules: [{ allow: private }]) {
+  id: ID!
+  staffId: String!
+  workDate: String!
+  startTime: String
+  endTime: String
+  goDirectlyFlag: Boolean
+  returnDirectlyFlag: Boolean
+  rests: [Rest]
+  remarks: String
+  paidHolidayFlag: Boolean
+  substituteHolidayDate: String
+  histories: [AttendanceHistory]
+  changeRequests: [AttendanceChangeRequest]
+  systemComments: [SystemComment]
+  revision: Int
+}
+
+type Document @model @auth(rules: [{ allow: private }]) {
+  id: ID!
+  title: String!
+  content: String!
+  tag: [String]
+  targetRole: [String]
+  revision: Int
+}
+
+type CheckForUpdate @model {
+  id: ID!
+  deployUuid: String!
+}
+
+type Rest {
+  startTime: String
+  endTime: String
+}
+
+type AttendanceHistory {
+  staffId: String!
+  workDate: String!
+  startTime: String
+  endTime: String
+  goDirectlyFlag: Boolean
+  returnDirectlyFlag: Boolean
+  rests: [Rest]
+  remarks: String
+  paidHolidayFlag: Boolean
+  substituteHolidayFlag: Boolean
+  substituteHolidayDate: String
+  createdAt: String!
+}
+
+type AttendanceChangeRequest {
+  startTime: String
+  endTime: String
+  goDirectlyFlag: Boolean
+  returnDirectlyFlag: Boolean
+  rests: [Rest]
+  remarks: String
+  paidHolidayFlag: Boolean
+  substituteHolidayFlag: Boolean
+  substituteHolidayDate: String
+  completed: Boolean
+  comment: String
+  staffComment: String
+}
+
+type EmailResult {
+  statusCode: Int
+  body: String
+}
+
+input EmailData {
+  to: [String]
+  subject: String!
+  body: String!
+}
+
+type Query {
+  sendMail(data: EmailData!): EmailResult
+    @function(name: "garakuSendMail-${env}")
+}
