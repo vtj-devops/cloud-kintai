@@ -55,7 +55,6 @@
   "git.autofetch": true,
   "window.zoomLevel": 1,
   "git.confirmSync": false,
-  "circleci.ssh.privateKey.github": "/workspaces/garaku-frontend/.devcontainer/.ssh/id_github",
   "markdown.extension.toc.levels": "2..6",
   "git.branchRandomName.enable": true,
   "editor.inlineSuggest.enabled": true,
@@ -68,5 +67,6 @@
     "README.md": [
       "## 目次"
     ]
-  }
+  },
+  "testing.automaticallyOpenTestResults": "neverOpen"
 }
