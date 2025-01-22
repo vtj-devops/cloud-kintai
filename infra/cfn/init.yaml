@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Resources:
+  TerraformUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Sub terraform-${AWS::StackName}-${AWS::AccountId}
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+  TerraformUserAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref TerraformUser
+
+  TerraformUserKeySecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub iam-user/${TerraformUser}
+      SecretString: !Sub '{"AccessKeyId":"${TerraformUserAccessKey}","SecretAccessKey":"${TerraformUserAccessKey.SecretAccessKey}"}'
+
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      PublicAccessBlockConfiguration:
+        RestrictPublicBuckets: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        BlockPublicAcls: true
+      BucketName: !Sub terraform-state-${AWS::StackName}-${AWS::AccountId}
+      VersioningConfiguration:
+        Status: Enabled
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - BucketKeyEnabled: true
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      SSESpecification:
+        SSEEnabled: false
+      TableName: !Sub terraform-state-lock-${AWS::StackName}-${AWS::AccountId}
+      AttributeDefinitions:
+        - AttributeType: S
+          AttributeName: LockID
+      KeySchema:
+        - KeyType: HASH
+          AttributeName: LockID
+      BillingMode: PROVISIONED
+      ProvisionedThroughput:
+        WriteCapacityUnits: 1
+        ReadCapacityUnits: 1
+      TableClass: STANDARD
+
+Outputs:
+  Bucket:
+    Value: !Ref S3Bucket
+  DynamoDBTable:
+    Value: !Ref DynamoDBTable
