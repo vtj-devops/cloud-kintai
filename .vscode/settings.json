@@ -11,15 +11,24 @@
   "editor.tabSize": 2,
   "editor.insertSpaces": true,
   "editor.formatOnSave": true,
-  "editor.rulers": [80, 100, 120],
+  "editor.rulers": [
+    80,
+    100,
+    120
+  ],
   "eslint.format.enable": true,
-  "eslint.workingDirectories": ["./src"],
+  "eslint.workingDirectories": [
+    "./src"
+  ],
   "diffEditor.wordWrap": "off",
   "workbench.startupEditor": "readme",
   "workbench.panel.defaultLocation": "right",
   "git.branchPrefix": "feature/",
   "git.autoStash": true,
-  "git.branchProtection": ["main", "develop"],
+  "git.branchProtection": [
+    "main",
+    "develop"
+  ],
   "[javascript]": {
     "editor.tabSize": 2,
     "editor.insertSpaces": true,
@@ -54,7 +63,9 @@
   },
   "typescript.tsdk": "node_modules/typescript/lib",
   "markdown.extension.toc.omittedFromToc": {
-    "README.md": ["## 目次"]
+    "README.md": [
+      "## 目次"
+    ]
   },
   "testing.automaticallyOpenTestResults": "neverOpen",
   "github.copilot.chat.commitMessageGeneration.instructions": [
