@@ -1,1 +1,49 @@
-{}
+{
+  "main": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-garakufrontend-main-a6b8c-authRole",
+      "UnauthRoleArn": "arn:aws:iam::822214488841:role/amplify-garakufrontend-main-a6b8c-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::822214488841:role/amplify-garakufrontend-main-a6b8c-authRole",
+      "Region": "ap-northeast-1",
+      "DeploymentBucketName": "amplify-garakufrontend-main-a6b8c-deployment",
+      "UnauthRoleName": "amplify-garakufrontend-main-a6b8c-unauthRole",
+      "StackName": "amplify-garakufrontend-main-a6b8c",
+      "StackId": "arn:aws:cloudformation:ap-northeast-1:822214488841:stack/amplify-garakufrontend-main-a6b8c/d5a53110-5718-11f0-a98d-06ac47e4fb6f",
+      "AmplifyAppId": "d2b3cmlfpqeos0"
+    },
+    "categories": {
+      "auth": {
+        "garakufrontendbfa3456a": {}
+      },
+      "function": {
+        "AdminQueriesf7a7d2e5": {
+          "deploymentBucketName": "amplify-garakufrontend-main-a6b8c-deployment",
+          "s3Key": "amplify-builds/AdminQueriesf7a7d2e5-61734a67314a6c387948-build.zip"
+        },
+        "garakuSendMail": {
+          "region": "ap-northeast-1",
+          "emailFrom": "ishimoto+minasapo-vtj@virtualtech.jp",
+          "deploymentBucketName": "amplify-garakufrontend-main-a6b8c-deployment",
+          "s3Key": "amplify-builds/garakuSendMail-566f4165677a59584a54-build.zip"
+        },
+        "garakufrontendbfa3456a": {}
+      },
+      "hosting": {
+        "amplifyhosting": {
+          "appId": "d2b3cmlfpqeos0",
+          "type": "cicd"
+        }
+      },
+      "api": {
+        "AdminQueries": {},
+        "garakufrontend": {}
+      },
+      "custom": {
+        "customResource1b080f88": {}
+      },
+      "storage": {
+        "s381050667": {}
+      }
+    }
+  }
+}

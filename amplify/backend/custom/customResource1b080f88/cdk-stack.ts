@@ -26,7 +26,7 @@ export class cdkStack extends cdk.Stack {
       this,
       "keyAdmin",
       // `amplify-backup-${AmplifyHelpers.getProjectInfo().envName}`
-      "amplify-dev"
+      "amplify-cloud-kintai-user"
     );
 
     const root = new iam.AccountRootPrincipal();
@@ -41,7 +41,10 @@ export class cdkStack extends cdk.Stack {
     );
 
     const { envName } = AmplifyHelpers.getProjectInfo();
-    const roleName = envName === "main" ? "amplifyconsole-backend-role" : "ap-northeast-1_UvGocGkQJ_Full-access";
+    const roleName =
+      envName === "main"
+        ? "amplifyconsole-backend-role"
+        : "amplifyconsole-backend-role";
     const keyRole = iam.Role.fromRoleName(this, "RunUser", roleName);
 
     const key = new kms.Key(
@@ -55,15 +58,13 @@ export class cdkStack extends cdk.Stack {
         description:
           "KMS key for encrypting the objects in your AWS Backup Vault",
         enableKeyRotation: false,
-          admins: [backupAdmin, keyAdmin, root],
+        admins: [backupAdmin, keyAdmin, root],
         policy: new iam.PolicyDocument({
-            statements: [
+          statements: [
             new iam.PolicyStatement({
-                actions: [
-                    "kms:*"
-                ],
-                principals: [keyAdmin, root],
-                resources: ["*"],
+              actions: ["kms:*"],
+              principals: [keyAdmin, root],
+              resources: ["*"],
             }),
             new iam.PolicyStatement({
               actions: [
