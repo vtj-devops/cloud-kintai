@@ -41,10 +41,7 @@ export class cdkStack extends cdk.Stack {
     );
 
     const { envName } = AmplifyHelpers.getProjectInfo();
-    const roleName =
-      envName === "main"
-        ? "amplifyconsole-backend-role"
-        : "amplifyconsole-backend-role";
+    const roleName = "amplifyconsole-backend-role";
     const keyRole = iam.Role.fromRoleName(this, "RunUser", roleName);
 
     const key = new kms.Key(
