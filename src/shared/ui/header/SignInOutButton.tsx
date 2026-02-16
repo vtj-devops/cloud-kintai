@@ -1,5 +1,6 @@
-import { Box, Button, Stack, styled } from "@mui/material";
+import { Box, Button, Stack } from "@mui/material";
 import StaffIcon from "@shared/ui/icon/StaffIcon";
+import { CSSProperties } from "react";
 
 import { designTokenVar } from "@/shared/designSystem";
 
@@ -17,41 +18,6 @@ const SIGN_BUTTON_FONT_WEIGHT = designTokenVar(
   "500"
 );
 
-const baseButtonStyles = {
-  whiteSpace: "nowrap",
-  paddingInline: SIGN_BUTTON_PADDING_X,
-  paddingLeft: SIGN_BUTTON_PADDING_X,
-  paddingRight: SIGN_BUTTON_PADDING_X,
-  borderRadius: SIGN_BUTTON_RADIUS,
-  fontWeight: SIGN_BUTTON_FONT_WEIGHT,
-};
-
-const SignOutButton = styled(Button)(({ theme }) => ({
-  ...baseButtonStyles,
-  color: theme.palette.logout.contrastText,
-  backgroundColor: theme.palette.logout.main,
-  border: `3px solid ${theme.palette.logout.main}`,
-  "&:hover": {
-    color: theme.palette.logout.main,
-    backgroundColor: theme.palette.logout.contrastText,
-  },
-}));
-
-const SignInButton = styled(Button)(({ theme }) => ({
-  ...baseButtonStyles,
-  color: theme.palette.login.contrastText,
-  backgroundColor: theme.palette.login.main,
-  "&:hover": {
-    color: theme.palette.login.main,
-    backgroundColor: theme.palette.login.contrastText,
-  },
-}));
-
-const RESPONSIVE_DISPLAY = {
-  xs: "none",
-  md: "block",
-} as const;
-
 export interface SignInOutButtonProps {
   isAuthenticated: boolean;
   isConfiguring?: boolean;
@@ -67,24 +33,54 @@ const SignInOutButton = ({
   onSignIn,
   onSignOut,
 }: SignInOutButtonProps) => {
+  const signButtonVars: CSSProperties & Record<`--${string}`, string> = {
+    "--sign-button-gap": SIGN_BUTTON_GAP,
+    "--sign-button-padding-x": SIGN_BUTTON_PADDING_X,
+    "--sign-button-radius": SIGN_BUTTON_RADIUS,
+    "--sign-button-font-weight": SIGN_BUTTON_FONT_WEIGHT,
+  };
+
   if (isConfiguring) {
     return null;
   }
 
   return (
-    <Box sx={{ display: RESPONSIVE_DISPLAY }}>
-      <Stack
-        direction="row"
-        alignItems="center"
-        sx={{ columnGap: SIGN_BUTTON_GAP, rowGap: SIGN_BUTTON_GAP }}
-      >
+    <Box className="block" style={signButtonVars}>
+      <Stack direction="row" alignItems="center" className="gap-[var(--sign-button-gap)]">
         {isAuthenticated ? (
           <>
-            <SignOutButton onClick={onSignOut}>ログアウト</SignOutButton>
+            <Button
+              onClick={onSignOut}
+              className="whitespace-nowrap rounded-[var(--sign-button-radius)] px-[var(--sign-button-padding-x)] font-[var(--sign-button-font-weight)]"
+              sx={(theme) => ({
+                color: theme.palette.logout.contrastText,
+                backgroundColor: theme.palette.logout.main,
+                border: `3px solid ${theme.palette.logout.main}`,
+                "&:hover": {
+                  color: theme.palette.logout.main,
+                  backgroundColor: theme.palette.logout.contrastText,
+                },
+              })}
+            >
+              ログアウト
+            </Button>
             {staffName && <StaffIcon name={staffName} />}
           </>
         ) : (
-          <SignInButton onClick={onSignIn}>ログイン</SignInButton>
+          <Button
+            onClick={onSignIn}
+            className="whitespace-nowrap rounded-[var(--sign-button-radius)] px-[var(--sign-button-padding-x)] font-[var(--sign-button-font-weight)]"
+            sx={(theme) => ({
+              color: theme.palette.login.contrastText,
+              backgroundColor: theme.palette.login.main,
+              "&:hover": {
+                color: theme.palette.login.main,
+                backgroundColor: theme.palette.login.contrastText,
+              },
+            })}
+          >
+            ログイン
+          </Button>
         )}
       </Stack>
     </Box>

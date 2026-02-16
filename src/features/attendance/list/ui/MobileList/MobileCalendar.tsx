@@ -256,6 +256,7 @@ interface MobileCalendarProps {
   currentMonth: Dayjs;
   onMonthChange?: (newMonth: Dayjs) => void;
   closeDates?: CloseDate[];
+  buildNavigatePath?: (formattedWorkDate: string) => string;
 }
 
 export default function MobileCalendar({
@@ -266,6 +267,7 @@ export default function MobileCalendar({
   currentMonth,
   onMonthChange,
   closeDates,
+  buildNavigatePath,
 }: MobileCalendarProps) {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -361,7 +363,10 @@ export default function MobileCalendar({
 
   const handleEdit = (date: string) => {
     const dateStr = dayjs(date).format(AttendanceDate.QueryParamFormat);
-    navigate(`/attendance/${dateStr}/edit`);
+    const path = buildNavigatePath
+      ? buildNavigatePath(dateStr)
+      : `/attendance/${dateStr}/edit`;
+    navigate(path);
   };
 
   // 祝祭日判定のヘルパー関数

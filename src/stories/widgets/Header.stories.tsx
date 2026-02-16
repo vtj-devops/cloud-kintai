@@ -46,8 +46,7 @@ export const Info: Story = {
           </Typography>
           <ul>
             <li>ロゴ</li>
-            <li>デスクトップメニュー</li>
-            <li>モバイルメニュー</li>
+            <li>統合ナビゲーション（デスクトップ/モバイルを内包）</li>
             <li>外部リンク</li>
             <li>サインイン/アウトボタン</li>
           </ul>

@@ -1,10 +1,22 @@
 import useCloseDates from "@entities/attendance/model/useCloseDates";
 import { StaffType, useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOutlined";
-import { Box, Chip, CircularProgress, Stack } from "@mui/material";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import {
+  Box,
+  Chip,
+  CircularProgress,
+  Collapse,
+  IconButton,
+  Stack,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import { DesktopDatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
@@ -39,6 +51,9 @@ export default function DownloadForm() {
   const [selectedStaff, setSelectedStaff] = useState<StaffType[]>([]);
   const { authStatus } = useContext(AuthContext);
   const isAuthenticated = authStatus === "authenticated";
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [isExpanded, setIsExpanded] = useState(!isMobile);
   const { staffs, loading: staffLoading, error: staffError } = useStaffs({
     isAuthenticated,
   });
@@ -72,6 +87,14 @@ export default function DownloadForm() {
     return dates;
   }, [startDate, endDate]);
 
+  useEffect(() => {
+    if (!isMobile) {
+      setIsExpanded(true);
+      return;
+    }
+    setIsExpanded(false);
+  }, [isMobile]);
+
   if (staffLoading || closeDateLoading) {
     return <CircularProgress />;
   }
@@ -83,12 +106,15 @@ export default function DownloadForm() {
   return (
     <Stack
       spacing={4}
-      alignItems="center"
+      alignItems={{ xs: "stretch", md: "center" }}
       sx={{
         border: CARD_BORDER_WIDTH,
         borderColor: "primary.main",
         borderRadius: "5px",
         pb: STANDARD_PADDING.CARD,
+        width: "100%",
+        minWidth: 0,
+        overflowX: "hidden",
       }}
     >
       <Box
@@ -100,111 +126,173 @@ export default function DownloadForm() {
           backgroundColor: "primary.main",
           color: "primary.contrastText",
           borderRadius: "3px 3px 0 0",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 1,
         }}
       >
-        ダウンロードオプション
-      </Box>
-      <Box>
-        <Stack
-          spacing={3}
-          sx={{ display: "inline-block", boxSizing: "border-box" }}
+        <Typography
+          component="span"
+          sx={{ fontWeight: 700, letterSpacing: "0.02em" }}
         >
-          <Box>
-            <Stack spacing={1}>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Box>
-                  <Controller
-                    name="startDate"
-                    control={control}
-                    render={({ field }) => (
-                      <DesktopDatePicker
-                        {...field}
-                        label="開始日"
-                        format={AttendanceDate.DisplayFormat}
-                        slotProps={{
-                          textField: { variant: "outlined", size: "small" },
-                        }}
-                      />
-                    )}
-                  />
-                </Box>
-                <Box>〜</Box>
-                <Box>
-                  <Controller
-                    name="endDate"
-                    control={control}
-                    render={({ field }) => (
-                      <DesktopDatePicker
-                        {...field}
-                        label="終了日"
-                        format={AttendanceDate.DisplayFormat}
-                        slotProps={{
-                          textField: { variant: "outlined", size: "small" },
-                        }}
-                      />
-                    )}
-                  />
-                </Box>
-              </Stack>
-              <Stack
-                spacing={2}
-                sx={{ maxWidth: SELECTOR_MAX_WIDTH, overflowX: "auto" }}
-              >
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Box sx={{ whiteSpace: "nowrap" }}>集計対象月から:</Box>
-                  <Chip
-                    icon={<AddCircleOutlineOutlinedIcon fontSize="small" />}
-                    label="新規"
-                    variant="outlined"
-                    color="primary"
-                    onClick={() => {
-                      navigate("/admin/master/job_term");
+          ダウンロードオプション
+        </Typography>
+        {isMobile && (
+          <IconButton
+            size="small"
+            onClick={() => setIsExpanded((prev) => !prev)}
+            sx={{ color: "primary.contrastText" }}
+            aria-label={isExpanded ? "collapse" : "expand"}
+          >
+            {isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          </IconButton>
+        )}
+      </Box>
+      <Collapse in={isExpanded} timeout="auto" unmountOnExit={false}>
+        <Box sx={{ width: "100%" }}>
+          <Stack
+            spacing={3}
+            sx={{
+              width: "100%",
+              maxWidth: 880,
+              px: { xs: 1, sm: 2, md: 0 },
+              boxSizing: "border-box",
+              margin: "0 auto",
+              minWidth: 0,
+            }}
+          >
+            <Box>
+              <Stack spacing={1}>
+                <Stack
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={1}
+                  alignItems={{ xs: "stretch", sm: "center" }}
+                  sx={{ width: "100%" }}
+                >
+                  <Box sx={{ flex: 1 }}>
+                    <Controller
+                      name="startDate"
+                      control={control}
+                      render={({ field }) => (
+                        <DesktopDatePicker
+                          {...field}
+                          label="開始日"
+                          format={AttendanceDate.DisplayFormat}
+                          slotProps={{
+                            textField: {
+                              variant: "outlined",
+                              size: "small",
+                              fullWidth: true,
+                            },
+                          }}
+                        />
+                      )}
+                    />
+                  </Box>
+                  <Box sx={{ display: { xs: "none", sm: "block" } }}>〜</Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Controller
+                      name="endDate"
+                      control={control}
+                      render={({ field }) => (
+                        <DesktopDatePicker
+                          {...field}
+                          label="終了日"
+                          format={AttendanceDate.DisplayFormat}
+                          slotProps={{
+                            textField: {
+                              variant: "outlined",
+                              size: "small",
+                              fullWidth: true,
+                            },
+                          }}
+                        />
+                      )}
+                    />
+                  </Box>
+                </Stack>
+                <Stack spacing={2} sx={{ maxWidth: SELECTOR_MAX_WIDTH }}>
+                  <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={1}
+                    alignItems={{ xs: "flex-start", sm: "center" }}
+                    sx={{
+                      flexWrap: "wrap",
+                      rowGap: 1,
+                      columnGap: 1,
                     }}
-                  />
-                  {closeDates
-                    .toSorted((a, b) =>
-                      dayjs(b.closeDate).diff(dayjs(a.closeDate))
-                    )
-                    .map((closeDate, index) => (
+                  >
+                    <Box sx={{ whiteSpace: "nowrap" }}>集計対象月から:</Box>
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      sx={{ flexWrap: "wrap", rowGap: 1 }}
+                    >
                       <Chip
-                        key={index}
-                        label={dayjs(closeDate.closeDate).format("YYYY/MM")}
+                        icon={<AddCircleOutlineOutlinedIcon fontSize="small" />}
+                        label="新規"
                         variant="outlined"
                         color="primary"
                         onClick={() => {
-                          setValue("startDate", dayjs(closeDate.startDate));
-                          setValue("endDate", dayjs(closeDate.endDate));
+                          navigate("/admin/master/job_term");
                         }}
                       />
-                    ))}
+                      {closeDates
+                        .toSorted((a, b) =>
+                          dayjs(b.closeDate).diff(dayjs(a.closeDate))
+                        )
+                        .map((closeDate, index) => (
+                          <Chip
+                            key={index}
+                            label={dayjs(closeDate.closeDate).format("YYYY/MM")}
+                            variant="outlined"
+                            color="primary"
+                            onClick={() => {
+                              setValue("startDate", dayjs(closeDate.startDate));
+                              setValue("endDate", dayjs(closeDate.endDate));
+                            }}
+                          />
+                        ))}
+                    </Stack>
+                  </Stack>
                 </Stack>
               </Stack>
-            </Stack>
-          </Box>
-          <Box>
-            <Stack spacing={1}>
-              <Box sx={{ mt: 2 }}>
-                <StaffSelector
-                  control={control}
-                  staffs={staffs}
-                  selectedStaff={selectedStaff}
-                  setSelectedStaff={setSelectedStaff}
-                  setValue={setValue}
-                />
-              </Box>
-            </Stack>
-          </Box>
-        </Stack>
-      </Box>
-      <Box>
-        <Stack direction="row" spacing={1}>
-          <ExportButton workDates={workDates} selectedStaff={selectedStaff} />
-          <AggregateExportButton
-            workDates={workDates}
-            selectedStaff={selectedStaff}
-          />
-        </Stack>
-      </Box>
+            </Box>
+            <Box>
+              <Stack spacing={1}>
+                <Box sx={{ mt: 2 }}>
+                  <StaffSelector
+                    control={control}
+                    staffs={staffs}
+                    selectedStaff={selectedStaff}
+                    setSelectedStaff={setSelectedStaff}
+                    setValue={setValue}
+                  />
+                </Box>
+              </Stack>
+            </Box>
+          </Stack>
+        </Box>
+        <Box>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={1}
+            sx={{ width: "100%" }}
+          >
+            <ExportButton
+              workDates={workDates}
+              selectedStaff={selectedStaff}
+              fullWidth={isMobile}
+            />
+            <AggregateExportButton
+              workDates={workDates}
+              selectedStaff={selectedStaff}
+              fullWidth={isMobile}
+            />
+          </Stack>
+        </Box>
+      </Collapse>
     </Stack>
   );
 }

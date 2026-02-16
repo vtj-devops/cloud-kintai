@@ -1,6 +1,14 @@
 import { useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import useWorkflows from "@entities/workflow/model/useWorkflows";
-import { Box, Button, Grid, Paper, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Grid,
+  Paper,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import { GetWorkflowQuery, WorkflowStatus } from "@shared/api/graphql/types";
 import Page from "@shared/ui/page/Page";
 import { useContext } from "react";
@@ -27,6 +35,8 @@ import { useWorkflowDetailViewModel } from "./hooks/useWorkflowDetailViewModel";
 const logger = createLogger("AdminWorkflowDetail");
 
 export default function AdminWorkflowDetail() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { id } = useParams() as { id?: string };
   const navigate = useNavigate();
   const { cognitoUser, authStatus } = useContext(AuthContext);
@@ -79,26 +89,32 @@ export default function AdminWorkflowDetail() {
       ]}
       maxWidth="lg"
     >
-      <Paper sx={{ p: 3 }}>
+      <Paper sx={{ p: { xs: 2, sm: 3 } }}>
         <Box
           sx={{
             display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
             justifyContent: "space-between",
-            alignItems: "center",
+            alignItems: { xs: "stretch", sm: "center" },
+            gap: 1,
             mb: 2,
           }}
         >
           <Box>
-            <Button size="small" sx={{ mr: 1 }} onClick={() => navigate(-1)}>
+            <Button
+              size="small"
+              sx={{ mr: { sm: 1 }, width: { xs: 1, sm: "auto" } }}
+              onClick={() => navigate(-1)}
+            >
               一覧に戻る
             </Button>
           </Box>
-          <Box>
+          <Box sx={{ display: "flex", gap: 1, flexDirection: { xs: "column", sm: "row" } }}>
             <Button
-              size="small"
+              size={isMobile ? "medium" : "small"}
               variant="contained"
               color="success"
-              sx={{ mr: 1 }}
+              sx={{ width: { xs: 1, sm: "auto" } }}
               onClick={handleApprove}
               disabled={
                 !workflow?.id ||
@@ -110,10 +126,10 @@ export default function AdminWorkflowDetail() {
             </Button>
 
             <Button
-              size="small"
+              size={isMobile ? "medium" : "small"}
               variant="contained"
               color="error"
-              sx={{ mr: 1 }}
+              sx={{ width: { xs: 1, sm: "auto" } }}
               onClick={handleReject}
               disabled={
                 !workflow?.id ||
@@ -133,7 +149,7 @@ export default function AdminWorkflowDetail() {
 
         {!loading && !error && (
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={7}>
+            <Grid item xs={12} md={7}>
               <WorkflowMetadataPanel
                 workflowId={workflow?.id ?? undefined}
                 fallbackId={id}
@@ -147,7 +163,7 @@ export default function AdminWorkflowDetail() {
               />
             </Grid>
 
-            <Grid item xs={12} sm={5}>
+            <Grid item xs={12} md={5}>
               <WorkflowCommentSection
                 workflow={workflow}
                 staffs={staffs}

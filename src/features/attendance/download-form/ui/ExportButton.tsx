@@ -21,9 +21,14 @@ interface Rest {
 interface Props {
   workDates: string[];
   selectedStaff: StaffType[];
+  fullWidth?: boolean;
 }
 
-export default function ExportButton({ workDates, selectedStaff }: Props) {
+export default function ExportButton({
+  workDates,
+  selectedStaff,
+  fullWidth = false,
+}: Props) {
   const { getHourlyPaidHolidayEnabled, getSpecialHolidayEnabled } =
     useContext(AppConfigContext);
 
@@ -188,6 +193,7 @@ export default function ExportButton({ workDates, selectedStaff }: Props) {
       variant="contained"
       color="primary"
       size="medium"
+      fullWidth={fullWidth}
       startIcon={<CloudDownloadOutlinedIcon />}
       disabled={disabled}
       disableElevation

@@ -238,6 +238,36 @@ export default function AttendanceDailyList() {
   const [duplicateSummaryMap, setDuplicateSummaryMap] = useState<
     Record<string, DuplicateAttendanceDaily[]>
   >({});
+  const tableContainerSx = useMemo(
+    () => ({
+      width: "100%",
+      overflowX: "auto",
+    }),
+    []
+  );
+  const summaryCellSx = useMemo(
+    () => ({
+      maxWidth: 360,
+      whiteSpace: "nowrap",
+      textOverflow: "ellipsis",
+      overflow: "hidden",
+    }),
+    []
+  );
+  const overtimeCellSx = useMemo(
+    () => ({
+      textAlign: "right" as const,
+      whiteSpace: "nowrap",
+    }),
+    []
+  );
+  const recordIdsCellSx = useMemo(
+    () => ({
+      display: { xs: "none", md: "table-cell" },
+      whiteSpace: "nowrap",
+    }),
+    []
+  );
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmTargetStaffId, setConfirmTargetStaffId] = useState<
@@ -711,14 +741,14 @@ export default function AttendanceDailyList() {
           <Alert severity="error" sx={{ mb: 2 }}>
             同一日付に重複した勤怠データがあります。早急にデータ統合を実施してください。
           </Alert>
-          <TableContainer>
+          <TableContainer sx={tableContainerSx}>
             <Table size="small">
               <TableHead>
                 <TableRow>
                   <TableCell sx={{ width: "30%" }}>スタッフ</TableCell>
                   <TableCell sx={{ width: "25%" }}>対象日</TableCell>
                   <TableCell sx={{ width: "15%" }}>重複件数</TableCell>
-                  <TableCell>レコードID一覧</TableCell>
+                  <TableCell sx={recordIdsCellSx}>レコードID一覧</TableCell>
                   <TableCell sx={{ width: "12%" }} align="right">
                     確認
                   </TableCell>
@@ -735,7 +765,9 @@ export default function AttendanceDailyList() {
                           : "-"}
                       </TableCell>
                       <TableCell>{dup.ids.length}</TableCell>
-                      <TableCell>{dup.ids.join(", ") || "-"}</TableCell>
+                      <TableCell sx={recordIdsCellSx}>
+                        {dup.ids.join(", ") || "-"}
+                      </TableCell>
                       <TableCell align="right">
                         <Button
                           variant="contained"
@@ -796,113 +828,119 @@ export default function AttendanceDailyList() {
                 </ToggleButtonGroup>
               </Box>
 
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ width: "16%" }}>項目</TableCell>
-                    {confirmRecords.map((rec, idx) => {
-                      const isSelected =
-                        selectionMode === "record" &&
-                        selectedRecordIndex === idx;
-                      const selectable = selectionMode === "record";
+              <TableContainer sx={tableContainerSx}>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ width: "16%" }}>項目</TableCell>
+                      {confirmRecords.map((rec, idx) => {
+                        const isSelected =
+                          selectionMode === "record" &&
+                          selectedRecordIndex === idx;
+                        const selectable = selectionMode === "record";
+
+                        return (
+                          <TableCell
+                            key={rec.id}
+                            sx={{
+                              minWidth: 140,
+                              cursor: selectable ? "pointer" : "default",
+                              fontWeight: isSelected ? 700 : 400,
+                              border: isSelected
+                                ? "2px solid rgba(25,118,210,0.6)"
+                                : undefined,
+                              backgroundColor: isSelected
+                                ? "rgba(25,118,210,0.08)"
+                                : undefined,
+                            }}
+                            onClick={() =>
+                              selectable && handleSelectRecord(idx)
+                            }
+                          >
+                            #{idx + 1} ({rec.id})
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {confirmFieldRows.map((row, rowIndex) => {
+                      const values = confirmRecords.map((rec) =>
+                        row.value(rec)
+                      );
+                      const unique = new Set(values);
+                      const hasDiff = unique.size > 1;
+                      const diffSx = hasDiff
+                        ? {
+                            backgroundColor: "rgba(255,205,210,0.35)",
+                            fontWeight: 700,
+                          }
+                        : undefined;
+
+                      const base = values[0] ?? "";
 
                       return (
-                        <TableCell
-                          key={rec.id}
-                          sx={{
-                            minWidth: 140,
-                            cursor: selectable ? "pointer" : "default",
-                            fontWeight: isSelected ? 700 : 400,
-                            border: isSelected
-                              ? "2px solid rgba(25,118,210,0.6)"
-                              : undefined,
-                            backgroundColor: isSelected
-                              ? "rgba(25,118,210,0.08)"
-                              : undefined,
-                          }}
-                          onClick={() => selectable && handleSelectRecord(idx)}
-                        >
-                          #{idx + 1} ({rec.id})
-                        </TableCell>
+                        <TableRow key={row.label}>
+                          <TableCell
+                            sx={{ fontWeight: hasDiff ? 700 : 600, ...diffSx }}
+                          >
+                            {row.label}
+                          </TableCell>
+                          {confirmRecords.map((rec, idx) => {
+                            const current = values[idx] ?? "";
+                            const content = hasDiff
+                              ? renderInlineDiff(base, current)
+                              : row.render(rec);
+
+                            const recordSelected =
+                              selectionMode === "record" &&
+                              selectedRecordIndex === idx;
+                            const isFieldSelected =
+                              selectionMode === "field" &&
+                              fieldSelections[row.label] === idx;
+                            const isFieldMode = selectionMode === "field";
+                            const isRecordMode = selectionMode === "record";
+                            const selectable = isFieldMode || isRecordMode;
+
+                            return (
+                              <TableCell
+                                key={`${row.label}-${rec.id}`}
+                                sx={{
+                                  ...diffSx,
+                                  cursor: selectable ? "pointer" : "default",
+                                  border:
+                                    isFieldSelected || recordSelected
+                                      ? "2px solid rgba(25,118,210,0.6)"
+                                      : undefined,
+                                  backgroundColor:
+                                    isFieldSelected || recordSelected
+                                      ? "rgba(25,118,210,0.08)"
+                                      : undefined,
+                                }}
+                                onClick={(event) => {
+                                  if (!selectable) return;
+                                  if (isRecordMode) {
+                                    handleSelectRecord(idx);
+                                    return;
+                                  }
+                                  handleSelectField(
+                                    row.label,
+                                    idx,
+                                    rowIndex,
+                                    event.shiftKey
+                                  );
+                                }}
+                              >
+                                {content}
+                              </TableCell>
+                            );
+                          })}
+                        </TableRow>
                       );
                     })}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {confirmFieldRows.map((row, rowIndex) => {
-                    const values = confirmRecords.map((rec) => row.value(rec));
-                    const unique = new Set(values);
-                    const hasDiff = unique.size > 1;
-                    const diffSx = hasDiff
-                      ? {
-                          backgroundColor: "rgba(255,205,210,0.35)",
-                          fontWeight: 700,
-                        }
-                      : undefined;
-
-                    const base = values[0] ?? "";
-
-                    return (
-                      <TableRow key={row.label}>
-                        <TableCell
-                          sx={{ fontWeight: hasDiff ? 700 : 600, ...diffSx }}
-                        >
-                          {row.label}
-                        </TableCell>
-                        {confirmRecords.map((rec, idx) => {
-                          const current = values[idx] ?? "";
-                          const content = hasDiff
-                            ? renderInlineDiff(base, current)
-                            : row.render(rec);
-
-                          const recordSelected =
-                            selectionMode === "record" &&
-                            selectedRecordIndex === idx;
-                          const isFieldSelected =
-                            selectionMode === "field" &&
-                            fieldSelections[row.label] === idx;
-                          const isFieldMode = selectionMode === "field";
-                          const isRecordMode = selectionMode === "record";
-                          const selectable = isFieldMode || isRecordMode;
-
-                          return (
-                            <TableCell
-                              key={`${row.label}-${rec.id}`}
-                              sx={{
-                                ...diffSx,
-                                cursor: selectable ? "pointer" : "default",
-                                border:
-                                  isFieldSelected || recordSelected
-                                    ? "2px solid rgba(25,118,210,0.6)"
-                                    : undefined,
-                                backgroundColor:
-                                  isFieldSelected || recordSelected
-                                    ? "rgba(25,118,210,0.08)"
-                                    : undefined,
-                              }}
-                              onClick={(event) => {
-                                if (!selectable) return;
-                                if (isRecordMode) {
-                                  handleSelectRecord(idx);
-                                  return;
-                                }
-                                handleSelectField(
-                                  row.label,
-                                  idx,
-                                  rowIndex,
-                                  event.shiftKey
-                                );
-                              }}
-                            >
-                              {content}
-                            </TableCell>
-                          );
-                        })}
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+                  </TableBody>
+                </Table>
+              </TableContainer>
             </>
           )}
         </DialogContent>
@@ -988,7 +1026,7 @@ export default function AttendanceDailyList() {
               </AlertTitle>
               申請中のスタッフがあります。承認されるまで反映されません
             </Alert>
-            <TableContainer>
+            <TableContainer sx={tableContainerSx}>
               <Table size="small">
                 <TableHead>
                   <TableRow>
@@ -1003,10 +1041,13 @@ export default function AttendanceDailyList() {
                     <TableCell className="table-cell-header--end-time">
                       退勤時刻
                     </TableCell>
-                    <TableCell className="table-cell-header--overtime">
+                    <TableCell
+                      className="table-cell-header--overtime"
+                      sx={overtimeCellSx}
+                    >
                       残業時間
                     </TableCell>
-                    <TableCell>摘要</TableCell>
+                    <TableCell sx={summaryCellSx}>摘要</TableCell>
                     <TableCell />
                   </TableRow>
                 </TableHead>
@@ -1039,10 +1080,12 @@ export default function AttendanceDailyList() {
                         row={row}
                         attendances={attendanceMap[row.sub]}
                       />
-                      <TableCell sx={{ textAlign: "right" }}>
+                      <TableCell sx={overtimeCellSx}>
                         {renderOvertimeValue(row)}
                       </TableCell>
-                      <TableCell>{renderSummaryMessage(row)}</TableCell>
+                      <TableCell sx={summaryCellSx}>
+                        {renderSummaryMessage(row)}
+                      </TableCell>
                       <TableCell sx={{ whiteSpace: "nowrap" }} />
                     </TableRow>
                   ))}
@@ -1053,7 +1096,7 @@ export default function AttendanceDailyList() {
         </Box>
       )}
 
-      <TableContainer>
+      <TableContainer sx={tableContainerSx}>
         <Table size="small">
           <TableHead>
             <TableRow>
@@ -1068,10 +1111,13 @@ export default function AttendanceDailyList() {
               <TableCell className="table-cell-header--end-time">
                 退勤時刻
               </TableCell>
-              <TableCell className="table-cell-header--overtime">
+              <TableCell
+                className="table-cell-header--overtime"
+                sx={overtimeCellSx}
+              >
                 残業時間
               </TableCell>
-              <TableCell>摘要</TableCell>
+              <TableCell sx={summaryCellSx}>摘要</TableCell>
               <TableCell />
             </TableRow>
           </TableHead>
@@ -1101,10 +1147,12 @@ export default function AttendanceDailyList() {
                   attendances={attendanceMap[row.sub]}
                   targetWorkDate={displayDateFormatted}
                 />
-                <TableCell sx={{ textAlign: "right" }}>
+                <TableCell sx={overtimeCellSx}>
                   {renderOvertimeValue(row)}
                 </TableCell>
-                <TableCell>{renderSummaryMessage(row)}</TableCell>
+                <TableCell sx={summaryCellSx}>
+                  {renderSummaryMessage(row)}
+                </TableCell>
                 <TableCell sx={{ whiteSpace: "nowrap" }} />
               </TableRow>
             ))}

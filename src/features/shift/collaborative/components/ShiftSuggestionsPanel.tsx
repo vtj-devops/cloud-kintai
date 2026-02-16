@@ -26,7 +26,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { memo, useState } from "react";
 
 import { RuleViolation, SuggestedAction } from "../rules/shiftRules";
 
@@ -40,7 +40,7 @@ interface ShiftSuggestionsPanelProps {
   onRefresh: () => void;
 }
 
-export const ShiftSuggestionsPanel = ({
+export const ShiftSuggestionsPanelBase = ({
   violations,
   isAnalyzing,
   onApplyAction,
@@ -129,8 +129,8 @@ export const ShiftSuggestionsPanel = ({
       elevation={2}
       sx={{
         position: "fixed",
-        right: 80,
-        bottom: 24,
+        right: 25,
+        bottom: 55,
         width: viewMode === "minimized" ? 300 : 400,
         maxHeight: viewMode === "minimized" ? "auto" : "calc(100vh - 200px)",
         overflow: "auto",
@@ -359,3 +359,5 @@ export const ShiftSuggestionsPanel = ({
     </Paper>
   );
 };
+
+export const ShiftSuggestionsPanel = memo(ShiftSuggestionsPanelBase);

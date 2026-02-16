@@ -1,5 +1,5 @@
 import { Box, Stack, SxProps, Theme, Typography } from "@mui/material";
-import { ReactNode, useMemo } from "react";
+import { CSSProperties, ReactNode } from "react";
 
 import { designTokenVar } from "@/shared/designSystem";
 
@@ -53,22 +53,24 @@ const GroupContainerMobile = ({
   children,
   sx,
 }: GroupContainerMobileProps) => {
-  const containerSx = useMemo(
-    () => ({
-      borderStyle: "solid",
-      borderWidth: GROUP_BORDER_WIDTH,
-      borderColor: GROUP_BORDER_COLOR,
-      borderLeftColor: GROUP_ACCENT_COLOR,
-      borderLeftWidth: GROUP_ACCENT_WIDTH,
-      borderRadius: GROUP_RADIUS,
-      padding: GROUP_PADDING,
-      backgroundColor: GROUP_BACKGROUND,
-    }),
-    []
-  );
+  const groupVars: CSSProperties & Record<`--${string}`, string> = {
+    "--group-border-width": GROUP_BORDER_WIDTH,
+    "--group-accent-width": GROUP_ACCENT_WIDTH,
+    "--group-border-color": GROUP_BORDER_COLOR,
+    "--group-accent-color": GROUP_ACCENT_COLOR,
+    "--group-radius": GROUP_RADIUS,
+    "--group-padding": GROUP_PADDING,
+    "--group-background": GROUP_BACKGROUND,
+    "--group-content-gap": GROUP_CONTENT_GAP,
+    "--group-count-color": GROUP_COUNT_COLOR,
+  };
 
   return (
-    <Box sx={[containerSx, sx] as SxProps<Theme>}>
+    <Box
+      className="rounded-[var(--group-radius)] border-[var(--group-border-width)] border-[var(--group-border-color)] border-l-[var(--group-accent-width)] border-l-[var(--group-accent-color)] border-solid bg-[var(--group-background)] p-[var(--group-padding)]"
+      style={groupVars}
+      sx={sx}
+    >
       {title ? (
         <Stack
           direction="row"
@@ -79,14 +81,17 @@ const GroupContainerMobile = ({
             {title}
           </Typography>
           {typeof count === "number" && (
-            <Typography variant="caption" sx={{ color: GROUP_COUNT_COLOR }}>
+            <Typography
+              variant="caption"
+              className="text-[color:var(--group-count-color)]"
+            >
               {`(${count}件)`}
             </Typography>
           )}
         </Stack>
       ) : null}
 
-      <Box sx={{ mt: GROUP_CONTENT_GAP }}>{children}</Box>
+      <Box className="mt-[var(--group-content-gap)]">{children}</Box>
     </Box>
   );
 };

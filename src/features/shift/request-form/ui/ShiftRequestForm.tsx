@@ -2,7 +2,6 @@ import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import DeleteIcon from "@mui/icons-material/Delete";
-import SaveIcon from "@mui/icons-material/Save";
 import {
   Box,
   Button,
@@ -70,6 +69,7 @@ export default function ShiftRequestForm() {
   const { cognitoUser, loading: cognitoUserLoading } = useCognitoUser();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.down("md"));
   const [currentMonth, setCurrentMonth] = useState(dayjs().startOf("month"));
   const weekdayLabels = ["日", "月", "火", "水", "木", "金", "土"];
   const statusLabelMap: Record<Status, string> = {
@@ -750,18 +750,30 @@ export default function ShiftRequestForm() {
   const canBulkSelectByWeekday = !isMobile && isSelectionMode;
 
   return (
-    <Container sx={{ py: 3, pb: isMobile ? 10 : 3 }}>
-      <Paper sx={{ p: 2 }}>
+    <Container
+      disableGutters={isMobile}
+      sx={{ py: { xs: 2, sm: 3 }, pb: isMobile ? 10 : 3, px: { xs: 1.5, sm: 2 } }}
+    >
+      <Paper sx={{ p: { xs: 1.5, sm: 2.5 } }}>
         <Typography variant="h1">希望シフト</Typography>
         <Box
           sx={{
             display: "flex",
-            alignItems: "center",
+            alignItems: { xs: "flex-start", sm: "center" },
             justifyContent: "space-between",
+            flexDirection: { xs: "column", sm: "row" },
+            gap: { xs: 1.5, sm: 2 },
             mb: 2,
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: { xs: "flex-start", sm: "center" },
+              gap: 1,
+              flexWrap: "wrap",
+            }}
+          >
             <IconButton size="small" onClick={prevMonth} aria-label="前の月">
               <ArrowBackIcon />
             </IconButton>
@@ -797,10 +809,11 @@ export default function ShiftRequestForm() {
             </Box>
           </Box>
 
-          <Box>
+          <Box sx={{ width: { xs: "100%", sm: "auto" } }}>
             <Button
               startIcon={<AddIcon />}
               onClick={() => setPatternDialogOpen(true)}
+              fullWidth={isMobile}
             >
               マイパターン
             </Button>
@@ -857,111 +870,129 @@ export default function ShiftRequestForm() {
                 </Stack>
               </Stack>
             </Box>
-            <Box>
-              <Typography variant="subtitle2" gutterBottom>
-                カレンダー
-              </Typography>
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
-                  gap: 0.5,
-                  textAlign: "center",
-                }}
-              >
-                {weekdayLabels.map((label, idx) => (
-                  <Typography
-                    key={`weekday-${idx}`}
-                    variant="caption"
-                    role={canBulkSelectByWeekday ? "button" : undefined}
-                    tabIndex={canBulkSelectByWeekday ? 0 : undefined}
-                    onClick={
-                      canBulkSelectByWeekday
-                        ? () => handleWeekdayLabelClick(idx)
-                        : undefined
-                    }
-                    onKeyDown={
-                      canBulkSelectByWeekday
-                        ? (event) => {
-                            if (event.key === "Enter" || event.key === " ") {
-                              event.preventDefault();
-                              handleWeekdayLabelClick(idx);
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "minmax(0, 1fr)",
+                  md: "minmax(0, 2fr) minmax(0, 1fr)",
+                },
+                gap: 2,
+                alignItems: "start",
+              }}
+            >
+              <Box>
+                <Typography variant="subtitle2" gutterBottom>
+                  カレンダー
+                </Typography>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
+                    gap: { xs: 0.25, sm: 0.5 },
+                    textAlign: "center",
+                  }}
+                >
+                  {weekdayLabels.map((label, idx) => (
+                    <Typography
+                      key={`weekday-${idx}`}
+                      variant="caption"
+                      role={canBulkSelectByWeekday ? "button" : undefined}
+                      tabIndex={canBulkSelectByWeekday ? 0 : undefined}
+                      onClick={
+                        canBulkSelectByWeekday
+                          ? () => handleWeekdayLabelClick(idx)
+                          : undefined
+                      }
+                      onKeyDown={
+                        canBulkSelectByWeekday
+                          ? (event) => {
+                              if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                handleWeekdayLabelClick(idx);
+                              }
                             }
-                          }
-                        : undefined
-                    }
-                    sx={{
-                      color: "text.secondary",
-                      py: 0.5,
-                      cursor: canBulkSelectByWeekday ? "pointer" : "default",
-                      userSelect: "none",
-                    }}
-                  >
-                    {label}
-                  </Typography>
-                ))}
-                {calendarDays.map((dayValue) => {
-                  const key = dayValue.format("YYYY-MM-DD");
-                  const status = selectedDates[key]?.status;
-                  const isCurrentMonthDay = dayValue.isSame(
-                    monthStart,
-                    "month"
-                  );
-                  const isFocused = focusedDateKey === key;
-                  const isSelectedDate = selectedRowKeys.includes(key);
-                  const statusBgColor =
-                    getStatusBgColor(status) || theme.palette.background.paper;
-                  const boxShadowValue = isFocused
-                    ? `0 0 0 2px ${alpha(theme.palette.primary.main, 0.8)}`
-                    : isSelectedDate
-                    ? `0 0 0 2px ${alpha(theme.palette.primary.main, 0.5)}`
-                    : undefined;
-                  const borderColor = isFocused
-                    ? theme.palette.primary.main
-                    : isSelectedDate
-                    ? alpha(theme.palette.primary.main, 0.5)
-                    : "divider";
-                  return (
-                    <Box
-                      key={`calendar-${key}`}
-                      onClick={(event) =>
-                        handleCalendarDayClick(dayValue, event)
+                          : undefined
                       }
                       sx={{
-                        position: "relative",
-                        minHeight: PANEL_HEIGHTS.FORM_ITEM_MIN,
-                        px: 0.5,
+                        color: "text.secondary",
                         py: 0.5,
-                        borderRadius: 1,
-                        border: "1px solid",
-                        borderColor,
-                        bgcolor: statusBgColor,
-                        boxShadow: boxShadowValue,
-                        color: isCurrentMonthDay
-                          ? "text.primary"
-                          : "text.disabled",
-                        cursor: isCurrentMonthDay ? "pointer" : "default",
-                        opacity: isCurrentMonthDay ? 1 : 0.4,
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: 0.25,
+                        cursor: canBulkSelectByWeekday ? "pointer" : "default",
+                        userSelect: "none",
                       }}
                     >
-                      <Typography variant="body2">{dayValue.date()}</Typography>
-                      {status && (
-                        <Typography variant="caption" sx={{ fontSize: 10 }}>
-                          {statusLabelMap[status]}
+                      {label}
+                    </Typography>
+                  ))}
+                  {calendarDays.map((dayValue) => {
+                    const key = dayValue.format("YYYY-MM-DD");
+                    const status = selectedDates[key]?.status;
+                    const isCurrentMonthDay = dayValue.isSame(
+                      monthStart,
+                      "month"
+                    );
+                    const isFocused = focusedDateKey === key;
+                    const isSelectedDate = selectedRowKeys.includes(key);
+                    const statusBgColor =
+                      getStatusBgColor(status) ||
+                      theme.palette.background.paper;
+                    const boxShadowValue = isFocused
+                      ? `0 0 0 2px ${alpha(theme.palette.primary.main, 0.8)}`
+                      : isSelectedDate
+                      ? `0 0 0 2px ${alpha(theme.palette.primary.main, 0.5)}`
+                      : undefined;
+                    const borderColor = isFocused
+                      ? theme.palette.primary.main
+                      : isSelectedDate
+                      ? alpha(theme.palette.primary.main, 0.5)
+                      : "divider";
+                    return (
+                      <Box
+                        key={`calendar-${key}`}
+                        onClick={(event) =>
+                          handleCalendarDayClick(dayValue, event)
+                        }
+                        sx={{
+                          position: "relative",
+                          minHeight: { xs: 42, sm: PANEL_HEIGHTS.FORM_ITEM_MIN },
+                          px: { xs: 0.25, sm: 0.5 },
+                          py: { xs: 0.25, sm: 0.5 },
+                          borderRadius: 1,
+                          border: "1px solid",
+                          borderColor,
+                          bgcolor: statusBgColor,
+                          boxShadow: boxShadowValue,
+                          color: isCurrentMonthDay
+                            ? "text.primary"
+                            : "text.disabled",
+                          cursor: isCurrentMonthDay ? "pointer" : "default",
+                          opacity: isCurrentMonthDay ? 1 : 0.4,
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 0.25,
+                        }}
+                      >
+                        <Typography variant={isTablet ? "body2" : "subtitle2"}>
+                          {dayValue.date()}
                         </Typography>
-                      )}
-                    </Box>
-                  );
-                })}
+                        {status && (
+                          <Typography variant="caption" sx={{ fontSize: 10 }}>
+                            {isMobile
+                              ? statusMobileLabelMap[status] ??
+                                statusLabelMap[status]
+                              : statusLabelMap[status]}
+                          </Typography>
+                        )}
+                      </Box>
+                    );
+                  })}
+                </Box>
+                <Box sx={{ mt: 1 }}>{renderSummary()}</Box>
               </Box>
+              <Box>{renderDayDetail({ isMobileView: isMobile })}</Box>
             </Box>
-            <Box>{renderSummary()}</Box>
-            {renderDayDetail({ isMobileView: isMobile })}
           </Stack>
         </Box>
 
@@ -980,58 +1011,27 @@ export default function ShiftRequestForm() {
               onChange={(e) => setNote(e.target.value)}
             />
 
-            {!isMobile && (
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  gap: 2,
-                }}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: 2,
+                flexWrap: "wrap",
+              }}
+            >
+              <Button
+                variant="contained"
+                onClick={() => saveShiftRequest(summary)}
+                disabled={!hasSelection || interactionDisabled}
+                fullWidth={isMobile}
               >
-                <Button
-                  variant="contained"
-                  onClick={() => saveShiftRequest(summary)}
-                  disabled={!hasSelection || interactionDisabled}
-                >
-                  保存
-                </Button>
-                {isSaving && <CircularProgress size={20} />}
-              </Box>
-            )}
+                保存
+              </Button>
+              {isSaving && <CircularProgress size={20} />}
+            </Box>
           </Stack>
         </Box>
-        {isMobile && (
-          <IconButton
-            aria-label="保存"
-            onClick={() => saveShiftRequest(summary)}
-            disabled={!hasSelection || interactionDisabled}
-            sx={{
-              position: "fixed",
-              bottom: 24,
-              right: 24,
-              width: 56,
-              height: 56,
-              zIndex: (theme) => theme.zIndex.snackbar,
-              bgcolor: (theme) => theme.palette.primary.main,
-              color: (theme) => theme.palette.primary.contrastText,
-              boxShadow: 6,
-              "&:hover": {
-                bgcolor: (theme) => theme.palette.primary.dark,
-              },
-              "&.Mui-disabled": {
-                bgcolor: (theme) => theme.palette.action.disabledBackground,
-                color: (theme) => theme.palette.action.disabled,
-              },
-            }}
-          >
-            {isSaving ? (
-              <CircularProgress size={24} color="inherit" />
-            ) : (
-              <SaveIcon />
-            )}
-          </IconButton>
-        )}
         {/* パターン管理ダイアログ */}
         <Dialog
           open={patternDialogOpen}

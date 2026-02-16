@@ -15,11 +15,13 @@ import downloadAttendances from "../lib/downloadAttendances";
 type Props = {
   workDates: string[];
   selectedStaff: StaffType[];
+  fullWidth?: boolean;
 };
 
 export default function AggregateExportButton({
   workDates,
   selectedStaff,
+  fullWidth = false,
 }: Props) {
   const { getHourlyPaidHolidayEnabled, getSpecialHolidayEnabled } =
     useContext(AppConfigContext);
@@ -141,6 +143,7 @@ export default function AggregateExportButton({
       size="medium"
       onClick={onClick}
       startIcon={<CloudDownloadOutlinedIcon />}
+      fullWidth={fullWidth}
       disabled={workDates.length === 0 || selectedStaff.length === 0}
       disableElevation
       sx={{

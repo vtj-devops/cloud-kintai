@@ -7,18 +7,13 @@ const MockLogo = () => (
   <Box sx={{ fontWeight: "bold", color: "white", fontSize: "18px" }}>Logo</Box>
 );
 
-// シンプルなメニューコンポーネント
-const MockDesktopMenu = () => (
+// シンプルなナビゲーションコンポーネント
+const MockNavigation = () => (
   <Stack direction="row" spacing={2} sx={{ color: "white" }}>
     <Box sx={{ cursor: "pointer" }}>Menu 1</Box>
     <Box sx={{ cursor: "pointer" }}>Menu 2</Box>
     <Box sx={{ cursor: "pointer" }}>Menu 3</Box>
   </Stack>
-);
-
-// シンプルなモバイルメニュー
-const MockMobileMenu = () => (
-  <Box sx={{ color: "white", fontSize: "20px" }}>☰</Box>
 );
 
 // シンプルなボタン
@@ -58,8 +53,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     logo: <MockLogo />,
-    desktopMenu: <MockDesktopMenu />,
-    mobileMenu: <MockMobileMenu />,
+    navigation: <MockNavigation />,
     signInOutButton: <MockSignInOutButton />,
   },
 };
@@ -68,8 +62,7 @@ export const CustomThemeColor: Story = {
   args: {
     themeColor: "#1976d2",
     logo: <MockLogo />,
-    desktopMenu: <MockDesktopMenu />,
-    mobileMenu: <MockMobileMenu />,
+    navigation: <MockNavigation />,
     signInOutButton: <MockSignInOutButton />,
   },
 };
@@ -77,14 +70,13 @@ export const CustomThemeColor: Story = {
 export const WithExternalLinks: Story = {
   args: {
     logo: <MockLogo />,
-    desktopMenu: <MockDesktopMenu />,
+    navigation: <MockNavigation />,
     externalLinks: (
       <Stack direction="row" spacing={1} sx={{ color: "white" }}>
         <Box sx={{ cursor: "pointer", fontSize: "14px" }}>GitHub</Box>
         <Box sx={{ cursor: "pointer", fontSize: "14px" }}>Docs</Box>
       </Stack>
     ),
-    mobileMenu: <MockMobileMenu />,
     signInOutButton: <MockSignInOutButton />,
   },
 };

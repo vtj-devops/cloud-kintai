@@ -4,9 +4,13 @@ import MenuItem from "@mui/material/MenuItem";
 import Popover from "@mui/material/Popover";
 import type { SelectChangeEvent } from "@mui/material/Select";
 import Select from "@mui/material/Select";
+import Stack from "@mui/material/Stack";
+import { useTheme } from "@mui/material/styles";
 import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
 import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import { DatePicker } from "@mui/x-date-pickers";
 import { WorkflowCategory, WorkflowStatus } from "@shared/api/graphql/types";
 import dayjs, { Dayjs } from "dayjs";
@@ -47,11 +51,26 @@ const SELECT_SX = {
 const FILTER_PANEL_PADDING = designTokenVar("spacing.lg", "16px");
 const FILTER_PANEL_GAP = designTokenVar("spacing.md", "12px");
 const FILTER_PANEL_BUTTON_GAP = designTokenVar("spacing.sm", "8px");
+const FILTER_FIELD_GAP = designTokenVar("spacing.xs", "4px");
+const FILTER_SECTION_GAP = designTokenVar("spacing.md", "12px");
+const FILTER_PANEL_RADIUS = designTokenVar("radius.lg", "16px");
 
-function WorkflowListFilters(
-  { filters, setFilter }: WorkflowListFiltersProps,
-  ref: Ref<WorkflowListFiltersHandle>
-) {
+const FIELD_LABELS = {
+  category: "種別",
+  application: "申請日",
+  status: "ステータス",
+  created: "作成日",
+} as const;
+
+type WorkflowListFiltersStateProps = {
+  filters: WorkflowListFiltersProps["filters"];
+  setFilter: WorkflowListFiltersProps["setFilter"];
+};
+
+const useWorkflowListFiltersState = ({
+  filters,
+  setFilter,
+}: WorkflowListFiltersStateProps) => {
   const {
     category: categoryFilter,
     status: statusFilter,
@@ -71,14 +90,6 @@ function WorkflowListFilters(
     setApplicationAnchorEl(null);
     setCreatedAnchorEl(null);
   }, []);
-
-  useImperativeHandle(
-    ref,
-    () => ({
-      closeAllPopovers,
-    }),
-    [closeAllPopovers]
-  );
 
   const handleDateChange = useCallback(
     (
@@ -113,6 +124,139 @@ function WorkflowListFilters(
     setFilter("status", nextValue);
   };
 
+  return {
+    categoryFilter,
+    statusFilter,
+    applicationFrom,
+    applicationTo,
+    createdFrom,
+    createdTo,
+    applicationAnchorEl,
+    createdAnchorEl,
+    closeAllPopovers,
+    handleDateChange,
+    handleApplicationFieldClick,
+    handleCreatedFieldClick,
+    handleStatusChange,
+    setApplicationAnchorEl,
+    setCreatedAnchorEl,
+  };
+};
+
+type DateFieldProps = {
+  displayValue: string;
+  anchorEl: HTMLElement | null;
+  onOpen: (event: React.MouseEvent<HTMLElement>) => void;
+  onClose: () => void;
+  fromValue: string | undefined;
+  toValue: string | undefined;
+  onChange: (
+    key: "applicationFrom" | "applicationTo" | "createdFrom" | "createdTo",
+    value: Dayjs | null
+  ) => void;
+  fromKey: "applicationFrom" | "createdFrom";
+  toKey: "applicationTo" | "createdTo";
+  onClear: () => void;
+  isCompact: boolean;
+};
+
+const DateRangeField = ({
+  displayValue,
+  anchorEl,
+  onOpen,
+  onClose,
+  fromValue,
+  toValue,
+  onChange,
+  fromKey,
+  toKey,
+  onClear,
+  isCompact,
+}: DateFieldProps) => (
+  <Box>
+    <TextField
+      size="small"
+      fullWidth
+      value={displayValue}
+      onClick={onOpen}
+      InputProps={{ readOnly: true }}
+    />
+    <Popover
+      open={Boolean(anchorEl)}
+      anchorEl={anchorEl}
+      onClose={onClose}
+      anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+    >
+      <Box
+        sx={{
+          p: FILTER_PANEL_PADDING,
+          display: "flex",
+          gap: FILTER_PANEL_GAP,
+          flexDirection: isCompact ? "column" : "row",
+          alignItems: isCompact ? "stretch" : "center",
+        }}
+      >
+        <DatePicker
+          label="From"
+          value={fromValue ? dayjs(fromValue) : null}
+          onChange={(v) => onChange(fromKey, v)}
+          slotProps={{ textField: { size: "small" } }}
+        />
+        <DatePicker
+          label="To"
+          value={toValue ? dayjs(toValue) : null}
+          onChange={(v) => onChange(toKey, v)}
+          slotProps={{ textField: { size: "small" } }}
+        />
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: isCompact ? "row" : "column",
+            justifyContent: "flex-end",
+            gap: FILTER_PANEL_BUTTON_GAP,
+          }}
+        >
+      <Button size="small" onClick={onClear}>
+        クリア
+      </Button>
+    </Box>
+  </Box>
+</Popover>
+  </Box>
+);
+
+function WorkflowListFilters(
+  { filters, setFilter }: WorkflowListFiltersProps,
+  ref: Ref<WorkflowListFiltersHandle>
+) {
+  const theme = useTheme();
+  const isCompact = useMediaQuery(theme.breakpoints.down("sm"));
+  const {
+    categoryFilter,
+    statusFilter,
+    applicationFrom,
+    applicationTo,
+    createdFrom,
+    createdTo,
+    applicationAnchorEl,
+    createdAnchorEl,
+    closeAllPopovers,
+    handleDateChange,
+    handleApplicationFieldClick,
+    handleCreatedFieldClick,
+    handleStatusChange,
+    setApplicationAnchorEl,
+    setCreatedAnchorEl,
+  } = useWorkflowListFiltersState({ filters, setFilter });
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      closeAllPopovers,
+    }),
+    [closeAllPopovers]
+  );
+
   return (
     <TableRow>
       <TableCell>
@@ -136,63 +280,27 @@ function WorkflowListFilters(
         </Select>
       </TableCell>
       <TableCell>
-        <TextField
-          size="small"
-          fullWidth
-          value={
+        <DateRangeField
+          displayValue={
             applicationFrom && applicationTo
               ? `${applicationFrom} → ${applicationTo}`
               : DISPLAY_LABEL_APPLICATION
           }
-          onClick={handleApplicationFieldClick}
-          InputProps={{ readOnly: true }}
-        />
-        <Popover
-          open={Boolean(applicationAnchorEl)}
           anchorEl={applicationAnchorEl}
+          onOpen={handleApplicationFieldClick}
           onClose={() => setApplicationAnchorEl(null)}
-          anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        >
-          <Box
-            sx={{
-              p: FILTER_PANEL_PADDING,
-              display: "flex",
-              gap: FILTER_PANEL_GAP,
-            }}
-          >
-            <DatePicker
-              label="From"
-              value={applicationFrom ? dayjs(applicationFrom) : null}
-              onChange={(v) => handleDateChange("applicationFrom", v)}
-              slotProps={{ textField: { size: "small" } }}
-            />
-            <DatePicker
-              label="To"
-              value={applicationTo ? dayjs(applicationTo) : null}
-              onChange={(v) => handleDateChange("applicationTo", v)}
-              slotProps={{ textField: { size: "small" } }}
-            />
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "flex-end",
-                gap: FILTER_PANEL_BUTTON_GAP,
-              }}
-            >
-              <Button
-                size="small"
-                onClick={() => {
-                  setFilter("applicationFrom", "");
-                  setFilter("applicationTo", "");
-                  setApplicationAnchorEl(null);
-                }}
-              >
-                クリア
-              </Button>
-            </Box>
-          </Box>
-        </Popover>
+          fromValue={applicationFrom}
+          toValue={applicationTo}
+          onChange={handleDateChange}
+          fromKey="applicationFrom"
+          toKey="applicationTo"
+          onClear={() => {
+            setFilter("applicationFrom", "");
+            setFilter("applicationTo", "");
+            setApplicationAnchorEl(null);
+          }}
+          isCompact={isCompact}
+        />
       </TableCell>
       <TableCell>
         <Select
@@ -235,67 +343,207 @@ function WorkflowListFilters(
         </Select>
       </TableCell>
       <TableCell>
-        <TextField
-          size="small"
-          fullWidth
-          value={
+        <DateRangeField
+          displayValue={
             createdFrom && createdTo
               ? `${createdFrom} → ${createdTo}`
               : DISPLAY_LABEL_CREATED
           }
-          onClick={handleCreatedFieldClick}
-          InputProps={{ readOnly: true }}
-        />
-        <Popover
-          open={Boolean(createdAnchorEl)}
           anchorEl={createdAnchorEl}
+          onOpen={handleCreatedFieldClick}
           onClose={() => setCreatedAnchorEl(null)}
-          anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        >
-          <Box
-            sx={{
-              p: FILTER_PANEL_PADDING,
-              display: "flex",
-              gap: FILTER_PANEL_GAP,
-            }}
-          >
-            <DatePicker
-              label="From"
-              value={createdFrom ? dayjs(createdFrom) : null}
-              onChange={(v) => handleDateChange("createdFrom", v)}
-              slotProps={{ textField: { size: "small" } }}
-            />
-            <DatePicker
-              label="To"
-              value={createdTo ? dayjs(createdTo) : null}
-              onChange={(v) => handleDateChange("createdTo", v)}
-              slotProps={{ textField: { size: "small" } }}
-            />
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "flex-end",
-                gap: FILTER_PANEL_BUTTON_GAP,
-              }}
-            >
-              <Button
-                size="small"
-                onClick={() => {
-                  setFilter("createdFrom", "");
-                  setFilter("createdTo", "");
-                  setCreatedAnchorEl(null);
-                }}
-              >
-                クリア
-              </Button>
-            </Box>
-          </Box>
-        </Popover>
+          fromValue={createdFrom}
+          toValue={createdTo}
+          onChange={handleDateChange}
+          fromKey="createdFrom"
+          toKey="createdTo"
+          onClear={() => {
+            setFilter("createdFrom", "");
+            setFilter("createdTo", "");
+            setCreatedAnchorEl(null);
+          }}
+          isCompact={isCompact}
+        />
       </TableCell>
       <TableCell />
     </TableRow>
   );
 }
 
-export default forwardRef(WorkflowListFilters);
+export const WorkflowListFiltersPanel = forwardRef(
+  (
+    { filters, setFilter }: WorkflowListFiltersProps,
+    ref: Ref<WorkflowListFiltersHandle>
+  ) => {
+    const theme = useTheme();
+    const isCompact = useMediaQuery(theme.breakpoints.down("sm"));
+    const {
+      categoryFilter,
+      statusFilter,
+      applicationFrom,
+      applicationTo,
+      createdFrom,
+      createdTo,
+      applicationAnchorEl,
+      createdAnchorEl,
+      closeAllPopovers,
+      handleDateChange,
+      handleApplicationFieldClick,
+      handleCreatedFieldClick,
+      handleStatusChange,
+      setApplicationAnchorEl,
+      setCreatedAnchorEl,
+    } = useWorkflowListFiltersState({ filters, setFilter });
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        closeAllPopovers,
+      }),
+      [closeAllPopovers]
+    );
+
+    return (
+      <Box
+        sx={{
+          p: FILTER_PANEL_PADDING,
+          borderRadius: FILTER_PANEL_RADIUS,
+          bgcolor: "background.paper",
+          border: "1px solid",
+          borderColor: "divider",
+        }}
+      >
+        <Stack spacing={FILTER_SECTION_GAP}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: FILTER_FIELD_GAP }}>
+            <Typography variant="caption" color="text.secondary">
+              {FIELD_LABELS.category}
+            </Typography>
+            <Select
+              size="small"
+              sx={SELECT_SX}
+              displayEmpty
+              value={categoryFilter}
+              onChange={(e) => setFilter("category", e.target.value)}
+            >
+              <MenuItem value="">すべて</MenuItem>
+              <MenuItem value={WorkflowCategory.PAID_LEAVE}>
+                {CATEGORY_LABELS[WorkflowCategory.PAID_LEAVE]}
+              </MenuItem>
+              <MenuItem value={WorkflowCategory.ABSENCE}>
+                {CATEGORY_LABELS[WorkflowCategory.ABSENCE]}
+              </MenuItem>
+              <MenuItem value={WorkflowCategory.OVERTIME}>
+                {CATEGORY_LABELS[WorkflowCategory.OVERTIME]}
+              </MenuItem>
+            </Select>
+          </Box>
+
+          <Box sx={{ display: "flex", flexDirection: "column", gap: FILTER_FIELD_GAP }}>
+            <Typography variant="caption" color="text.secondary">
+              {FIELD_LABELS.application}
+            </Typography>
+            <DateRangeField
+              displayValue={
+                applicationFrom && applicationTo
+                  ? `${applicationFrom} → ${applicationTo}`
+                  : DISPLAY_LABEL_APPLICATION
+              }
+              anchorEl={applicationAnchorEl}
+              onOpen={handleApplicationFieldClick}
+              onClose={() => setApplicationAnchorEl(null)}
+              fromValue={applicationFrom}
+              toValue={applicationTo}
+              onChange={handleDateChange}
+              fromKey="applicationFrom"
+              toKey="applicationTo"
+              onClear={() => {
+                setFilter("applicationFrom", "");
+                setFilter("applicationTo", "");
+                setApplicationAnchorEl(null);
+              }}
+              isCompact={isCompact}
+            />
+          </Box>
+
+          <Box sx={{ display: "flex", flexDirection: "column", gap: FILTER_FIELD_GAP }}>
+            <Typography variant="caption" color="text.secondary">
+              {FIELD_LABELS.status}
+            </Typography>
+            <Select
+              size="small"
+              multiple
+              sx={SELECT_SX}
+              displayEmpty
+              value={statusFilter ?? []}
+              onChange={handleStatusChange}
+              renderValue={(selected) =>
+                selected.length === 0
+                  ? "すべて"
+                  : selected
+                      .map(
+                        (status) =>
+                          STATUS_LABELS[status as WorkflowStatus] || String(status)
+                      )
+                      .join("、")
+              }
+            >
+              <MenuItem value={STATUS_ALL_VALUE}>すべて</MenuItem>
+              <MenuItem value={WorkflowStatus.DRAFT}>
+                {STATUS_LABELS[WorkflowStatus.DRAFT]}
+              </MenuItem>
+              <MenuItem value={WorkflowStatus.SUBMITTED}>
+                {STATUS_LABELS[WorkflowStatus.SUBMITTED]}
+              </MenuItem>
+              <MenuItem value={WorkflowStatus.PENDING}>
+                {STATUS_LABELS[WorkflowStatus.PENDING]}
+              </MenuItem>
+              <MenuItem value={WorkflowStatus.APPROVED}>
+                {STATUS_LABELS[WorkflowStatus.APPROVED]}
+              </MenuItem>
+              <MenuItem value={WorkflowStatus.REJECTED}>
+                {STATUS_LABELS[WorkflowStatus.REJECTED]}
+              </MenuItem>
+              <MenuItem value={WorkflowStatus.CANCELLED}>
+                {STATUS_LABELS[WorkflowStatus.CANCELLED]}
+              </MenuItem>
+            </Select>
+          </Box>
+
+          <Box sx={{ display: "flex", flexDirection: "column", gap: FILTER_FIELD_GAP }}>
+            <Typography variant="caption" color="text.secondary">
+              {FIELD_LABELS.created}
+            </Typography>
+            <DateRangeField
+              displayValue={
+                createdFrom && createdTo
+                  ? `${createdFrom} → ${createdTo}`
+                  : DISPLAY_LABEL_CREATED
+              }
+              anchorEl={createdAnchorEl}
+              onOpen={handleCreatedFieldClick}
+              onClose={() => setCreatedAnchorEl(null)}
+              fromValue={createdFrom}
+              toValue={createdTo}
+              onChange={handleDateChange}
+              fromKey="createdFrom"
+              toKey="createdTo"
+              onClear={() => {
+                setFilter("createdFrom", "");
+                setFilter("createdTo", "");
+                setCreatedAnchorEl(null);
+              }}
+              isCompact={isCompact}
+            />
+          </Box>
+        </Stack>
+      </Box>
+    );
+  }
+);
+
+WorkflowListFiltersPanel.displayName = "WorkflowListFiltersPanel";
+
+const WorkflowListFiltersWithRef = forwardRef(WorkflowListFilters);
+WorkflowListFiltersWithRef.displayName = "WorkflowListFilters";
+
+export default WorkflowListFiltersWithRef;

@@ -86,6 +86,10 @@ export interface CollaborativeShiftState {
   lastSyncedAt: number;
   error: string | null;
   connectionState: "connected" | "disconnected" | "error";
+
+  // オフライン対応
+  isOnline: boolean;
+  hasPendingChanges: boolean;
 }
 
 /**
@@ -164,4 +168,47 @@ export interface ShiftCellUpdate {
   date: string; // "DD"
   newState?: ShiftState;
   isLocked?: boolean;
+  previousState?: ShiftState;
+  previousLocked?: boolean;
+}
+
+/**
+ * メンション情報
+ */
+export interface Mention {
+  userId: string;
+  userName: string;
+  position: number; // テキスト内の位置
+}
+
+/**
+ * セルコメント
+ */
+export interface CellComment {
+  id: string;
+  cellKey: string; // "staffId#date"
+  userId: string;
+  userName: string;
+  userColor: string;
+  content: string;
+  mentions: Mention[];
+  createdAt: string; // ISO 8601
+  updatedAt: string; // ISO 8601
+  isEdited: boolean;
+  replies?: CellComment[]; // 返信コメント
+}
+
+/**
+ * コメントマップ
+ * Key: cellKey ("staffId#date"), Value: CellComment[]
+ */
+export type CommentsMap = Map<string, CellComment[]>;
+
+/**
+ * 共同編集コンテキストの状態（拡張版）
+ */
+export interface CollaborativeShiftStateWithComments extends CollaborativeShiftState {
+  // コメント管理
+  comments: CommentsMap;
+  selectedCommentCell: string | null; // コメント編集中のセルキー
 }

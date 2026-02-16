@@ -9,11 +9,13 @@ import {
   TableHead,
   TableRow,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { Attendance } from "@shared/api/graphql/types";
 import dayjs, { type Dayjs } from "dayjs";
 import type { ReactNode } from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { AttendanceDate } from "@/entities/attendance/lib/AttendanceDate";
@@ -25,6 +27,7 @@ import {
   PendingAttendanceSection,
 } from "@/features/admin/staffAttendanceList/ui/components";
 import DesktopCalendarView from "@/features/attendance/list/ui/DesktopCalendarView";
+import MobileCalendar from "@/features/attendance/list/ui/MobileList/MobileCalendar";
 import { useSplitView } from "@/features/splitView";
 import { designTokenVar } from "@/shared/designSystem";
 import { PageSection } from "@/shared/ui/layout";
@@ -46,6 +49,10 @@ export default function AdminStaffAttendanceList() {
   const { staffId } = useParams();
   const navigate = useNavigate();
   const { enableSplitMode, setRightPanel } = useSplitView();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const calendarContainerRef = useRef<HTMLDivElement | null>(null);
+  const [calendarContainerWidth, setCalendarContainerWidth] = useState(0);
 
   const [currentMonth, setCurrentMonth] = useState(dayjs().startOf("month"));
 
@@ -143,6 +150,23 @@ export default function AdminStaffAttendanceList() {
     </Stack>
   );
 
+  useEffect(() => {
+    if (!calendarContainerRef.current || typeof ResizeObserver === "undefined") {
+      return;
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      setCalendarContainerWidth(entry.contentRect.width);
+    });
+
+    observer.observe(calendarContainerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const isCalendarCompact = isMobile || calendarContainerWidth < 900;
+
   // エラーがある場合は、エラーメッセージが既にsnackbarで表示されているため、
   // データが存在する場合は表示を続ける
   if (attendancesError && attendances.length === 0) {
@@ -236,20 +260,35 @@ export default function AdminStaffAttendanceList() {
         )}
 
         <PageSection variant="surface" layoutVariant="dashboard">
-          <DesktopCalendarView
-            attendances={attendances}
-            staff={staff}
-            holidayCalendars={holidayCalendars}
-            companyHolidayCalendars={companyHolidayCalendars}
-            navigate={navigate}
-            buildNavigatePath={buildCalendarNavigatePath}
-            closeDates={closeDates}
-            closeDatesLoading={closeDatesLoading}
-            closeDatesError={closeDatesError}
-            currentMonth={currentMonth}
-            onMonthChange={setCurrentMonth}
-            onOpenInRightPanel={handleOpenInRightPanel}
-          />
+          <Box ref={calendarContainerRef} sx={{ width: "100%" }}>
+            {isCalendarCompact ? (
+              <MobileCalendar
+                attendances={attendances}
+                staff={staff}
+                holidayCalendars={holidayCalendars}
+                companyHolidayCalendars={companyHolidayCalendars}
+                currentMonth={currentMonth}
+                onMonthChange={setCurrentMonth}
+                closeDates={closeDates}
+                buildNavigatePath={buildCalendarNavigatePath}
+              />
+            ) : (
+              <DesktopCalendarView
+                attendances={attendances}
+                staff={staff}
+                holidayCalendars={holidayCalendars}
+                companyHolidayCalendars={companyHolidayCalendars}
+                navigate={navigate}
+                buildNavigatePath={buildCalendarNavigatePath}
+                closeDates={closeDates}
+                closeDatesLoading={closeDatesLoading}
+                closeDatesError={closeDatesError}
+                currentMonth={currentMonth}
+                onMonthChange={setCurrentMonth}
+                onOpenInRightPanel={handleOpenInRightPanel}
+              />
+            )}
+          </Box>
         </PageSection>
 
         <PageSection

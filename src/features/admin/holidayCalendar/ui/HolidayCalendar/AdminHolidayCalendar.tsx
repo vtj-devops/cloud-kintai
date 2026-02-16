@@ -1,5 +1,4 @@
 import { Box, Stack, Tab, Tabs, Typography } from "@mui/material";
-import { Activity } from "react";
 import { type ReactNode, type SyntheticEvent, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -17,17 +16,15 @@ function CustomTabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
 
   return (
-    <Activity mode={value === index ? "visible" : "hidden"}>
-      <div
-        role="tabpanel"
-        hidden={value !== index}
-        id={`simple-tabpanel-${index}`}
-        aria-labelledby={`simple-tab-${index}`}
-        {...other}
-      >
-        <Box sx={{ p: 3 }}>{children}</Box>
-      </div>
-    </Activity>
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      <Box sx={{ p: 3 }}>{children}</Box>
+    </div>
   );
 }
 

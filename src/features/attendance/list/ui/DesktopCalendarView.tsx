@@ -37,6 +37,9 @@ const CalendarWrapper = styled(Box)(({ theme }) => ({
   borderRadius: 16,
   border: `1px solid ${theme.palette.divider}`,
   backgroundColor: theme.palette.background.paper,
+  [theme.breakpoints.down("lg")]: {
+    padding: "0px 24px 24px 24px",
+  },
   [theme.breakpoints.down("md")]: {
     display: "none",
   },
@@ -46,6 +49,9 @@ const CalendarGrid = styled(Box)(({ theme }) => ({
   display: "grid",
   gridTemplateColumns: "repeat(7, 1fr)",
   gap: theme.spacing(1),
+  [theme.breakpoints.down("lg")]: {
+    gap: theme.spacing(0.75),
+  },
 }));
 
 const DayCell = styled(Box, {
@@ -75,6 +81,10 @@ const DayCell = styled(Box, {
   overflow: "hidden",
   "&:hover": {
     backgroundColor: theme.palette.action.hover,
+  },
+  [theme.breakpoints.down("lg")]: {
+    minHeight: 110,
+    padding: theme.spacing(1),
   },
 }));
 

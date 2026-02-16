@@ -11,6 +11,7 @@ import {
   ListItemText,
   Typography,
 } from "@mui/material";
+import { memo } from "react";
 
 interface KeyboardShortcutsHelpProps {
   open: boolean;
@@ -22,7 +23,7 @@ interface ShortcutGroup {
   shortcuts: Array<{ key: string; description: string }>;
 }
 
-export const KeyboardShortcutsHelp = ({
+export const KeyboardShortcutsHelpBase = ({
   open,
   onClose,
 }: KeyboardShortcutsHelpProps) => {
@@ -128,3 +129,5 @@ export const KeyboardShortcutsHelp = ({
     </Dialog>
   );
 };
+
+export const KeyboardShortcutsHelp = memo(KeyboardShortcutsHelpBase);

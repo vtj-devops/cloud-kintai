@@ -2,7 +2,7 @@ import "@aws-amplify/ui-react/styles.css";
 import "./styles.scss";
 
 import { Authenticator } from "@aws-amplify/ui-react";
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { Button, Stack, Typography } from "@mui/material";
 import { useContext, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -30,18 +30,13 @@ export default function Login() {
     <Stack
       direction="column"
       spacing={2}
-      justifyContent={"center"}
-      alignItems={"center"}
-      sx={{
-        pt: {
-          xs: 0,
-          sm: 10,
-        },
-      }}
+      justifyContent="center"
+      alignItems="center"
+      className="pt-0 sm:pt-10"
     >
-      <Box sx={{ display: { xs: "none", sm: "block" } }}>
+      <div className="hidden sm:block">
         <img src={logo} height={200} />
-      </Box>
+      </div>
       <Authenticator hideSignUp>
         {({ signOut }) => {
           if (signOut) {

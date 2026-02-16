@@ -1,5 +1,5 @@
 import { StaffRole } from "@entities/staff/model/useStaffs/useStaffs";
-import { Alert, Box, Container } from "@mui/material";
+import { Alert, Container } from "@mui/material";
 import { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -23,26 +23,16 @@ export default function Register() {
   if (isRegisterDisabled) {
     return (
       <Container>
-        <Box sx={{ mt: 4, textAlign: "center" }}>
+        <div className="mt-4 text-center">
           <Alert severity="warning">現在、こちらの機能は使用できません</Alert>
-        </Box>
+        </div>
       </Container>
     );
   }
 
   return (
-    <Box
-      sx={{
-        height: 1,
-        py: {
-          xs: 2,
-          md: 10,
-        },
-        justifyContent: "center",
-        display: "flex",
-      }}
-    >
+    <div className="flex h-full justify-center py-2 md:py-10">
       <TimeRecorder />
-    </Box>
+    </div>
   );
 }

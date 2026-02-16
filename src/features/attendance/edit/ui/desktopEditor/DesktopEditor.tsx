@@ -56,13 +56,29 @@ import {
 
 const logger = createLogger("DesktopEditor");
 
-const DesktopContainer = styled(Container)(() => ({
-  pt: 1,
-  pb: 5,
+const DesktopContainer = styled(Container)(({ theme }) => ({
+  paddingTop: theme.spacing(1),
+  paddingBottom: theme.spacing(5),
 }));
 
-const BodyStack = styled(Stack)(() => ({
-  padding: "0 239px",
+const BodyStack = styled(Stack)(({ theme }) => ({
+  width: "100%",
+  maxWidth: 960,
+  margin: "0 auto",
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
+  [theme.breakpoints.up("md")]: {
+    paddingLeft: theme.spacing(4),
+    paddingRight: theme.spacing(4),
+  },
+  [theme.breakpoints.up("lg")]: {
+    maxWidth: 1080,
+    paddingLeft: theme.spacing(6),
+    paddingRight: theme.spacing(6),
+  },
+  [theme.breakpoints.up("xl")]: {
+    maxWidth: 1200,
+  },
 }));
 
 const RequestButton = styled(Button)(({ theme }) => ({
@@ -163,7 +179,7 @@ export default function DesktopEditor() {
   }
 
   return (
-    <DesktopContainer maxWidth="xl">
+    <DesktopContainer maxWidth={false}>
       <Stack direction="column" spacing={2}>
         <AttendanceEditBreadcrumb />
         <BodyStack spacing={2}>
@@ -181,7 +197,6 @@ export default function DesktopEditor() {
             </Alert>
           )}
           <Stack direction="column" spacing={2}>
-            <AttendanceEditBreadcrumb />
             <ChangeRequestingAlert changeRequests={changeRequests} />
           </Stack>
           <NoDataAlert />

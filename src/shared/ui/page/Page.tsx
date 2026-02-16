@@ -26,8 +26,13 @@ export default function Page({
   showDefaultHeader = true,
 }: PageProps) {
   return (
-    <Container maxWidth={maxWidth} disableGutters sx={{ pt: PAGE_PADDING_TOP }}>
-      <Stack direction="column" spacing={0} sx={{ gap: PAGE_SECTION_GAP }}>
+    <Container
+      maxWidth={maxWidth}
+      disableGutters
+      className="pt-6"
+      style={{ paddingTop: PAGE_PADDING_TOP }}
+    >
+      <Stack direction="column" spacing={0} style={{ gap: PAGE_SECTION_GAP }}>
         {showDefaultHeader && (
           <>
             <CommonBreadcrumbs items={breadcrumbs} current={title} />

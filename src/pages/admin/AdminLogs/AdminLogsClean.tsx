@@ -9,6 +9,8 @@ import {
   Stack,
   Tooltip,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { Staff } from "@shared/api/graphql/types";
 import dayjs from "dayjs";
@@ -18,6 +20,8 @@ import { getOperationLogLabel } from "@/entities/operation-log/lib/operationLogL
 import useAdminOperationLogs from "@/hooks/useAdminOperationLogs/useAdminOperationLogs";
 
 export default function AdminLogsClean() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { logs, loading, error, nextToken, loadInitial, loadMore } =
     useAdminOperationLogs(30);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -90,21 +94,29 @@ export default function AdminLogsClean() {
                   key={log.id}
                   divider
                   alignItems="flex-start"
-                  sx={{ py: 1 }}
+                  sx={{
+                    py: 1.5,
+                    px: { xs: 0, sm: 1 },
+                    display: "flex",
+                    flexDirection: { xs: "column", sm: "row" },
+                    gap: { xs: 1, sm: 0 },
+                  }}
                 >
                   {/* 日時 + アクション */}
                   <Box
                     sx={{
                       display: "flex",
-                      alignItems: "center",
-                      width: 320,
-                      minWidth: 320,
+                      alignItems: { xs: "flex-start", sm: "center" },
+                      width: { xs: "100%", sm: 320 },
+                      minWidth: { xs: 0, sm: 320 },
+                      flexDirection: { xs: "column", sm: "row" },
+                      gap: { xs: 0.5, sm: 0 },
                     }}
                   >
                     <Typography
                       variant="caption"
                       color="text.secondary"
-                      noWrap
+                      noWrap={!isMobile}
                       title={
                         log.timestamp
                           ? dayjs(log.timestamp).format("YYYY-MM-DD HH:mm:ss")
@@ -119,12 +131,18 @@ export default function AdminLogsClean() {
                     <Chip
                       size="small"
                       label={getOperationLogLabel(log.action)}
-                      sx={{ ml: 1 }}
+                      sx={{ ml: { xs: 0, sm: 1 } }}
                     />
                   </Box>
 
                   {/* スタッフ名を独立列として表示 */}
-                  <Box sx={{ width: 240, minWidth: 240, ml: 2 }}>
+                  <Box
+                    sx={{
+                      width: { xs: "100%", sm: 240 },
+                      minWidth: { xs: 0, sm: 240 },
+                      ml: { xs: 0, sm: 2 },
+                    }}
+                  >
                     <Typography variant="body2" color="text.secondary">
                       {(() => {
                         if (!log.staffId) return "スタッフ情報なし";
@@ -140,15 +158,24 @@ export default function AdminLogsClean() {
                   </Box>
 
                   {/* リソース情報 */}
-                  <Box sx={{ flex: 1, ml: 2 }}>
-                    <Typography variant="subtitle2">
+                  <Box sx={{ flex: 1, ml: { xs: 0, sm: 2 }, width: { xs: "100%", sm: "auto" } }}>
+                    <Typography variant="subtitle2" sx={{ wordBreak: "break-word" }}>
                       {log.resource ?? "(no resource)"} {log.resourceId ?? ""}
                     </Typography>
                   </Box>
 
                   {/* 詳細 */}
-                  <Box sx={{ width: "40%", minWidth: 240, ml: 2 }}>
-                    <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+                  <Box
+                    sx={{
+                      width: { xs: "100%", sm: "40%" },
+                      minWidth: { xs: 0, sm: 240 },
+                      ml: { xs: 0, sm: 2 },
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
+                    >
                       {log.details ?? ""}
                     </Typography>
 
@@ -162,7 +189,8 @@ export default function AdminLogsClean() {
                             display: "block",
                             overflow: "hidden",
                             textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
+                            whiteSpace: { xs: "normal", sm: "nowrap" },
+                            wordBreak: "break-word",
                           }}
                         >
                           {log.userAgent.length > 140

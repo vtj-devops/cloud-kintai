@@ -1,4 +1,12 @@
-import { Stack } from "@mui/material";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import {
+  Button,
+  Collapse,
+  Stack,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import React, { lazy, Suspense, useCallback, useMemo } from "react";
 import { Group, Panel, Separator } from "react-resizable-panels";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -89,6 +97,9 @@ function AdminDashboardContent() {
   const location = useLocation();
   const { state, enableSplitMode, disableSplitMode, setRightPanel } =
     useSplitView();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [isMenuExpanded, setIsMenuExpanded] = React.useState(!isMobile);
 
   const handleSelect = useCallback(
     (itemHref: string) => {
@@ -108,6 +119,14 @@ function AdminDashboardContent() {
     );
     return prefixMatch?.href ?? menuItems[0]?.href ?? "";
   }, [location.pathname, menuItems]);
+
+  React.useEffect(() => {
+    if (!isMobile) {
+      setIsMenuExpanded(true);
+      return;
+    }
+    setIsMenuExpanded(false);
+  }, [isMobile]);
 
   const handleToggleSplitMode = useCallback(() => {
     if (state.mode === "single") {
@@ -162,17 +181,32 @@ function AdminDashboardContent() {
       <PageSection variant="surface" layoutVariant="dashboard" sx={{ gap: 0 }}>
         <AdminHeader
           actions={
-            <>
-              <SplitModeToggle
-                mode={state.mode}
-                onToggle={handleToggleSplitMode}
-              />
-              <AdminMenu
-                items={menuItems}
-                selectedHref={activeMenuHref}
-                onSelect={(item) => handleSelect(item.href)}
-              />
-            </>
+            <Stack spacing={1} alignItems="flex-start">
+              {!isMobile && (
+                <SplitModeToggle
+                  mode={state.mode}
+                  onToggle={handleToggleSplitMode}
+                />
+              )}
+              {isMobile && (
+                <Button
+                  variant="text"
+                  size="small"
+                  onClick={() => setIsMenuExpanded((prev) => !prev)}
+                  startIcon={isMenuExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                  sx={{ fontWeight: 600 }}
+                >
+                  {isMenuExpanded ? "メニューを閉じる" : "メニューを開く"}
+                </Button>
+              )}
+              <Collapse in={isMenuExpanded} timeout="auto" unmountOnExit={false}>
+                <AdminMenu
+                  items={menuItems}
+                  selectedHref={activeMenuHref}
+                  onSelect={(item) => handleSelect(item.href)}
+                />
+              </Collapse>
+            </Stack>
           }
         />
       </PageSection>

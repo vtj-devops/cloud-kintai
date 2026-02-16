@@ -5,10 +5,15 @@ import {
   CollaborativeShiftContextType,
 } from "../context/CollaborativeShiftContext";
 import { useCollaborativeShiftData } from "../hooks/useCollaborativeShiftData";
+import { useCollaborativeShiftOffline } from "../hooks/useCollaborativeShiftOffline";
+import { useShiftComments } from "../hooks/useShiftComments";
 import { useShiftPresence } from "../hooks/useShiftPresence";
 import { useShiftSync } from "../hooks/useShiftSync";
+import { useUndoRedo } from "../hooks/useUndoRedo";
 import {
+  CellComment,
   CollaborativeShiftState,
+  Mention,
   ShiftCellUpdate,
 } from "../types/collaborative.types";
 
@@ -32,6 +37,17 @@ export const CollaborativeShiftProvider: React.FC<
   shiftRequestId,
 }) => {
   const [selectedCells, setSelectedCells] = useState<Set<string>>(new Set());
+  const [showHistory, setShowHistory] = useState(false);
+
+  // コメント管理フック
+  const {
+    addComment,
+    updateComment,
+    deleteComment,
+    getCommentsByCell,
+    replyToComment,
+    deleteCommentReply,
+  } = useShiftComments();
 
   // データ管理フック
   const {
@@ -49,6 +65,57 @@ export const CollaborativeShiftProvider: React.FC<
     staffIds,
     targetMonth,
     currentUserId,
+  });
+
+  // オフライン対応フック
+  const {
+    isOnline,
+    hasPendingChanges,
+    updateShiftWithOfflineSupport,
+    batchUpdateShiftsWithOfflineSupport,
+    syncPendingChanges,
+  } = useCollaborativeShiftOffline({
+    enabled: true,
+    onUpdateShift: updateShift,
+    onBatchUpdateShifts: batchUpdateShifts,
+    onConflictDetected: () => {
+      // TODO: コンフリクト解決ダイアログを表示
+      console.warn("Conflicts detected, need to implement resolution UI");
+    },
+  });
+
+  // 取り消し/やり直しフック
+  const {
+    canUndo,
+    canRedo,
+    undo: undoAction,
+    redo: redoAction,
+    pushHistory,
+    getLastUndo,
+    getLastRedo,
+    undoHistory,
+    redoHistory,
+  } = useUndoRedo({
+    maxHistorySize: 50,
+    onUndo: async (entry) => {
+      // 取り消し時は逆の操作を適用
+      const undoUpdates = entry.updates.map((update) => {
+        const previousShift = shiftDataMap
+          .get(update.staffId)
+          ?.get(update.date);
+        return {
+          ...update,
+          newState: previousShift?.state,
+          isLocked: previousShift?.isLocked,
+        };
+      });
+
+      await batchUpdateShiftsWithOfflineSupport(undoUpdates);
+    },
+    onRedo: async (entry) => {
+      // やり直し時は元の操作を再適用
+      await batchUpdateShiftsWithOfflineSupport(entry.updates);
+    },
   });
 
   // プレゼンス管理フック
@@ -90,10 +157,21 @@ export const CollaborativeShiftProvider: React.FC<
       // 編集中の通知を停止
       stopEditingCell(update.staffId, update.date);
 
-      // 更新を実行
-      await updateShift(update);
+      // 履歴に追加
+      pushHistory(
+        [update],
+        `${update.staffId} の ${update.date} のシフトを更新`,
+      );
+
+      // オフライン対応の更新を実行
+      await updateShiftWithOfflineSupport(update);
     },
-    [updateActivity, stopEditingCell, updateShift],
+    [
+      updateActivity,
+      stopEditingCell,
+      pushHistory,
+      updateShiftWithOfflineSupport,
+    ],
   );
 
   /**
@@ -108,9 +186,18 @@ export const CollaborativeShiftProvider: React.FC<
         stopEditingCell(update.staffId, update.date);
       });
 
-      await batchUpdateShifts(updates);
+      // 履歴に追加
+      pushHistory(updates, `${updates.length} 件のシフトを一括更新`);
+
+      // オフライン対応のバッチ更新を実行
+      await batchUpdateShiftsWithOfflineSupport(updates);
     },
-    [updateActivity, stopEditingCell, batchUpdateShifts],
+    [
+      updateActivity,
+      stopEditingCell,
+      pushHistory,
+      batchUpdateShiftsWithOfflineSupport,
+    ],
   );
 
   /**
@@ -167,6 +254,100 @@ export const CollaborativeShiftProvider: React.FC<
   }, [triggerSync]);
 
   /**
+   * コメント追加
+   */
+  const handleAddComment = useCallback(
+    async (
+      cellKey: string,
+      content: string,
+      mentions: Mention[],
+    ): Promise<CellComment> => {
+      return addComment(
+        cellKey,
+        currentUserId,
+        currentUserName,
+        activeUsers.find((u) => u.userId === currentUserId)?.color || "#1976d2",
+        content,
+        mentions,
+      );
+    },
+    [addComment, currentUserId, currentUserName, activeUsers],
+  );
+
+  /**
+   * コメント更新
+   */
+  const handleUpdateComment = useCallback(
+    async (
+      commentId: string,
+      content: string,
+      mentions: Mention[],
+    ): Promise<CellComment> => {
+      const updated = updateComment(commentId, content, mentions);
+      if (!updated) {
+        throw new Error(`Comment ${commentId} not found`);
+      }
+      return updated;
+    },
+    [updateComment],
+  );
+
+  /**
+   * コメント削除
+   */
+  const handleDeleteComment = useCallback(
+    async (commentId: string): Promise<void> => {
+      deleteComment(commentId);
+    },
+    [deleteComment],
+  );
+
+  /**
+   * セルのコメント取得
+   */
+  const handleGetCommentsByCell = useCallback(
+    (cellKey: string): CellComment[] => {
+      return getCommentsByCell(cellKey);
+    },
+    [getCommentsByCell],
+  );
+
+  /**
+   * コメントに返信
+   */
+  const handleReplyToComment = useCallback(
+    async (
+      parentCommentId: string,
+      content: string,
+      mentions: Mention[],
+    ): Promise<CellComment> => {
+      const reply = replyToComment(
+        parentCommentId,
+        currentUserId,
+        currentUserName,
+        activeUsers.find((u) => u.userId === currentUserId)?.color || "#1976d2",
+        content,
+        mentions,
+      );
+      if (!reply) {
+        throw new Error(`Parent comment ${parentCommentId} not found`);
+      }
+      return reply;
+    },
+    [replyToComment, currentUserId, currentUserName, activeUsers],
+  );
+
+  /**
+   * 返信削除
+   */
+  const handleDeleteCommentReply = useCallback(
+    async (parentCommentId: string, replyCommentId: string): Promise<void> => {
+      deleteCommentReply(parentCommentId, replyCommentId);
+    },
+    [deleteCommentReply],
+  );
+
+  /**
    * 状態をまとめる
    */
   const state: CollaborativeShiftState = useMemo(
@@ -181,6 +362,8 @@ export const CollaborativeShiftProvider: React.FC<
       lastSyncedAt,
       error: error || syncError || null,
       connectionState,
+      isOnline,
+      hasPendingChanges,
     }),
     [
       shiftDataMap,
@@ -194,6 +377,8 @@ export const CollaborativeShiftProvider: React.FC<
       error,
       syncError,
       connectionState,
+      isOnline,
+      hasPendingChanges,
     ],
   );
 
@@ -215,6 +400,25 @@ export const CollaborativeShiftProvider: React.FC<
       resumeSync: resume,
       updateUserActivity: handleUpdateUserActivity,
       retryPendingChanges,
+      syncPendingChanges,
+      // Undo/Redo
+      canUndo,
+      canRedo,
+      undo: undoAction,
+      redo: redoAction,
+      getLastUndo,
+      getLastRedo,
+      undoHistory,
+      redoHistory,
+      showHistory,
+      toggleHistory: () => setShowHistory((prev) => !prev),
+      // Comments
+      addComment: handleAddComment,
+      updateComment: handleUpdateComment,
+      deleteComment: handleDeleteComment,
+      getCommentsByCell: handleGetCommentsByCell,
+      replyToComment: handleReplyToComment,
+      deleteCommentReply: handleDeleteCommentReply,
     }),
     [
       state,
@@ -233,6 +437,22 @@ export const CollaborativeShiftProvider: React.FC<
       resume,
       handleUpdateUserActivity,
       retryPendingChanges,
+      syncPendingChanges,
+      canUndo,
+      canRedo,
+      undoAction,
+      redoAction,
+      getLastUndo,
+      getLastRedo,
+      undoHistory,
+      redoHistory,
+      showHistory,
+      handleAddComment,
+      handleUpdateComment,
+      handleDeleteComment,
+      handleGetCommentsByCell,
+      handleReplyToComment,
+      handleDeleteCommentReply,
     ],
   );
 

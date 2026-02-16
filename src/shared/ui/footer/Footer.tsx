@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 
 import { designTokenVar } from "@/shared/designSystem";
 
@@ -19,27 +19,30 @@ const FOOTER_PADDING_X = designTokenVar("component.footer.paddingX", "16px");
 const FOOTER_PADDING_Y = designTokenVar("component.footer.paddingY", "12px");
 
 const Footer = ({ themeColor }: FooterProps) => (
-  <Box
-    component="footer"
+  <footer
     role="contentinfo"
-    sx={{
+    className="border-t"
+    style={{
       backgroundColor: themeColor ?? FOOTER_BACKGROUND,
       color: FOOTER_TEXT,
-      borderTop: `1px solid ${FOOTER_DIVIDER}`,
+      borderColor: FOOTER_DIVIDER,
     }}
   >
-    <Box
-      textAlign="center"
-      sx={{
-        py: FOOTER_PADDING_Y,
-        px: FOOTER_PADDING_X,
+    <div
+      className="text-center"
+      style={{
+        paddingTop: FOOTER_PADDING_Y,
+        paddingBottom: FOOTER_PADDING_Y,
+        paddingLeft: FOOTER_PADDING_X,
+        paddingRight: FOOTER_PADDING_X,
+        textAlign: "center",
       }}
     >
-      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+      <Typography variant="body1" align="center" className="text-center font-medium">
         © 2026 Virtual Tech Japan Inc.
       </Typography>
-    </Box>
-  </Box>
+    </div>
+  </footer>
 );
 
 export default Footer;

@@ -7,6 +7,8 @@ import {
   Stack,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import {
   GetWorkflowQuery,
@@ -52,6 +54,8 @@ export default function WorkflowCommentSection({
   onSuccess,
   onError,
 }: WorkflowCommentSectionProps) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [messages, setMessages] = useState(
     [] as {
       id: string;
@@ -192,7 +196,7 @@ export default function WorkflowCommentSection({
         variant="outlined"
         sx={{
           p: 2,
-          maxHeight: PANEL_HEIGHTS.SCROLLABLE_MAX,
+          maxHeight: { xs: 360, sm: PANEL_HEIGHTS.SCROLLABLE_MAX },
           overflow: "auto",
         }}
       >
@@ -316,6 +320,7 @@ export default function WorkflowCommentSection({
           display: "flex",
           gap: 1,
           alignItems: "flex-end",
+          flexDirection: "column",
         }}
       >
         <TextField
@@ -324,32 +329,46 @@ export default function WorkflowCommentSection({
           multiline
           minRows={2}
           placeholder="メッセージを入力..."
-          helperText="Command+Enterで送信"
+          helperText="Cmd/Ctrl+Enterで送信"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && e.metaKey) {
+            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
               e.preventDefault();
               sendMessage();
             }
           }}
           disabled={sending}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={sendMessage}
-                  disabled={sending || !input.trim()}
-                  sx={{ textTransform: "none", minWidth: 64 }}
-                >
-                  送信
-                </Button>
-              </InputAdornment>
-            ),
-          }}
+          InputProps={
+            isMobile
+              ? undefined
+              : {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={sendMessage}
+                        disabled={sending || !input.trim()}
+                        sx={{ textTransform: "none", minWidth: 64 }}
+                      >
+                        送信
+                      </Button>
+                    </InputAdornment>
+                  ),
+                }
+          }
         />
+        {isMobile && (
+          <Button
+            variant="contained"
+            onClick={sendMessage}
+            disabled={sending || !input.trim()}
+            sx={{ width: 1, textTransform: "none" }}
+          >
+            送信
+          </Button>
+        )}
       </Box>
     </Box>
   );

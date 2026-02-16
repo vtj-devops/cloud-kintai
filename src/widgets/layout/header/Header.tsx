@@ -9,9 +9,8 @@ import { resolveThemeColor } from "@/shared/config/theme";
 import { designTokenVar } from "@/shared/designSystem";
 import HeaderBar from "@/shared/ui/header/HeaderBar";
 
-import DesktopMenu from "./DesktopMenu";
 import { ExternalLinks } from "./ExternalLinks/ExternalLinks";
-import MobileMenu from "./MobileMenu";
+import NavigationMenu from "./NavigationMenu";
 import { SignInOutButton } from "./SignInOutButton";
 
 export default function Header() {
@@ -39,9 +38,8 @@ export default function Header() {
     <HeaderBar
       themeColor={headerThemeColor}
       logo={<Logo />}
-      desktopMenu={<DesktopMenu pathName={pathName} />}
+      navigation={<NavigationMenu pathName={pathName} />}
       externalLinks={showExternalLinks ? <ExternalLinks /> : null}
-      mobileMenu={<MobileMenu pathName={pathName} />}
       signInOutButton={<SignInOutButton />}
     />
   );

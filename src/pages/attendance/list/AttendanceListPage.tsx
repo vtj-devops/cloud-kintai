@@ -13,7 +13,7 @@ export default function AttendanceListPage() {
           sx={{
             ...dashboardInnerSurfaceSx,
             height: 1,
-            minHeight: PANEL_HEIGHTS.DASHBOARD_MIN,
+            minHeight: { xs: "auto", md: PANEL_HEIGHTS.DASHBOARD_MIN },
           }}
         >
           <AttendanceList />

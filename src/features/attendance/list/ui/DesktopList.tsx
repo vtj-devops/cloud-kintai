@@ -45,6 +45,9 @@ import DesktopCalendarView from "./DesktopCalendarView";
 
 const DesktopBox = styled(Box)(({ theme }) => ({
   padding: "0px 40px 40px 40px",
+  [theme.breakpoints.down("lg")]: {
+    padding: "0px 24px 32px 24px",
+  },
   [theme.breakpoints.down("md")]: {
     display: "none",
   },

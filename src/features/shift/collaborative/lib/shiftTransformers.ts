@@ -1,3 +1,4 @@
+import type { ShiftRequestLite } from "@entities/shift/api/shiftApi";
 import type {
   ModelShiftRequestConditionInput,
   ShiftRequest,
@@ -15,9 +16,6 @@ import {
   ShiftState,
   shiftStateToShiftRequestStatus,
 } from "../types/collaborative.types";
-
-const nonNullable = <T>(value: T | null | undefined): value is T =>
-  value !== null && value !== undefined;
 
 const buildDayKeys = (targetMonth: string) => {
   const start = dayjs(`${targetMonth}-01`);
@@ -72,21 +70,32 @@ const buildStaffShiftMap = (
 };
 
 export const normalizeShiftRequest = (
-  shiftRequest: ShiftRequest,
-): ShiftRequestData => ({
-  id: shiftRequest.id,
-  staffId: shiftRequest.staffId,
-  targetMonth: shiftRequest.targetMonth,
-  entries:
-    shiftRequest.entries?.filter(nonNullable).map((entry) => ({
+  shiftRequest: ShiftRequestLite | ShiftRequest,
+): ShiftRequestData => {
+  const entries: ShiftRequestData["entries"] = [];
+
+  (shiftRequest.entries ?? []).forEach((entry) => {
+    if (!entry) {
+      return;
+    }
+
+    entries.push({
       date: entry.date,
       status: entry.status,
       isLocked: entry.isLocked ?? false,
-    })) ?? [],
-  updatedAt: shiftRequest.updatedAt ?? undefined,
-  updatedBy: shiftRequest.updatedBy ?? undefined,
-  version: shiftRequest.version ?? undefined,
-});
+    });
+  });
+
+  return {
+    id: shiftRequest.id,
+    staffId: shiftRequest.staffId,
+    targetMonth: shiftRequest.targetMonth,
+    entries,
+    updatedAt: shiftRequest.updatedAt ?? undefined,
+    updatedBy: shiftRequest.updatedBy ?? undefined,
+    version: shiftRequest.version ?? undefined,
+  };
+};
 
 export const transformShiftRequestToShiftDataMap = ({
   shiftRequests,

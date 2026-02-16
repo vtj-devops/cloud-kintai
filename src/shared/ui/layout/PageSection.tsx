@@ -1,4 +1,5 @@
 import { Box, type BoxProps } from "@mui/material";
+import type { CSSProperties } from "react";
 import { forwardRef } from "react";
 
 import { designTokenVar } from "@/shared/designSystem";
@@ -27,11 +28,6 @@ const VARIANT_FALLBACKS = {
   },
 } as const;
 
-const toArray = (value: BoxProps["sx"]) => {
-  if (!value) return [] as BoxProps["sx"][];
-  return Array.isArray(value) ? value : [value];
-};
-
 export default forwardRef<HTMLDivElement, PageSectionProps>(
   function PageSection(
     {
@@ -40,6 +36,7 @@ export default forwardRef<HTMLDivElement, PageSectionProps>(
       layoutVariant = "dashboard",
       component = "section",
       sx,
+      className,
       ...rest
     },
     ref
@@ -77,7 +74,6 @@ export default forwardRef<HTMLDivElement, PageSectionProps>(
       `${variantPath}.shadow`,
       variantFallback.shadow
     );
-    const normalizedSx = toArray(sx);
     const surfaceStyles =
       variant === "surface"
         ? {
@@ -86,22 +82,29 @@ export default forwardRef<HTMLDivElement, PageSectionProps>(
             boxShadow: SECTION_SHADOW,
           }
         : {};
+    const sectionStyle: CSSProperties = {
+      ...surfaceStyles,
+    };
+    const sectionCssVars = sectionStyle as CSSProperties &
+      Record<string, string>;
+    sectionCssVars["--section-padding-x-xs"] = SECTION_PADDING_X.xs;
+    sectionCssVars["--section-padding-x-md"] = SECTION_PADDING_X.md;
+    sectionCssVars["--section-padding-y"] = SECTION_PADDING_Y;
+    sectionCssVars["--section-gap"] = SECTION_GAP;
+    const mergedClassName = [
+      "flex flex-col px-[var(--section-padding-x-xs)] py-[var(--section-padding-y)] gap-[var(--section-gap)] md:px-[var(--section-padding-x-md)]",
+      className,
+    ]
+      .filter(Boolean)
+      .join(" ");
 
     return (
       <Box
         ref={ref}
         component={component}
-        sx={[
-          {
-            px: SECTION_PADDING_X,
-            py: SECTION_PADDING_Y,
-            display: "flex",
-            flexDirection: "column",
-            gap: SECTION_GAP,
-            ...surfaceStyles,
-          },
-          ...normalizedSx,
-        ]}
+        className={mergedClassName}
+        style={sectionStyle}
+        sx={sx}
         {...rest}
       >
         {children}

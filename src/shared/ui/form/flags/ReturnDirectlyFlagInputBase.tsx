@@ -58,7 +58,7 @@ export default function ReturnDirectlyFlagInputBase<
   if (layout === "row") {
     return (
       <Stack direction="row" alignItems="center">
-        <Box sx={{ fontWeight: "bold", width: "150px" }}>{label}</Box>
+        <Box className="w-[150px] font-bold">{label}</Box>
         <Box>
           <Controller
             name={checkedValueName}

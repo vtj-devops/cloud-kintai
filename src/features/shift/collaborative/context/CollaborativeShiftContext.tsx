@@ -1,8 +1,11 @@
 import { createContext, useContext } from "react";
 
+import { HistoryEntry } from "../hooks/useUndoRedo";
 import {
+  CellComment,
   CollaborativeShiftState,
   CollaborativeUser,
+  Mention,
   ShiftCellUpdate,
 } from "../types/collaborative.types";
 
@@ -36,6 +39,48 @@ export interface CollaborativeShiftContextType {
   resumeSync: () => void;
   updateUserActivity: () => void;
   retryPendingChanges: () => Promise<void>;
+  syncPendingChanges: () => Promise<{
+    successful: string[];
+    conflicts: Array<{
+      changeId: string;
+      localUpdate: ShiftCellUpdate;
+      remoteUpdate?: ShiftCellUpdate;
+      strategy: "local" | "remote" | "manual";
+    }>;
+  }>;
+  // Undo/Redo
+  canUndo: boolean;
+  canRedo: boolean;
+  undo: () => Promise<boolean>;
+  redo: () => Promise<boolean>;
+  getLastUndo: () => HistoryEntry | null;
+  getLastRedo: () => HistoryEntry | null;
+  undoHistory: HistoryEntry[];
+  redoHistory: HistoryEntry[];
+  showHistory: boolean;
+  toggleHistory: () => void;
+  // コメント機能
+  addComment: (
+    cellKey: string,
+    content: string,
+    mentions: Mention[],
+  ) => Promise<CellComment>;
+  updateComment: (
+    commentId: string,
+    content: string,
+    mentions: Mention[],
+  ) => Promise<CellComment>;
+  deleteComment: (commentId: string) => Promise<void>;
+  getCommentsByCell: (cellKey: string) => CellComment[];
+  replyToComment: (
+    parentCommentId: string,
+    content: string,
+    mentions: Mention[],
+  ) => Promise<CellComment>;
+  deleteCommentReply: (
+    parentCommentId: string,
+    replyCommentId: string,
+  ) => Promise<void>;
 }
 
 /**

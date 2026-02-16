@@ -64,9 +64,12 @@ export default function AdminStaff() {
 
   return (
     <>
-      <Container maxWidth="xl" sx={{ height: 1, pt: 2 }}>
+      <Container
+        maxWidth="xl"
+        sx={{ height: 1, pt: 2, px: { xs: 1, sm: 2, md: 3 } }}
+      >
         <Stack spacing={2}>
-          <Stack direction="row" spacing={2}>
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
             <CreateStaffDialog
               staffs={staffs}
               refreshStaff={refreshStaff}
@@ -89,9 +92,10 @@ export default function AdminStaff() {
             size="small"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            fullWidth
           />
-          <TableContainer>
-            <Table size="small">
+          <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+            <Table size="small" sx={{ minWidth: 1100 }}>
               <TableHead>
                 <TableRow>
                   <TableCell />

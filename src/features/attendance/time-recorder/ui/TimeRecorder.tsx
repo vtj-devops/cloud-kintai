@@ -580,7 +580,10 @@ export default function TimeRecorder(): JSX.Element {
       <Box
         sx={{
           width: { xs: "100%", md: TIME_RECORDER_WIDTH_MD },
-          mx: { xs: TIME_RECORDER_MARGIN_XS, md: 0 },
+          maxWidth: TIME_RECORDER_WIDTH_MD,
+          px: { xs: TIME_RECORDER_MARGIN_XS, md: 0 },
+          mx: "auto",
+          boxSizing: "border-box",
         }}
       >
         <LinearProgress />
@@ -597,7 +600,10 @@ export default function TimeRecorder(): JSX.Element {
     <Box
       sx={{
         width: { xs: "100%", md: TIME_RECORDER_WIDTH_MD },
-        mx: { xs: TIME_RECORDER_MARGIN_XS, md: 0 },
+        maxWidth: TIME_RECORDER_WIDTH_MD,
+        px: { xs: TIME_RECORDER_MARGIN_XS, md: 0 },
+        mx: "auto",
+        boxSizing: "border-box",
       }}
     >
       <Box
@@ -693,14 +699,14 @@ export default function TimeRecorder(): JSX.Element {
           </Grid>
 
           {/* 休憩 */}
-          <Grid item xs={6}>
+          <Grid item xs={6} sx={{ display: "flex", justifyContent: "center" }}>
             <RestStartItem
               workStatus={workStatus}
               onClick={handleRestStart}
               disabled={hasChangeRequest}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={6} sx={{ display: "flex", justifyContent: "center" }}>
             <RestEndItem
               workStatus={workStatus}
               onClick={handleRestEnd}

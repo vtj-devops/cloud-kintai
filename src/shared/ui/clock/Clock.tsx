@@ -13,7 +13,12 @@ const Clock = () => {
   }, []);
 
   return (
-    <Box bgcolor="black" textAlign="center" sx={{ p: 3 }} borderRadius="5px">
+    <Box
+      bgcolor="black"
+      textAlign="center"
+      borderRadius="5px"
+      style={{ padding: "12px" }}
+    >
       <Typography variant="h1" color="white">
         {time}
       </Typography>

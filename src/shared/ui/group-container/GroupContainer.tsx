@@ -4,12 +4,11 @@ import {
   Box,
   Collapse,
   IconButton,
-  Stack,
   SxProps,
   Theme,
   Typography,
 } from "@mui/material";
-import { ReactNode, useMemo, useState } from "react";
+import { CSSProperties, ReactNode, useState } from "react";
 
 import { designTokenVar } from "@/shared/designSystem";
 
@@ -76,34 +75,29 @@ const GroupContainer = ({
   sx,
 }: GroupContainerProps) => {
   const [collapsed, setCollapsed] = useState<boolean>(defaultCollapsed);
-  const containerSx = useMemo(
-    () => ({
-      borderStyle: "solid",
-      borderWidth: GROUP_BORDER_WIDTH,
-      borderColor: GROUP_BORDER_COLOR,
-      borderLeftColor: GROUP_ACCENT_COLOR,
-      borderLeftWidth: GROUP_ACCENT_WIDTH,
-      borderRadius: GROUP_RADIUS,
-      padding: GROUP_PADDING,
-      backgroundColor: GROUP_BACKGROUND,
-      boxShadow: GROUP_SHADOW,
-    }),
-    []
-  );
+  const groupVars: CSSProperties & Record<`--${string}`, string> = {
+    "--group-border-width": GROUP_BORDER_WIDTH,
+    "--group-accent-width": GROUP_ACCENT_WIDTH,
+    "--group-border-color": GROUP_BORDER_COLOR,
+    "--group-accent-color": GROUP_ACCENT_COLOR,
+    "--group-radius": GROUP_RADIUS,
+    "--group-padding": GROUP_PADDING,
+    "--group-background": GROUP_BACKGROUND,
+    "--group-shadow": GROUP_SHADOW,
+    "--group-header-gap": GROUP_HEADER_GAP,
+    "--group-content-gap": GROUP_CONTENT_GAP,
+    "--group-count-color": GROUP_COUNT_COLOR,
+  };
 
   return (
-    <Box sx={[containerSx, sx] as SxProps<Theme>}>
+    <Box
+      className="rounded-[var(--group-radius)] border-[var(--group-border-width)] border-[var(--group-border-color)] border-l-[var(--group-accent-width)] border-l-[var(--group-accent-color)] border-solid bg-[var(--group-background)] p-[var(--group-padding)] shadow-[var(--group-shadow)]"
+      style={groupVars}
+      sx={sx}
+    >
       {(title || collapsible) && (
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-        >
-          <Stack
-            direction="row"
-            alignItems="center"
-            sx={{ columnGap: GROUP_HEADER_GAP, rowGap: GROUP_HEADER_GAP }}
-          >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-[var(--group-header-gap)]">
             {title ? (
               <Typography variant="subtitle1" fontWeight={700}>
                 {title}
@@ -112,10 +106,12 @@ const GroupContainer = ({
             {typeof count === "number" && (
               <Typography
                 variant="caption"
-                sx={{ color: GROUP_COUNT_COLOR }}
-              >{`(${count}件)`}</Typography>
+                className="text-[color:var(--group-count-color)]"
+              >
+                {`(${count}件)`}
+              </Typography>
             )}
-          </Stack>
+          </div>
           {collapsible && (
             <IconButton
               size="small"
@@ -125,11 +121,11 @@ const GroupContainer = ({
               {collapsed ? <ExpandMoreIcon /> : <ExpandLessIcon />}
             </IconButton>
           )}
-        </Stack>
+        </div>
       )}
 
       <Collapse in={!collapsed}>
-        <Box sx={{ mt: GROUP_CONTENT_GAP }}>{children}</Box>
+        <Box className="mt-[var(--group-content-gap)]">{children}</Box>
       </Collapse>
     </Box>
   );

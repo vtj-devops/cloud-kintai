@@ -16,6 +16,8 @@ import {
   Skeleton,
   Stack,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material"; // 保存時刻の表示形式
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -191,6 +193,8 @@ const sortReports = (items: DailyReportItem[]) =>
   });
 
 export default function DailyReport() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { cognitoUser, loading: isCognitoUserLoading } = useCognitoUser();
   const [searchParams, setSearchParams] = useSearchParams();
   const [reports, setReports] = useState<DailyReportItem[]>([]);
@@ -867,7 +871,11 @@ export default function DailyReport() {
               </Alert>
             )}
 
-            <Grid container spacing={3} alignItems="flex-start">
+            <Grid
+              container
+              spacing={{ xs: 2, md: 3 }}
+              alignItems="flex-start"
+            >
               <Grid item xs={12} md={3}>
                 <Box sx={dashboardInnerSurfaceSx}>
                   <DailyReportCalendar
@@ -914,7 +922,12 @@ export default function DailyReport() {
                           >
                             新しい日報を登録
                           </Typography>
-                          <Typography variant="h5">日報作成フォーム</Typography>
+                          <Typography
+                            variant="h5"
+                            sx={{ fontSize: { xs: "1.2rem", sm: "1.5rem" } }}
+                          >
+                            日報作成フォーム
+                          </Typography>
                         </Box>
                         <Alert severity="warning" sx={{ mt: 2 }}>
                           この日報はまだ提出されていません。下書き保存後、必ず「提出する」ボタンをクリックしてください。
@@ -942,10 +955,12 @@ export default function DailyReport() {
                               direction={{ xs: "column", sm: "row" }}
                               justifyContent="flex-end"
                               spacing={2}
+                              alignItems={{ xs: "stretch", sm: "center" }}
                             >
                               <Button
                                 type="button"
                                 variant="text"
+                                fullWidth={isMobile}
                                 onClick={() => {
                                   setActionError(null);
                                   const newForm = emptyForm(
@@ -962,6 +977,7 @@ export default function DailyReport() {
                               <Button
                                 type="button"
                                 variant="outlined"
+                                fullWidth={isMobile}
                                 disabled={!canSubmit || isSubmitting}
                                 onClick={() => {
                                   void handleCreateSubmit(
@@ -975,6 +991,7 @@ export default function DailyReport() {
                               <Button
                                 type="button"
                                 variant="contained"
+                                fullWidth={isMobile}
                                 disabled={!canSubmit || isSubmitting}
                                 onClick={() => {
                                   void handleCreateSubmit(
@@ -1020,7 +1037,13 @@ export default function DailyReport() {
                                   {formatDateSlash(report.date) || report.date}{" "}
                                   | {report.author}
                                 </Typography>
-                                <Typography variant="h5">
+                                <Typography
+                                  variant="h5"
+                                  sx={{
+                                    fontSize: { xs: "1.2rem", sm: "1.5rem" },
+                                    wordBreak: "break-word",
+                                  }}
+                                >
                                   {report.title}
                                 </Typography>
                                 {report.updatedAt && (
@@ -1166,6 +1189,7 @@ export default function DailyReport() {
                         </Typography>
                         <Button
                           variant="contained"
+                          fullWidth={isMobile}
                           onClick={() => {
                             setSelectedReportId("create");
                             setCreateForm(
@@ -1194,6 +1218,7 @@ export default function DailyReport() {
                           >
                             <Button
                               variant="outlined"
+                              fullWidth={isMobile}
                               disabled={!canEditSubmit || isUpdating}
                               onClick={() => {
                                 void handleSaveEdit(
@@ -1206,6 +1231,7 @@ export default function DailyReport() {
                             </Button>
                             <Button
                               variant="contained"
+                              fullWidth={isMobile}
                               disabled={
                                 !canEditSubmit ||
                                 isUpdating ||
@@ -1220,16 +1246,27 @@ export default function DailyReport() {
                             >
                               提出する
                             </Button>
-                            <Button variant="text" onClick={handleCancelEdit}>
+                            <Button
+                              variant="text"
+                              fullWidth={isMobile}
+                              onClick={handleCancelEdit}
+                            >
                               キャンセル
                             </Button>
                           </Stack>
                         ) : (
                           <Box
-                            sx={{ display: "flex", justifyContent: "flex-end" }}
+                            sx={{
+                              display: "flex",
+                              justifyContent: {
+                                xs: "stretch",
+                                sm: "flex-end",
+                              },
+                            }}
                           >
                             <Button
                               variant="outlined"
+                              fullWidth={isMobile}
                               disabled={isUpdating}
                               onClick={() => {
                                 if (selectedReport) {

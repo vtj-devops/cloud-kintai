@@ -3,23 +3,102 @@ import {
   createShiftRequest,
   updateShiftRequest,
 } from "@shared/api/graphql/documents/mutations";
-import {
-  listShiftRequests,
-  shiftRequestsByStaffId,
-} from "@shared/api/graphql/documents/queries";
 import { graphqlBaseQuery } from "@shared/api/graphql/graphqlBaseQuery";
 import type {
   CreateShiftRequestInput,
   CreateShiftRequestMutation,
-  ListShiftRequestsQuery,
   ModelShiftRequestConditionInput,
   ModelShiftRequestFilterInput,
   ShiftRequest,
-  ShiftRequestsByStaffIdQuery,
   ShiftRequestsByStaffIdQueryVariables,
+  ShiftRequestStatus,
   UpdateShiftRequestInput,
   UpdateShiftRequestMutation,
 } from "@shared/api/graphql/types";
+
+export type ShiftRequestLite = {
+  id: string;
+  staffId: string;
+  targetMonth: string;
+  entries?: Array<{
+    date: string;
+    status: ShiftRequestStatus;
+    isLocked?: boolean | null;
+  } | null> | null;
+  updatedAt?: string | null;
+  updatedBy?: string | null;
+  version?: number | null;
+};
+
+type ListShiftRequestsLiteQuery = {
+  listShiftRequests?: {
+    items?: Array<ShiftRequestLite | null> | null;
+    nextToken?: string | null;
+  } | null;
+};
+
+type ShiftRequestsByStaffIdLiteQuery = {
+  shiftRequestsByStaffId?: {
+    items?: Array<ShiftRequestLite | null> | null;
+    nextToken?: string | null;
+  } | null;
+};
+
+const listShiftRequestsLite = /* GraphQL */ `
+  query ListShiftRequestsLite(
+    $filter: ModelShiftRequestFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listShiftRequests(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        staffId
+        targetMonth
+        entries {
+          date
+          status
+          isLocked
+        }
+        updatedAt
+        updatedBy
+        version
+      }
+      nextToken
+    }
+  }
+`;
+
+const shiftRequestsByStaffIdLite = /* GraphQL */ `
+  query ShiftRequestsByStaffIdLite(
+    $staffId: ID!
+    $targetMonth: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $limit: Int
+  ) {
+    shiftRequestsByStaffId(
+      staffId: $staffId
+      targetMonth: $targetMonth
+      sortDirection: $sortDirection
+      limit: $limit
+    ) {
+      items {
+        id
+        staffId
+        targetMonth
+        entries {
+          date
+          status
+          isLocked
+        }
+        updatedAt
+        updatedBy
+        version
+      }
+      nextToken
+    }
+  }
+`;
 
 export type ShiftRequestsQueryArgs = {
   staffIds: string[];
@@ -105,64 +184,75 @@ export const shiftApi = createApi({
   baseQuery: graphqlBaseQuery(),
   tagTypes: ["ShiftRequest", "ShiftCollaboration"],
   endpoints: (builder) => ({
-    getShiftRequests: builder.query<ShiftRequest[], ShiftRequestsQueryArgs>({
-      async queryFn(arg, _api, _extraOptions, baseQuery) {
-        if (arg.staffIds.length === 0) {
-          return { data: [] };
-        }
-
-        const shiftRequests: ShiftRequest[] = [];
-        let nextToken: string | null = null;
-        const filter = buildShiftRequestsFilter(arg);
-
-        do {
-          const result = await baseQuery({
-            document: listShiftRequests,
-            variables: { filter, limit: 200, nextToken },
-          });
-
-          if (result.error) {
-            return { error: result.error };
+    getShiftRequests: builder.query<ShiftRequestLite[], ShiftRequestsQueryArgs>(
+      {
+        async queryFn(arg, _api, _extraOptions, baseQuery) {
+          if (arg.staffIds.length === 0) {
+            return { data: [] };
           }
 
-          const data = result.data as ListShiftRequestsQuery | null;
-          const connection = data?.listShiftRequests;
+          const shiftRequests: ShiftRequestLite[] = [];
+          let nextToken: string | null = null;
+          const filter = buildShiftRequestsFilter(arg);
 
-          if (!connection) {
-            return { error: { message: "Failed to fetch shift requests" } };
+          do {
+            const result = await baseQuery({
+              document: listShiftRequestsLite,
+              variables: { filter, limit: 200, nextToken },
+            });
+
+            if (result.error) {
+              return { error: result.error };
+            }
+
+            const data = result.data as ListShiftRequestsLiteQuery | null;
+            const connection = data?.listShiftRequests;
+
+            if (!connection) {
+              return { error: { message: "Failed to fetch shift requests" } };
+            }
+
+            shiftRequests.push(
+              ...(connection.items?.filter(nonNullable) ?? []),
+            );
+            nextToken = connection.nextToken ?? null;
+          } while (nextToken);
+
+          return { data: shiftRequests };
+        },
+        serializeQueryArgs: ({ queryArgs }) => ({
+          ...queryArgs,
+          staffIds: queryArgs.staffIds.toSorted(),
+        }),
+        providesTags: (result, _error, arg) => {
+          const listTag: ShiftRequestTag = { type: "ShiftRequest", id: "LIST" };
+          const collaborationTag: ShiftCollaborationTag = {
+            type: "ShiftCollaboration",
+            id: arg.targetMonth,
+          };
+
+          if (!result) {
+            return [listTag, collaborationTag];
           }
 
-          shiftRequests.push(...(connection.items?.filter(nonNullable) ?? []));
-          nextToken = connection.nextToken ?? null;
-        } while (nextToken);
-
-        return { data: shiftRequests };
+          return [
+            listTag,
+            collaborationTag,
+            ...result.map((shiftRequest) => ({
+              type: "ShiftRequest" as const,
+              id: buildShiftRequestTagId(shiftRequest),
+            })),
+          ];
+        },
       },
-      providesTags: (result, _error, arg) => {
-        const listTag: ShiftRequestTag = { type: "ShiftRequest", id: "LIST" };
-        const collaborationTag: ShiftCollaborationTag = {
-          type: "ShiftCollaboration",
-          id: arg.targetMonth,
-        };
-
-        if (!result) {
-          return [listTag, collaborationTag];
-        }
-
-        return [
-          listTag,
-          collaborationTag,
-          ...result.map((shiftRequest) => ({
-            type: "ShiftRequest" as const,
-            id: buildShiftRequestTagId(shiftRequest),
-          })),
-        ];
-      },
-    }),
-    getShiftRequest: builder.query<ShiftRequest | null, ShiftRequestQueryArgs>({
+    ),
+    getShiftRequest: builder.query<
+      ShiftRequestLite | null,
+      ShiftRequestQueryArgs
+    >({
       async queryFn(arg, _api, _extraOptions, baseQuery) {
         const result = await baseQuery({
-          document: shiftRequestsByStaffId,
+          document: shiftRequestsByStaffIdLite,
           variables: {
             staffId: arg.staffId,
             targetMonth: { eq: arg.targetMonth },
@@ -175,7 +265,7 @@ export const shiftApi = createApi({
           return { error: result.error };
         }
 
-        const data = result.data as ShiftRequestsByStaffIdQuery | null;
+        const data = result.data as ShiftRequestsByStaffIdLiteQuery | null;
         const item =
           data?.shiftRequestsByStaffId?.items?.find(nonNullable) ?? null;
 

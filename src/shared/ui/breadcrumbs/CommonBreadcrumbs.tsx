@@ -1,4 +1,5 @@
 import { Breadcrumbs, Link, Typography } from "@mui/material";
+import { CSSProperties } from "react";
 
 import { designTokenVar } from "@/shared/designSystem";
 
@@ -37,21 +38,27 @@ export default function CommonBreadcrumbs({
     "component.breadcrumbs.fontWeight",
     "500"
   );
+  const breadcrumbVars: CSSProperties & Record<`--${string}`, string> = {
+    "--breadcrumbs-gap": BREADCRUMB_GAP,
+    "--breadcrumbs-separator-color": BREADCRUMB_SEPARATOR_COLOR,
+    "--breadcrumbs-link-color": BREADCRUMB_LINK_COLOR,
+    "--breadcrumbs-text-color": BREADCRUMB_TEXT_COLOR,
+    "--breadcrumbs-font-size": BREADCRUMB_FONT_SIZE,
+    "--breadcrumbs-font-weight": BREADCRUMB_FONT_WEIGHT,
+  };
 
   return (
     <Breadcrumbs
+      className="[&_.MuiBreadcrumbs-li]:text-[length:var(--breadcrumbs-font-size)] [&_.MuiBreadcrumbs-li]:font-[var(--breadcrumbs-font-weight)] [&_.MuiBreadcrumbs-ol]:gap-[var(--breadcrumbs-gap)]"
+      style={breadcrumbVars}
       separator={
-        <Typography component="span" sx={{ color: BREADCRUMB_SEPARATOR_COLOR }}>
+        <Typography
+          component="span"
+          className="text-[color:var(--breadcrumbs-separator-color)]"
+        >
           /
         </Typography>
       }
-      sx={{
-        columnGap: BREADCRUMB_GAP,
-        "& .MuiBreadcrumbs-li": {
-          fontSize: BREADCRUMB_FONT_SIZE,
-          fontWeight: BREADCRUMB_FONT_WEIGHT,
-        },
-      }}
     >
       {items.map((item, idx) =>
         item.href ? (
@@ -59,23 +66,23 @@ export default function CommonBreadcrumbs({
             href={item.href}
             key={idx}
             underline="hover"
-            sx={{
-              color: BREADCRUMB_LINK_COLOR,
-              textDecoration: "none",
-              "&:hover": {
-                textDecoration: "underline",
-              },
-            }}
+            className="text-[color:var(--breadcrumbs-link-color)] no-underline hover:underline"
           >
             {item.label}
           </Link>
         ) : (
-          <Typography sx={{ color: BREADCRUMB_TEXT_COLOR }} key={idx}>
+          <Typography
+            className="text-[color:var(--breadcrumbs-text-color)]"
+            key={idx}
+          >
             {item.label}
           </Typography>
         )
       )}
-      <Typography sx={{ color: BREADCRUMB_TEXT_COLOR }} aria-current="page">
+      <Typography
+        className="text-[color:var(--breadcrumbs-text-color)]"
+        aria-current="page"
+      >
         {current}
       </Typography>
     </Breadcrumbs>

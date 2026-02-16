@@ -28,12 +28,12 @@ export const Headline = ({ children }: HeadlineProps) => {
     <Typography
       component="h2"
       variant="h4"
-      sx={{
+      style={{
         borderLeft: `solid ${HEADLINE_BORDER_WIDTH} ${HEADLINE_ACCENT_COLOR}`,
         borderBottom: `solid ${HEADLINE_BORDER_WIDTH} ${HEADLINE_ACCENT_COLOR}`,
         paddingLeft: HEADLINE_PADDING_LEFT,
-        fontWeight: 700,
         color: HEADLINE_TEXT_COLOR,
+        fontWeight: 700,
       }}
     >
       {children}

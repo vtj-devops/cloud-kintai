@@ -1,4 +1,4 @@
-import { Box, Button, Container, Stack, Typography } from "@mui/material";
+import { Button, Container, Stack, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 import { designTokenVar } from "@/shared/designSystem";
@@ -18,27 +18,26 @@ export default function NotFound() {
   };
 
   return (
-    <Container maxWidth="xl" disableGutters sx={{ pt: PAGE_PADDING_TOP }}>
+    <Container
+      maxWidth="xl"
+      disableGutters
+      className="pt-6"
+      style={{ paddingTop: PAGE_PADDING_TOP }}
+    >
       <Stack
         direction="column"
         spacing={0}
-        sx={{ gap: PAGE_SECTION_GAP }}
         alignItems="center"
         justifyContent="center"
-        minHeight="60vh"
+        className="min-h-[60vh]"
+        style={{ gap: PAGE_SECTION_GAP }}
       >
-        <Box sx={{ textAlign: "center", py: 4 }}>
+        <div className="py-4 text-center">
           {/* 404コード */}
           <Typography
             variant="h1"
             component="div"
-            sx={{
-              fontSize: { xs: "72px", md: "120px" },
-              fontWeight: 700,
-              color: "primary.main",
-              lineHeight: 1,
-              mb: 2,
-            }}
+            className="mb-2 text-[72px] font-bold leading-none text-primary md:text-[120px]"
           >
             404
           </Typography>
@@ -47,12 +46,7 @@ export default function NotFound() {
           <Typography
             variant="h2"
             component="h1"
-            sx={{
-              fontSize: { xs: "24px", md: "32px" },
-              fontWeight: 600,
-              mb: 1,
-              color: "text.primary",
-            }}
+            className="mb-1 text-2xl font-semibold text-foreground md:text-[32px]"
           >
             ページが見つかりません
           </Typography>
@@ -60,12 +54,7 @@ export default function NotFound() {
           {/* サブメッセージ */}
           <Typography
             variant="body1"
-            sx={{
-              fontSize: { xs: "14px", md: "16px" },
-              color: "text.secondary",
-              mb: 4,
-              maxWidth: "500px",
-            }}
+            className="mb-4 max-w-[500px] text-sm text-[var(--ds-color-neutral-600,#5E726A)] md:text-base"
           >
             お探しのページは存在しないか、移動された可能性があります。
             <br />
@@ -77,16 +66,14 @@ export default function NotFound() {
             direction={{ xs: "column", sm: "row" }}
             spacing={2}
             justifyContent="center"
-            sx={{ mt: 4 }}
+            className="mt-4"
           >
             <Button
               variant="contained"
               color="primary"
               size="large"
               onClick={handleGoHome}
-              sx={{
-                minWidth: "160px",
-              }}
+              className="min-w-40"
             >
               ホームに戻る
             </Button>
@@ -95,14 +82,12 @@ export default function NotFound() {
               color="primary"
               size="large"
               onClick={handleGoBack}
-              sx={{
-                minWidth: "160px",
-              }}
+              className="min-w-40"
             >
               前のページに戻る
             </Button>
           </Stack>
-        </Box>
+        </div>
       </Stack>
     </Container>
   );

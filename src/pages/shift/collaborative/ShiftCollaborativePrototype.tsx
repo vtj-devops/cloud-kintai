@@ -102,7 +102,7 @@ const shiftStateConfig = {
 // モックシフトデータ生成
 const generateMockShiftData = (
   staffs: MockStaff[],
-  daysInMonth: number
+  daysInMonth: number,
 ): Map<string, Map<string, MockShiftCell>> => {
   const data = new Map<string, Map<string, MockShiftCell>>();
 
@@ -142,7 +142,7 @@ const generateMockShiftData = (
 // 日ごとの人数集計
 const calculateDailyCount = (
   shiftData: Map<string, Map<string, MockShiftCell>>,
-  dayKey: string
+  dayKey: string,
 ): { work: number; fixedOff: number; requestedOff: number; total: number } => {
   let work = 0;
   let fixedOff = 0;
@@ -164,22 +164,22 @@ export default function ShiftCollaborativePrototype() {
   const [currentMonth, setCurrentMonth] = useState(dayjs());
   const monthStart = useMemo(
     () => currentMonth.startOf("month"),
-    [currentMonth]
+    [currentMonth],
   );
   const daysInMonth = monthStart.daysInMonth();
 
   // モックデータ生成
   const shiftData = useMemo(
     () => generateMockShiftData(mockStaffs, daysInMonth),
-    [daysInMonth]
+    [daysInMonth],
   );
 
   const days = useMemo(
     () =>
       Array.from({ length: daysInMonth }).map((_, i) =>
-        monthStart.add(i, "day")
+        monthStart.add(i, "day"),
       ),
-    [monthStart, daysInMonth]
+    [monthStart, daysInMonth],
   );
 
   // 進捗計算（モック）
@@ -218,7 +218,7 @@ export default function ShiftCollaborativePrototype() {
   const nextMonth = () => setCurrentMonth((m) => m.add(1, "month"));
 
   return (
-    <Page title="シフト調整 (共同編集プロトタイプ)" maxWidth={false}>
+    <Page title="シフト調整(共同) プロトタイプ" maxWidth={false}>
       <Container maxWidth="xl" sx={{ py: 3 }}>
         <Stack spacing={3}>
           {/* ヘッダーエリア */}
@@ -232,7 +232,7 @@ export default function ShiftCollaborativePrototype() {
                 }}
               >
                 <Typography variant="h5" fontWeight="bold">
-                  シフト調整 (共同編集)
+                  シフト調整(共同)
                 </Typography>
 
                 {/* 接続状態・参加ユーザー */}
@@ -367,8 +367,8 @@ export default function ShiftCollaborativePrototype() {
                           bgcolor: needsAttention
                             ? alpha("#f44336", 0.1)
                             : isWeekend
-                            ? alpha("#2196f3", 0.05)
-                            : "background.paper",
+                              ? alpha("#2196f3", 0.05)
+                              : "background.paper",
                           minWidth: 60,
                           borderLeft:
                             day.date() === 1 ? "2px solid" : undefined,
@@ -422,10 +422,10 @@ export default function ShiftCollaborativePrototype() {
                         const config = shiftStateConfig[cell.state];
                         const cellKey = `${staff.id}-${dayKey}`;
                         const isBeingEdited = mockActiveUsers.some(
-                          (u) => u.editingCell === cellKey
+                          (u) => u.editingCell === cellKey,
                         );
                         const editingUser = mockActiveUsers.find(
-                          (u) => u.editingCell === cellKey
+                          (u) => u.editingCell === cellKey,
                         );
 
                         return (

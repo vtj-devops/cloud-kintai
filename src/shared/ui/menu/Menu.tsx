@@ -1,4 +1,4 @@
-import { Box, Stack } from "@mui/material";
+import { Stack } from "@mui/material";
 import Link from "@shared/ui/link/Link";
 
 const MENU_ITEMS = [
@@ -12,25 +12,23 @@ const MENU_ITEMS = [
   },
 ] as const;
 
-const linkStyle = {
-  display: "block",
-  height: 1,
-  lineHeight: "32px",
-  px: 1,
-} as const;
-
 const Menu = () => (
   <Stack
     component="nav"
     direction="row"
     alignItems="center"
     spacing={2}
-    sx={{ width: "auto", height: 1, boxSizing: "border-box" }}
+    className="h-full w-auto box-border"
   >
     {MENU_ITEMS.map(({ label, href }) => (
-      <Box key={href}>
-        <Link label={label} href={href} color="secondary" sx={linkStyle} />
-      </Box>
+      <div key={href}>
+        <Link
+          label={label}
+          href={href}
+          color="secondary"
+          className="block h-full px-1 leading-8"
+        />
+      </div>
     ))}
   </Stack>
 );

@@ -1,4 +1,5 @@
 import "./index.css";
+import "./tailwind.css";
 import "@/shared/lib/dayjs-locale";
 
 import { Authenticator } from "@aws-amplify/ui-react";

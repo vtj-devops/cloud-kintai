@@ -132,12 +132,13 @@ export default function StatusChip({ status }: StatusChipProps) {
     <Chip
       label={label}
       size="small"
-      sx={{
+      style={{
         borderRadius: STATUS_CHIP_BORDER_RADIUS,
         fontSize: STATUS_CHIP_FONT_SIZE,
         fontWeight: STATUS_CHIP_FONT_WEIGHT,
-        gap: STATUS_CHIP_GAP,
-        px: STATUS_CHIP_PADDING_X,
+        columnGap: STATUS_CHIP_GAP,
+        paddingLeft: STATUS_CHIP_PADDING_X,
+        paddingRight: STATUS_CHIP_PADDING_X,
         transition: `background-color ${STATUS_CHIP_DURATION} ${STATUS_CHIP_EASING}, color ${STATUS_CHIP_DURATION} ${STATUS_CHIP_EASING}`,
         backgroundColor: palette.surface,
         color: palette.base,

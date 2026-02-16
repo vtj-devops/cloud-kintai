@@ -6,7 +6,7 @@ import { designTokenVar } from "@/shared/designSystem";
 import { PageSection } from "@/shared/ui/layout";
 
 const PAGE_PADDING_X = {
-  xs: designTokenVar("spacing.lg", "16px"),
+  xs: designTokenVar("spacing.sm", "8px"),
   md: designTokenVar("spacing.xxl", "32px"),
 };
 

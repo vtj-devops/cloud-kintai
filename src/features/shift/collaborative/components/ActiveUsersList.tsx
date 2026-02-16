@@ -19,7 +19,7 @@ import {
 import { useTheme } from "@mui/material/styles";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import React, { useMemo, useState } from "react";
+import React, { memo, useMemo, useState } from "react";
 
 import { CollaborativeUser } from "../types/collaborative.types";
 
@@ -76,7 +76,7 @@ const getEditingCellCount = (
 /**
  * アクティブユーザーリストコンポーネント
  */
-export const ActiveUsersList: React.FC<ActiveUsersListProps> = ({
+const ActiveUsersListBase: React.FC<ActiveUsersListProps> = ({
   activeUsers,
   editingCells,
   compact = false,
@@ -194,6 +194,8 @@ export const ActiveUsersList: React.FC<ActiveUsersListProps> = ({
     </>
   );
 };
+
+export const ActiveUsersList = memo(ActiveUsersListBase);
 
 interface UserDetailListProps {
   users: Array<

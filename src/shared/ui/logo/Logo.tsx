@@ -11,8 +11,8 @@ const HEADER_LOGO_MAX_HEIGHT = designTokenVar(
 const Logo = () => (
   <Box
     sx={{
-      height: { xs: "18px", md: HEADER_LOGO_MAX_HEIGHT },
-      maxWidth: { xs: "100px", md: "none" },
+      height: { xs: "26px", sm: "28px", md: HEADER_LOGO_MAX_HEIGHT },
+      maxWidth: { xs: "clamp(64px, 30vw, 180px)", sm: "220px", md: "none" },
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
@@ -25,7 +25,7 @@ const Logo = () => (
       sx={{
         display: "inline-flex",
         alignItems: "center",
-        height: { xs: "18px", md: HEADER_LOGO_MAX_HEIGHT },
+        height: { xs: "26px", sm: "28px", md: HEADER_LOGO_MAX_HEIGHT },
         maxWidth: "100%",
       }}
     >

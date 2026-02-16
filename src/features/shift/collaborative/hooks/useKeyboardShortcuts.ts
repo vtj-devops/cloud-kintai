@@ -11,6 +11,8 @@ interface KeyboardShortcutsConfig {
   onEscape: () => void;
   onCopy?: () => void;
   onPaste?: () => void;
+  onUndo?: () => void;
+  onRedo?: () => void;
 }
 
 /**
@@ -25,6 +27,8 @@ export const useKeyboardShortcuts = ({
   onEscape,
   onCopy,
   onPaste,
+  onUndo,
+  onRedo,
 }: KeyboardShortcutsConfig) => {
   const enabledRef = useRef(enabled);
 
@@ -96,6 +100,20 @@ export const useKeyboardShortcuts = ({
         return;
       }
 
+      // Ctrl/Cmd + Z: 取り消し
+      if (isModifier && !shiftKey && key === "z" && onUndo) {
+        event.preventDefault();
+        onUndo();
+        return;
+      }
+
+      // Ctrl/Cmd + Shift + Z: やり直し
+      if (isModifier && shiftKey && key === "z" && onRedo) {
+        event.preventDefault();
+        onRedo();
+        return;
+      }
+
       // ?: ヘルプ表示
       if (key === "?" || (shiftKey && key === "/")) {
         event.preventDefault();
@@ -118,7 +136,9 @@ export const useKeyboardShortcuts = ({
       onEscape,
       onCopy,
       onPaste,
-    ]
+      onUndo,
+      onRedo,
+    ],
   );
 
   useEffect(() => {
@@ -141,6 +161,8 @@ export const useKeyboardShortcuts = ({
       { key: "Ctrl/Cmd + A", description: "全セル選択" },
       { key: "Ctrl/Cmd + C", description: "選択セルをコピー" },
       { key: "Ctrl/Cmd + V", description: "コピーした内容を貼り付け" },
+      { key: "Ctrl/Cmd + Z", description: "操作を取り消す" },
+      { key: "Ctrl/Cmd + Shift + Z", description: "操作をやり直す" },
       { key: "?", description: "ヘルプを表示" },
       { key: "Esc", description: "選択解除・モーダルを閉じる" },
     ],

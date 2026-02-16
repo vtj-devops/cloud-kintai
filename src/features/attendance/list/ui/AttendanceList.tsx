@@ -10,7 +10,15 @@ import {
   useGetHolidayCalendarsQuery,
 } from "@entities/calendar/api/calendarApi";
 import fetchStaff from "@entities/staff/model/useStaff/fetchStaff";
-import { Box, LinearProgress, Stack, styled, Typography } from "@mui/material";
+import {
+  Box,
+  LinearProgress,
+  Stack,
+  styled,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import { Staff } from "@shared/api/graphql/types";
 /**
  * 日付操作ライブラリ。日付のフォーマットや計算に使用。
@@ -56,6 +64,8 @@ export default function AttendanceTable() {
    * 認証済みユーザー情報。
    */
   const { cognitoUser } = useContext(AuthContext);
+  const theme = useTheme();
+  const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
   /**
    * Reduxのdispatch関数。
    */
@@ -285,44 +295,59 @@ export default function AttendanceTable() {
           backgroundColor: headerBackground,
           boxShadow: headerShadow,
           borderRadius: headerRadius,
-          px: headerPaddingX,
-          py: headerPaddingY,
+          px: { xs: "12px", sm: headerPaddingX },
+          py: { xs: "10px", sm: headerPaddingY },
           display: "flex",
           flexDirection: "column",
           gap: headerGap,
         }}
       >
         <Stack spacing={0.5}>
-          <Typography variant="h1">勤怠一覧</Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography
+            variant="h1"
+            sx={{ fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" } }}
+          >
+            勤怠一覧
+          </Typography>
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ fontSize: { xs: "0.875rem", sm: "0.95rem", md: "1rem" } }}
+          >
             {rangeLabelForDisplay}の合計勤務時間: {totalTime.toFixed(1)}h
           </Typography>
         </Stack>
-        <DescriptionTypography variant="body1">
+        <DescriptionTypography
+          variant="body1"
+          sx={{ fontSize: { xs: "0.85rem", sm: "0.95rem", md: "1rem" } }}
+        >
           月を選択して勤怠情報を表示・編集できます
         </DescriptionTypography>
       </Box>
-      <DesktopList
-        attendances={attendances}
-        holidayCalendars={holidayCalendars}
-        companyHolidayCalendars={companyHolidayCalendars}
-        navigate={navigate}
-        staff={staff}
-        closeDates={closeDates}
-        closeDatesLoading={closeDatesLoading}
-        closeDatesError={closeDatesError}
-        currentMonth={currentMonth}
-        onMonthChange={(nextMonth) => setCurrentMonth(nextMonth)}
-      />
-      <MobileList
-        attendances={attendances}
-        holidayCalendars={holidayCalendars}
-        companyHolidayCalendars={companyHolidayCalendars}
-        staff={staff}
-        currentMonth={currentMonth}
-        onMonthChange={(nextMonth) => setCurrentMonth(nextMonth)}
-        closeDates={closeDates}
-      />
+      {isDesktop ? (
+        <DesktopList
+          attendances={attendances}
+          holidayCalendars={holidayCalendars}
+          companyHolidayCalendars={companyHolidayCalendars}
+          navigate={navigate}
+          staff={staff}
+          closeDates={closeDates}
+          closeDatesLoading={closeDatesLoading}
+          closeDatesError={closeDatesError}
+          currentMonth={currentMonth}
+          onMonthChange={(nextMonth) => setCurrentMonth(nextMonth)}
+        />
+      ) : (
+        <MobileList
+          attendances={attendances}
+          holidayCalendars={holidayCalendars}
+          companyHolidayCalendars={companyHolidayCalendars}
+          staff={staff}
+          currentMonth={currentMonth}
+          onMonthChange={(nextMonth) => setCurrentMonth(nextMonth)}
+          closeDates={closeDates}
+        />
+      )}
     </Stack>
   );
 }

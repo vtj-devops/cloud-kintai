@@ -6,9 +6,8 @@ import { designTokenVar } from "@/shared/designSystem";
 interface HeaderBarProps {
   themeColor?: string;
   logo: ReactNode;
-  desktopMenu: ReactNode;
+  navigation: ReactNode;
   externalLinks?: ReactNode;
-  mobileMenu: ReactNode;
   signInOutButton: ReactNode;
 }
 
@@ -30,42 +29,43 @@ const HEADER_CONTENT_MAX_WIDTH = designTokenVar(
 export default function HeaderBar({
   themeColor,
   logo,
-  desktopMenu,
+  navigation,
   externalLinks,
-  mobileMenu,
   signInOutButton,
 }: HeaderBarProps) {
   const headerBackground = themeColor ?? HEADER_BACKGROUND;
 
   return (
-    <header style={{ overflow: "hidden", width: "100%" }}>
+    <header style={{ width: "100%" }}>
       <Container
         maxWidth={false}
         disableGutters
-        sx={{ p: 0, backgroundColor: headerBackground, overflow: "hidden" }}
+        sx={{ p: 0, backgroundColor: headerBackground }}
       >
         <Box
           sx={{
             width: "100%",
             maxWidth: { xs: "100%", md: HEADER_CONTENT_MAX_WIDTH },
             mx: { xs: 0, md: "auto" },
-            px: { xs: "8px", md: HEADER_PADDING_X },
-            overflow: "hidden",
+            px: { xs: "6px", md: HEADER_PADDING_X },
+            boxSizing: "border-box",
           }}
         >
-          <Stack
-            direction="row"
-            alignItems="center"
-            color={HEADER_TEXT}
+          <Box
             sx={{
               width: "100%",
               maxWidth: "100%",
-              height: HEADER_HEIGHT,
               minHeight: HEADER_HEIGHT,
               boxSizing: "border-box",
               py: HEADER_PADDING_Y,
-              gap: { xs: "4px", md: HEADER_GAP },
-              overflow: "hidden",
+              color: HEADER_TEXT,
+              display: "grid",
+              alignItems: "center",
+              gridTemplateColumns: {
+                xs: "minmax(0, 1fr) auto",
+                lg: "auto minmax(0, 1fr) auto",
+              },
+              columnGap: { xs: "2px", md: HEADER_GAP },
             }}
           >
             <Box
@@ -73,9 +73,11 @@ export default function HeaderBar({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "flex-start",
-                flexShrink: { xs: 2, md: 0 },
+                flexShrink: { xs: 1, md: 0 },
                 minWidth: 0,
                 height: "100%",
+                pr: { xs: "6px", md: 0 },
+                overflow: "hidden",
               }}
             >
               {logo}
@@ -84,14 +86,15 @@ export default function HeaderBar({
             <Box
               sx={{
                 flexGrow: 1,
-                display: { xs: "none", md: "flex" },
+                display: { xs: "none", lg: "flex" },
                 justifyContent: "center",
                 alignItems: "center",
                 minWidth: 0,
                 px: HEADER_SIDE_GAP,
+                gridColumn: "2",
               }}
             >
-              {desktopMenu}
+              {navigation}
             </Box>
 
             <Stack
@@ -99,18 +102,24 @@ export default function HeaderBar({
               alignItems="center"
               justifyContent="flex-end"
               sx={{
-                flexGrow: { xs: 1, md: 0 },
+                flexGrow: 0,
                 flexShrink: 0,
                 minWidth: "fit-content",
-                columnGap: { xs: "4px", md: HEADER_GAP },
+                gridColumn: { xs: "2", lg: "3" },
+                justifySelf: "end",
+                columnGap: { xs: "2px", md: HEADER_GAP },
                 rowGap: { xs: "4px", md: HEADER_GAP },
               }}
             >
-              {externalLinks}
+              <Box sx={{ display: { xs: "block", lg: "none" } }}>
+                {navigation}
+              </Box>
+              <Box sx={{ display: "block" }}>
+                {externalLinks}
+              </Box>
               {signInOutButton}
-              {mobileMenu}
             </Stack>
-          </Stack>
+          </Box>
         </Box>
       </Container>
     </header>

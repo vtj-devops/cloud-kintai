@@ -28,20 +28,17 @@ const Title = forwardRef<HTMLSpanElement, TitleProps>(function Title(
   ref
 ) {
   const resolvedBorderColor = borderColor ?? color ?? TITLE_ACCENT_COLOR;
-  const normalizedSx = Array.isArray(sx) ? sx : sx ? [sx] : [];
 
   return (
     <Typography
       ref={ref}
       variant={variant}
-      sx={[
-        {
-          paddingLeft: TITLE_PADDING_LEFT,
-          borderBottom: `solid ${TITLE_BORDER_WIDTH} ${resolvedBorderColor}`,
-          color,
-        },
-        ...normalizedSx,
-      ]}
+      style={{
+        paddingLeft: TITLE_PADDING_LEFT,
+        borderBottom: `solid ${TITLE_BORDER_WIDTH} ${resolvedBorderColor}`,
+        color,
+      }}
+      sx={sx}
       {...typographyProps}
     >
       {children}

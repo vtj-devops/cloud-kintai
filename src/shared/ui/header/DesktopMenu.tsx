@@ -1,5 +1,6 @@
 import { Box, Stack } from "@mui/material";
 import Link from "@shared/ui/link/Link";
+import { CSSProperties } from "react";
 
 import { designTokenVar } from "@/shared/designSystem";
 
@@ -62,54 +63,36 @@ const DesktopMenu = ({
     "component.headerMenu.transitionMs",
     "160ms"
   );
+  const menuVars: CSSProperties & Record<`--${string}`, string> = {
+    "--menu-gap": MENU_GAP,
+    "--menu-item-height": MENU_ITEM_HEIGHT,
+    "--menu-item-px": MENU_ITEM_PADDING_X,
+    "--menu-item-py": MENU_ITEM_PADDING_Y,
+    "--menu-item-radius": MENU_ITEM_RADIUS,
+    "--menu-item-font-weight": MENU_ITEM_FONT_WEIGHT,
+    "--menu-item-color": MENU_ITEM_COLOR,
+    "--menu-item-active-color": MENU_ITEM_ACTIVE_COLOR,
+    "--menu-item-active-bg": MENU_ITEM_ACTIVE_BACKGROUND,
+    "--menu-item-hover-bg": MENU_ITEM_HOVER_BACKGROUND,
+    "--menu-item-transition": MENU_ITEM_TRANSITION,
+  };
 
-  const buildLinkSx = (isActive: boolean) => ({
-    display: "flex",
-    alignItems: "center",
-    minHeight: MENU_ITEM_HEIGHT,
-    paddingInline: MENU_ITEM_PADDING_X,
-    paddingBlock: MENU_ITEM_PADDING_Y,
-    color: isActive ? MENU_ITEM_ACTIVE_COLOR : MENU_ITEM_COLOR,
-    backgroundColor: isActive ? MENU_ITEM_ACTIVE_BACKGROUND : "transparent",
-    borderRadius: MENU_ITEM_RADIUS,
-    fontWeight: MENU_ITEM_FONT_WEIGHT,
-    textDecoration: "none",
-    transition: `color ${MENU_ITEM_TRANSITION} ease, background-color ${MENU_ITEM_TRANSITION} ease`,
-    whiteSpace: "nowrap",
-    lineHeight: 1.2,
-    "&:hover, &:focus-visible": {
-      backgroundColor: isActive
-        ? MENU_ITEM_ACTIVE_BACKGROUND
-        : MENU_ITEM_HOVER_BACKGROUND,
-      color: isActive ? MENU_ITEM_ACTIVE_COLOR : MENU_ITEM_COLOR,
-      textDecoration: "none",
-    },
-  });
+  const buildLinkClassName = (isActive: boolean) =>
+    `flex min-h-[var(--menu-item-height)] items-center rounded-[var(--menu-item-radius)] px-[var(--menu-item-px)] py-[var(--menu-item-py)] font-[var(--menu-item-font-weight)] whitespace-nowrap leading-[1.2] no-underline transition-[color,background-color] [transition-duration:var(--menu-item-transition)] ease-in-out hover:no-underline focus-visible:no-underline ${
+      isActive
+        ? "bg-[var(--menu-item-active-bg)] text-[color:var(--menu-item-active-color)] hover:bg-[var(--menu-item-active-bg)] hover:text-[color:var(--menu-item-active-color)] focus-visible:bg-[var(--menu-item-active-bg)] focus-visible:text-[color:var(--menu-item-active-color)]"
+        : "bg-transparent text-[color:var(--menu-item-color)] hover:bg-[var(--menu-item-hover-bg)] hover:text-[color:var(--menu-item-color)] focus-visible:bg-[var(--menu-item-hover-bg)] focus-visible:text-[color:var(--menu-item-color)]"
+    }`;
 
   return (
-    <Box
-      sx={{
-        width: 1,
-        display: {
-          xs: "none",
-          md: "flex",
-        },
-        alignItems: "center",
-      }}
-    >
-      <Stack
-        direction="row"
-        sx={{
-          width: "auto",
-          columnGap: MENU_GAP,
-        }}
-      >
+    <Box className="hidden w-full items-center lg:flex" style={menuVars}>
+      <Stack direction="row" className="w-auto gap-[var(--menu-gap)]">
         {menuItems.map((menu) => (
           <Box key={menu.href}>
             <Link
               label={menu.label}
               href={menu.href}
-              sx={buildLinkSx(pathName === menu.href)}
+              className={buildLinkClassName(pathName === menu.href)}
             />
           </Box>
         ))}
@@ -119,7 +102,7 @@ const DesktopMenu = ({
             <Link
               label={adminLink.label}
               href={adminLink.href}
-              sx={buildLinkSx(pathName === adminLink.href)}
+              className={buildLinkClassName(pathName === adminLink.href)}
             />
           </Box>
         )}

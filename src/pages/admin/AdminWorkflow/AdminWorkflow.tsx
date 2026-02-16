@@ -18,6 +18,8 @@ import {
   TablePagination,
   TableRow,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { WorkflowCategory, WorkflowStatus } from "@shared/api/graphql/types";
 import StatusChip from "@shared/ui/chips/StatusChip";
@@ -38,6 +40,8 @@ const STATUS_EXCLUDED_FROM_DEFAULT: WorkflowStatus[] = [
 ];
 
 export default function AdminWorkflow() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { authStatus } = useContext(AuthContext);
   const isAuthenticated = authStatus === "authenticated";
   const { workflows, loading, error } = useWorkflows({ isAuthenticated });
@@ -126,8 +130,12 @@ export default function AdminWorkflow() {
         </Typography>
 
         {/* フィルター */}
-        <Stack direction="row" spacing={2} alignItems="center">
-          <FormControl size="small" sx={{ minWidth: 160 }}>
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2}
+          alignItems={{ xs: "stretch", sm: "center" }}
+        >
+          <FormControl size="small" sx={{ minWidth: { sm: 160 } }}>
             <InputLabel id="category-filter-label">種別</InputLabel>
             <Select
               labelId="category-filter-label"
@@ -144,7 +152,7 @@ export default function AdminWorkflow() {
             </Select>
           </FormControl>
 
-          <FormControl size="small" sx={{ minWidth: 160 }}>
+          <FormControl size="small" sx={{ minWidth: { sm: 160 } }}>
             <InputLabel id="status-filter-label">ステータス</InputLabel>
             <Select
               labelId="status-filter-label"
@@ -174,46 +182,78 @@ export default function AdminWorkflow() {
           </FormControl>
         </Stack>
 
-        <Paper sx={{ p: 2 }}>
-          <TableContainer>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>種別</TableCell>
-                  <TableCell>申請者</TableCell>
-                  <TableCell>ステータス</TableCell>
-                  <TableCell>作成日</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {paginatedWorkflows.map((w) => {
-                  const staff = staffs.find((s) => s.id === w.staffId);
-                  const staffName = staff
-                    ? `${staff.familyName || ""}${staff.givenName || ""}`
-                    : w.staffId || "不明";
-                  const categoryLabel = getWorkflowCategoryLabel(w);
+        <Paper sx={{ p: { xs: 1.5, sm: 2 } }}>
+          {isMobile ? (
+            <Stack spacing={1.5}>
+              {paginatedWorkflows.map((w) => {
+                const staff = staffs.find((s) => s.id === w.staffId);
+                const staffName = staff
+                  ? `${staff.familyName || ""}${staff.givenName || ""}`
+                  : w.staffId || "不明";
+                const categoryLabel = getWorkflowCategoryLabel(w);
 
-                  return (
-                    <TableRow
-                      key={w.id}
-                      hover
-                      onClick={() => navigate(`/admin/workflow/${w.id}`)}
-                      sx={{ cursor: "pointer" }}
-                    >
-                      <TableCell>{categoryLabel}</TableCell>
-                      <TableCell>{staffName}</TableCell>
-                      <TableCell>
+                return (
+                  <Paper
+                    key={w.id}
+                    variant="outlined"
+                    onClick={() => navigate(`/admin/workflow/${w.id}`)}
+                    sx={{ p: 1.5, cursor: "pointer" }}
+                  >
+                    <Stack spacing={1}>
+                      <Typography variant="subtitle2">{categoryLabel}</Typography>
+                      <Typography variant="body2">{staffName}</Typography>
+                      <Stack direction="row" justifyContent="space-between" alignItems="center">
                         <StatusChip status={w.status} />
-                      </TableCell>
-                      <TableCell>
-                        {w.createdAt ? w.createdAt.split("T")[0] : ""}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                        <Typography variant="caption" color="text.secondary">
+                          {w.createdAt ? w.createdAt.split("T")[0] : ""}
+                        </Typography>
+                      </Stack>
+                    </Stack>
+                  </Paper>
+                );
+              })}
+            </Stack>
+          ) : (
+            <TableContainer sx={{ overflowX: "auto" }}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>種別</TableCell>
+                    <TableCell>申請者</TableCell>
+                    <TableCell>ステータス</TableCell>
+                    <TableCell>作成日</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {paginatedWorkflows.map((w) => {
+                    const staff = staffs.find((s) => s.id === w.staffId);
+                    const staffName = staff
+                      ? `${staff.familyName || ""}${staff.givenName || ""}`
+                      : w.staffId || "不明";
+                    const categoryLabel = getWorkflowCategoryLabel(w);
+
+                    return (
+                      <TableRow
+                        key={w.id}
+                        hover
+                        onClick={() => navigate(`/admin/workflow/${w.id}`)}
+                        sx={{ cursor: "pointer" }}
+                      >
+                        <TableCell>{categoryLabel}</TableCell>
+                        <TableCell>{staffName}</TableCell>
+                        <TableCell>
+                          <StatusChip status={w.status} />
+                        </TableCell>
+                        <TableCell>
+                          {w.createdAt ? w.createdAt.split("T")[0] : ""}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
 
           <TablePagination
             component="div"
@@ -225,7 +265,7 @@ export default function AdminWorkflow() {
               setRowsPerPage(parseInt(e.target.value, 10));
               setPage(0);
             }}
-            rowsPerPageOptions={[10, 25, 50]}
+            rowsPerPageOptions={isMobile ? [10] : [10, 25, 50]}
           />
         </Paper>
       </Stack>

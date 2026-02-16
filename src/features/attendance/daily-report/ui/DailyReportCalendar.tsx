@@ -63,14 +63,48 @@ export function DailyReportCalendar({
   );
 
   return (
-    <Paper variant="outlined" sx={{ height: "100%" }}>
-      <Box sx={{ p: 1 }}>
+    <Paper variant="outlined" sx={{ height: "100%", overflow: "hidden" }}>
+      <Box sx={{ p: { xs: 0.5, sm: 1 } }}>
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ja">
           <DateCalendar
             value={value}
             onChange={onChange}
             reduceAnimations
             slots={{ day: CalendarDay }}
+            sx={{
+              minWidth: 0,
+              width: "100%",
+              maxWidth: 360,
+              mx: "auto",
+              ".MuiDayCalendar-header": {
+                justifyContent: "space-between",
+              },
+              ".MuiDayCalendar-weekContainer": {
+                justifyContent: "space-between",
+                margin: 0,
+              },
+              ".MuiDayCalendar-weekDayLabel": {
+                width: "clamp(28px, 9.5vw, 36px)",
+                height: "clamp(28px, 9.5vw, 36px)",
+                margin: 0,
+                fontSize: "clamp(0.7rem, 2.6vw, 0.85rem)",
+              },
+              ".MuiPickersDay-root": {
+                width: "clamp(28px, 9.5vw, 36px)",
+                height: "clamp(28px, 9.5vw, 36px)",
+                margin: 0,
+                fontSize: "clamp(0.75rem, 2.8vw, 0.9rem)",
+              },
+              ".MuiPickersCalendarHeader-root": {
+                px: 0.5,
+              },
+              ".MuiPickersCalendarHeader-label": {
+                fontSize: "clamp(0.9rem, 3.4vw, 1.05rem)",
+              },
+              ".MuiPickersArrowSwitcher-root": {
+                ml: 0,
+              },
+            }}
           />
         </LocalizationProvider>
         <Typography
