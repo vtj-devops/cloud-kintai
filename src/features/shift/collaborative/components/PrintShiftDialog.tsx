@@ -305,9 +305,9 @@ const PrintShiftDialogComponent = ({
                           <td class="staff-name">${staffName}</td>
                           ${filteredDays
                             .map((day) => {
-                              const dateStr = day.format("YYYY-MM-DD");
+                              const dayKey = day.format("DD");
                               const state =
-                                shiftDataMap.get(staff.id)?.get(dateStr)
+                                shiftDataMap.get(staff.id)?.get(dayKey)
                                   ?.state || "empty";
                               const stateConfig = {
                                 work: { label: "○", color: "#4caf50" },

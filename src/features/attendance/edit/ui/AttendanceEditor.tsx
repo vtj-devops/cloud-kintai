@@ -3,8 +3,13 @@ import {
   useCreateAttendanceMutation,
   useUpdateAttendanceMutation,
 } from "@entities/attendance/api/attendanceApi";
+import { useOvertimeRequest } from "@entities/attendance/hooks/useOvertimeRequest";
 import { attendanceEditSchema } from "@entities/attendance/validation/attendanceEditSchema";
 import { collectAttendanceErrorMessages } from "@entities/attendance/validation/collectErrorMessages";
+import {
+  type OvertimeCheckContext,
+  validateOvertimeCheck,
+} from "@entities/attendance/validation/overtimeCheckValidator";
 import { useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import AddAlarmIcon from "@mui/icons-material/AddAlarm";
@@ -100,7 +105,7 @@ const SaveButton = styled(Button)(({ theme }) => ({
 
 // ヘルパー関数：時間単位休暇データを安全に変換
 function buildHourlyPaidHolidayTimes(
-  data: HourlyPaidHolidayTimeInputs[] | undefined
+  data: HourlyPaidHolidayTimeInputs[] | undefined,
 ): HourlyPaidHolidayTimeInput[] {
   if (!data) {
     return [];
@@ -128,6 +133,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
     getEndTime,
     getAbsentEnabled,
     loading: appConfigLoading,
+    config: appConfig,
   } = useAppConfig();
   const dispatch = useDispatch();
   const { authenticatedUser } = useAuthenticatedUser();
@@ -144,22 +150,23 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
 
   const handleUpdateAttendance = useCallback(
     (input: UpdateAttendanceInput) => updateAttendanceMutation(input).unwrap(),
-    [updateAttendanceMutation]
+    [updateAttendanceMutation],
   );
 
   const handleCreateAttendance = useCallback(
     (input: CreateAttendanceInput) => createAttendanceMutation(input).unwrap(),
-    [createAttendanceMutation]
+    [createAttendanceMutation],
   );
   const [enabledSendMail, setEnabledSendMail] = useState<boolean>(true);
   const [vacationTab, setVacationTab] = useState<number>(0);
   const [highlightStartTime, setHighlightStartTime] = useState(false);
   const [highlightEndTime, setHighlightEndTime] = useState(false);
+  const [overtimeError, setOvertimeError] = useState<string | null>(null);
 
   const logger = useMemo(
     () =>
       new Logger("AttendanceEditor", import.meta.env.DEV ? "DEBUG" : "ERROR"),
-    []
+    [],
   );
 
   const {
@@ -233,21 +240,57 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
     logger,
   });
 
+  // 残業申請情報を取得
+  const { overtimeRequestEndTime, hasOvertimeRequest } = useOvertimeRequest({
+    staffId: staff?.id ?? targetStaffId ?? null,
+    workDate: workDate ? workDate.format("YYYY-MM-DD") : null,
+    isAuthenticated,
+  });
+
   const lunchRestStartTime = useMemo(
     () => getLunchRestStartTime().format("HH:mm"),
-    [getLunchRestStartTime]
+    [getLunchRestStartTime],
   );
   const lunchRestEndTime = useMemo(
     () => getLunchRestEndTime().format("HH:mm"),
-    [getLunchRestEndTime]
+    [getLunchRestEndTime],
   );
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const watchedData = watch();
   const errorMessages = useMemo(
     () => collectAttendanceErrorMessages(errors),
-    [errors]
+    [errors],
   );
+
+  // 残業チェック：業務終了時間を超過した場合の検証
+  useEffect(() => {
+    if (!watchedData.endTime || !appConfig) {
+      setOvertimeError(null);
+      return;
+    }
+
+    const workEndTimeStr = getEndTime().format("HH:mm");
+    const context: OvertimeCheckContext = {
+      workEndTime: workEndTimeStr,
+      overTimeCheckEnabled: appConfig.overTimeCheckEnabled ?? false,
+      overtimeRequestEndTime,
+      hasOvertimeRequest,
+    };
+
+    const result = validateOvertimeCheck(watchedData.endTime, context);
+    if (!result.isValid && result.errorMessage) {
+      setOvertimeError(result.errorMessage);
+    } else {
+      setOvertimeError(null);
+    }
+  }, [
+    watchedData.endTime,
+    appConfig,
+    overtimeRequestEndTime,
+    hasOvertimeRequest,
+    getEndTime,
+  ]);
 
   const totalWorkTime = useMemo(() => {
     if (!watchedData.endTime) return 0;
@@ -263,12 +306,12 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
         const diff = calcTotalRestTime(rest.startTime, rest.endTime);
         return acc + diff;
       }, 0) ?? 0,
-    [watchedData.rests]
+    [watchedData.rests],
   );
 
   const totalProductionTime = useMemo(
     () => totalWorkTime - totalRestTime,
-    [totalWorkTime, totalRestTime]
+    [totalWorkTime, totalRestTime],
   );
 
   // 合計時間単位休暇時間を計算
@@ -280,11 +323,11 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
 
         const diff = calcTotalHourlyPaidHolidayTime(
           time.startTime,
-          time.endTime
+          time.endTime,
         );
         return acc + diff;
       }, 0) ?? 0,
-    [watchedData.hourlyPaidHolidayTimes]
+    [watchedData.hourlyPaidHolidayTimes],
   );
 
   const visibleRestWarning = useMemo(
@@ -295,7 +338,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
         totalWorkTime > 6 &&
         totalRestTime === 0
       ),
-    [watchedData.startTime, watchedData.endTime, totalWorkTime, totalRestTime]
+    [watchedData.startTime, watchedData.endTime, totalWorkTime, totalRestTime],
   );
 
   // 休憩中かどうかを判定（勤務開始時間と最初の休憩時間が入力されている状態）
@@ -308,11 +351,17 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
         watchedData.rests[0]?.startTime &&
         !watchedData.rests[0]?.endTime
       ),
-    [watchedData.startTime, watchedData.rests]
+    [watchedData.startTime, watchedData.rests],
   );
 
   const onSubmit = useCallback(
     async (data: AttendanceEditInputs) => {
+      // 残業チェック：バリデーションエラーがある場合は提出を中止
+      if (overtimeError) {
+        dispatch(setSnackbarError(overtimeError));
+        return;
+      }
+
       // 備考はユーザー入力の値（data.remarks）をそのまま保存します。
       // 画面上に表示しているタグ（remarkTags）は見かけ上の表示であり、備考の値には影響を与えません。
       if (attendance) {
@@ -327,7 +376,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
                 getStartTime(),
                 data.workDate as string | null | undefined,
                 attendance?.workDate,
-                targetWorkDate
+                targetWorkDate,
               )
             : data.startTime,
           endTime: data.paidHolidayFlag
@@ -335,7 +384,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
                 getEndTime(),
                 data.workDate as string | null | undefined,
                 attendance?.workDate,
-                targetWorkDate
+                targetWorkDate,
               )
             : data.endTime || null,
           absentFlag: data.absentFlag ?? false,
@@ -353,13 +402,13 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
                 {
                   startTime: new AttendanceDateTime()
                     .setDateString(
-                      (data.workDate as string) || attendance?.workDate || ""
+                      (data.workDate as string) || attendance?.workDate || "",
                     )
                     .setRestStart()
                     .toISOString(),
                   endTime: new AttendanceDateTime()
                     .setDateString(
-                      (data.workDate as string) || attendance?.workDate || ""
+                      (data.workDate as string) || attendance?.workDate || "",
                     )
                     .setRestEnd()
                     .toISOString(),
@@ -374,7 +423,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
               comment,
               confirmed,
               createdAt,
-            })
+            }),
           ),
           hourlyPaidHolidayTimes: data.paidHolidayFlag
             ? []
@@ -433,7 +482,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
             ? resolveConfigTimeOnDate(
                 getStartTime(),
                 data.workDate as string | null | undefined,
-                targetWorkDate
+                targetWorkDate,
               )
             : data.startTime,
           absentFlag: data.absentFlag ?? false,
@@ -442,7 +491,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
             ? resolveConfigTimeOnDate(
                 getEndTime(),
                 data.workDate as string | null | undefined,
-                targetWorkDate
+                targetWorkDate,
               )
             : data.endTime,
           goDirectlyFlag: data.goDirectlyFlag,
@@ -473,7 +522,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
               comment,
               confirmed,
               createdAt,
-            })
+            }),
           ),
           hourlyPaidHolidayTimes: data.paidHolidayFlag
             ? []
@@ -521,7 +570,8 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
       refetchAttendance,
       getStartTime,
       getEndTime,
-    ]
+      overtimeError,
+    ],
   );
 
   // absentFlag の変更に応じて備考欄を自動更新する
@@ -537,7 +587,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
     if (!flag && has) {
       setValue(
         "remarkTags",
-        tags.filter((t) => t !== "欠勤")
+        tags.filter((t) => t !== "欠勤"),
       );
     }
   }, [absentFlagValue, setValue, getValues]);
@@ -566,14 +616,14 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
           getValues("startTime") as string | null | undefined,
           targetWorkDate,
           attendance?.workDate,
-          workDate
+          workDate,
         );
         const desiredEnd = resolveConfigTimeOnDate(
           getEndTime(),
           getValues("endTime") as string | null | undefined,
           targetWorkDate,
           attendance?.workDate,
-          workDate
+          workDate,
         );
         if (getValues("startTime") !== desiredStart) {
           setValue("startTime", desiredStart);
@@ -645,7 +695,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
       if (tags.includes("特別休暇")) {
         setValue(
           "remarkTags",
-          tags.filter((t) => t !== "特別休暇")
+          tags.filter((t) => t !== "特別休暇"),
         );
       }
     }
@@ -666,7 +716,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
         if (tags.includes("有給休暇")) {
           setValue(
             "remarkTags",
-            tags.filter((t) => t !== "有給休暇")
+            tags.filter((t) => t !== "有給休暇"),
           );
         }
       }
@@ -778,7 +828,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
                   <Typography variant="body2" sx={{ mt: 0.5 }}>
                     履歴作成日時:{" "}
                     {dayjs(sortedHistories[historyIndex].createdAt).format(
-                      "YYYY/MM/DD HH:mm:ss"
+                      "YYYY/MM/DD HH:mm:ss",
                     )}
                   </Typography>
                 )}
@@ -848,7 +898,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
                       <ListItemText
                         primary={`履歴 #${sortedHistories.length - idx}`}
                         secondary={dayjs(h.createdAt).format(
-                          "YYYY/MM/DD HH:mm:ss"
+                          "YYYY/MM/DD HH:mm:ss",
                         )}
                       />
                     </ListItemButton>
@@ -876,6 +926,15 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
                         </Typography>
                       ))}
                     </Stack>
+                  </Alert>
+                </Box>
+              )}
+
+              {overtimeError && (
+                <Box>
+                  <Alert severity="error">
+                    <AlertTitle>残業チェック</AlertTitle>
+                    <Typography variant="body2">{overtimeError}</Typography>
                   </Alert>
                 </Box>
               )}
@@ -944,8 +1003,8 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
                         getStartTime(),
                         getValues("startTime") as string | null | undefined,
                         workDate,
-                        targetWorkDate
-                      )
+                        targetWorkDate,
+                      ),
                     );
                     setHighlightStartTime(true);
                     setTimeout(() => setHighlightStartTime(false), 2500);
@@ -1054,7 +1113,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
                                     time={hourlyPaidHolidayTime}
                                     index={index}
                                   />
-                                )
+                                ),
                               )}
                               <Box>
                                 <IconButton
@@ -1125,7 +1184,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
                               sx={{ pl: 1 }}
                             >
                               {dayjs(attendance.updatedAt).format(
-                                "YYYY/MM/DD HH:mm:ss"
+                                "YYYY/MM/DD HH:mm:ss",
                               )}
                             </Typography>
                           </Box>
@@ -1166,7 +1225,9 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
                   {!readOnly && (
                     <SaveButton
                       onClick={handleSubmit(onSubmit)}
-                      disabled={!isValid || !isDirty || isSubmitting}
+                      disabled={
+                        !isValid || !isDirty || isSubmitting || !!overtimeError
+                      }
                       startIcon={
                         isSubmitting ? (
                           <CircularProgress size={24} sx={{ mr: 1 }} />

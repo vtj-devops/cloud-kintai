@@ -14,47 +14,47 @@ import { designTokenVar } from "@/shared/designSystem";
 
 const GROUP_BORDER_WIDTH = designTokenVar(
   "component.groupContainer.borderWidth",
-  "1px"
+  "1px",
 );
 const GROUP_ACCENT_WIDTH = designTokenVar(
   "component.groupContainer.accentWidth",
-  "6px"
+  "3px",
 );
 const GROUP_BORDER_COLOR = designTokenVar(
   "component.groupContainer.borderColor",
-  "#D9E2DD"
+  "#E8EFEB",
 );
 const GROUP_ACCENT_COLOR = designTokenVar(
   "component.groupContainer.accentColor",
-  "#0FA85E"
+  "#0FA85E",
 );
 const GROUP_RADIUS = designTokenVar(
   "component.groupContainer.borderRadius",
-  "12px"
+  "12px",
 );
 const GROUP_PADDING = designTokenVar(
   "component.groupContainer.padding",
-  "16px"
+  "16px",
 );
 const GROUP_BACKGROUND = designTokenVar(
   "component.groupContainer.background",
-  "#FFFFFF"
+  "#FFFFFF",
 );
 const GROUP_SHADOW = designTokenVar(
   "component.groupContainer.shadow",
-  "0 6px 16px rgba(15, 168, 94, 0.08)"
+  "0 2px 4px rgba(15, 168, 94, 0.04)",
 );
 const GROUP_HEADER_GAP = designTokenVar(
   "component.groupContainer.headerGap",
-  "8px"
+  "8px",
 );
 const GROUP_CONTENT_GAP = designTokenVar(
   "component.groupContainer.contentGap",
-  "8px"
+  "8px",
 );
 const GROUP_COUNT_COLOR = designTokenVar(
   "component.groupContainer.countColor",
-  "#5E726A"
+  "#5E726A",
 );
 
 export interface GroupContainerProps {
@@ -62,6 +62,8 @@ export interface GroupContainerProps {
   count?: number;
   collapsible?: boolean;
   defaultCollapsed?: boolean;
+  hideAccent?: boolean;
+  hideBorder?: boolean;
   sx?: SxProps<Theme>;
   children?: ReactNode;
 }
@@ -71,6 +73,8 @@ const GroupContainer = ({
   count,
   collapsible = false,
   defaultCollapsed = false,
+  hideAccent = false,
+  hideBorder = false,
   children,
   sx,
 }: GroupContainerProps) => {
@@ -88,10 +92,17 @@ const GroupContainer = ({
     "--group-content-gap": GROUP_CONTENT_GAP,
     "--group-count-color": GROUP_COUNT_COLOR,
   };
+  if (hideAccent) {
+    groupVars["--group-accent-width"] = "0px";
+  }
+  if (hideBorder) {
+    groupVars["--group-border-width"] = "0px";
+    groupVars["--group-border-color"] = "transparent";
+  }
 
   return (
     <Box
-      className="rounded-[var(--group-radius)] border-[var(--group-border-width)] border-[var(--group-border-color)] border-l-[var(--group-accent-width)] border-l-[var(--group-accent-color)] border-solid bg-[var(--group-background)] p-[var(--group-padding)] shadow-[var(--group-shadow)]"
+      className="rounded-[var(--group-radius)] border-b-[var(--group-border-width)] border-t-[var(--group-border-width)] border-b-[var(--group-border-color)] border-t-[var(--group-border-color)] border-l-[var(--group-accent-width)] border-l-[var(--group-accent-color)] border-solid bg-[var(--group-background)] p-[var(--group-padding)] shadow-[var(--group-shadow)]"
       style={groupVars}
       sx={sx}
     >

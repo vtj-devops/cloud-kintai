@@ -103,6 +103,7 @@ export const onCreateAppConfig = /* GraphQL */ `subscription OnCreateAppConfig($
       fixed
       __typename
     }
+    overTimeCheckEnabled
     createdAt
     updatedAt
     __typename
@@ -162,6 +163,7 @@ export const onUpdateAppConfig = /* GraphQL */ `subscription OnUpdateAppConfig($
       fixed
       __typename
     }
+    overTimeCheckEnabled
     createdAt
     updatedAt
     __typename
@@ -221,6 +223,7 @@ export const onDeleteAppConfig = /* GraphQL */ `subscription OnDeleteAppConfig($
       fixed
       __typename
     }
+    overTimeCheckEnabled
     createdAt
     updatedAt
     __typename

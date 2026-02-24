@@ -83,6 +83,7 @@ interface VirtualizedShiftTableProps {
     fixedOff: number;
     requestedOff: number;
   };
+  currentUserId?: string;
 }
 
 /* eslint-disable react/prop-types */
@@ -111,6 +112,7 @@ export const VirtualizedShiftTable = memo<VirtualizedShiftTableProps>(
     ShiftCellComponent,
     isWeekend,
     calculateDailyCount,
+    currentUserId,
   }) => {
     // メモ化されたスタッフ情報マップ
     const staffMap = useMemo(
@@ -192,18 +194,34 @@ export const VirtualizedShiftTable = memo<VirtualizedShiftTableProps>(
             {staffIds.map((staffId) => {
               const staffData = shiftDataMap.get(staffId);
               const staffName = staffMap.get(staffId) || staffId;
+              const isCurrentUser = staffId === currentUserId;
 
               if (!staffData) return null;
 
               return (
-                <TableRow key={staffId}>
+                <TableRow
+                  key={staffId}
+                  sx={{
+                    backgroundColor: isCurrentUser
+                      ? alpha("#2196F3", 0.1)
+                      : "transparent",
+                    "&:hover": {
+                      backgroundColor: isCurrentUser
+                        ? alpha("#2196F3", 0.15)
+                        : undefined,
+                    },
+                  }}
+                >
                   <TableCell
                     sx={{
                       position: "sticky",
                       left: 0,
                       zIndex: 2,
-                      bgcolor: "background.paper",
-                      fontWeight: 600,
+                      bgcolor: isCurrentUser
+                        ? alpha("#2196F3", 0.1)
+                        : "background.paper",
+                      fontWeight: isCurrentUser ? 700 : 600,
+                      color: isCurrentUser ? "primary.main" : undefined,
                     }}
                   >
                     {staffName}

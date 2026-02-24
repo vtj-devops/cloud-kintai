@@ -53,7 +53,7 @@ export function MobileEditor() {
   const contextErrorMessages = ctx.errorMessages;
   const derivedMessages = useMemo(
     () => collectAttendanceErrorMessages(errors),
-    [errors]
+    [errors],
   );
   const errorMessages = contextErrorMessages?.length
     ? contextErrorMessages
@@ -103,7 +103,25 @@ export function MobileEditor() {
   }
 
   return (
-    <Stack direction="column" spacing={1} sx={{ p: 1, pb: 10 }}>
+    <Stack
+      direction="column"
+      spacing={1}
+      sx={{
+        p: 1,
+        pb: 10,
+        "& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline": {
+          borderColor: "divider",
+        },
+        "& .MuiOutlinedInput-root.Mui-error:hover .MuiOutlinedInput-notchedOutline":
+          {
+            borderColor: "divider",
+          },
+        "& .MuiOutlinedInput-root.Mui-error.Mui-focused .MuiOutlinedInput-notchedOutline":
+          {
+            borderColor: "divider",
+          },
+      }}
+    >
       <AttendanceEditBreadcrumb />
       <Title>勤怠編集</Title>
       {errorMessages.length > 0 && (
@@ -131,16 +149,16 @@ export function MobileEditor() {
             visibleMode="staff"
           />
         )}
-        <GroupContainerMobile>
+        <GroupContainerMobile hideAccent hideBorder>
           {/* 勤務日 */}
           <WorkDateItem />
         </GroupContainerMobile>
-        <GroupContainerMobile>
+        <GroupContainerMobile hideAccent hideBorder>
           {/* スタッフ・勤務形態 */}
           <StaffNameItem />
           <WorkTypeItemMobile />
         </GroupContainerMobile>
-        <GroupContainerMobile>
+        <GroupContainerMobile hideAccent hideBorder>
           <Stack spacing={1}>
             {/* 勤務時間・休憩時間 */}
             <WorkTimeInput />
@@ -152,7 +170,7 @@ export function MobileEditor() {
             />
           </Stack>
         </GroupContainerMobile>
-        <GroupContainerMobile>
+        <GroupContainerMobile hideAccent hideBorder>
           {/* 休暇タブ */}
           <TabbedPaidHolidayComponent
             control={control}
@@ -169,10 +187,10 @@ export function MobileEditor() {
             setHolidayTab={setHolidayTab}
           />
         </GroupContainerMobile>
-        <GroupContainerMobile title="備考">
+        <GroupContainerMobile title="備考" hideAccent hideBorder>
           <RemarksInput />
         </GroupContainerMobile>
-        <GroupContainerMobile title="修正理由">
+        <GroupContainerMobile title="修正理由" hideAccent hideBorder>
           <StaffCommentInput />
         </GroupContainerMobile>
         <RequestButtonItem

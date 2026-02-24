@@ -60,6 +60,7 @@ describe("buildBasePayload helpers", () => {
       amPmHolidayEnabled: true,
       specialHolidayEnabled: false,
       attendanceStatisticsEnabled: true,
+      overTimeCheckEnabled: true,
     });
     expect(payload.workStartTime).toBe("09:00");
     expect(payload.workEndTime).toBe("18:00");

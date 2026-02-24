@@ -5,11 +5,14 @@ import { useShiftPresence } from "../useShiftPresence";
 describe("useShiftPresence", () => {
   beforeEach(() => {
     jest.useFakeTimers();
+    // テスト前にローカルストレージをクリア
+    localStorage.clear();
   });
 
   afterEach(() => {
     jest.restoreAllMocks();
     jest.useRealTimers();
+    localStorage.clear();
   });
 
   const defaultProps = {
@@ -18,55 +21,133 @@ describe("useShiftPresence", () => {
   };
 
   describe("セッション管理", () => {
-    it("初期化時にアクティブユーザーリストに自分を追加する", () => {
+    it("初期化時にアクティブユーザーリストにユーザーが保存される", () => {
       const { result } = renderHook(() => useShiftPresence(defaultProps));
 
-      expect(result.current.activeUsers).toHaveLength(1);
-      expect(result.current.activeUsers[0]).toMatchObject({
+      // ハートビート（10秒）が実行される
+      act(() => {
+        jest.advanceTimersByTime(10);
+      });
+
+      // アクティブユーザーリストに自分が含まれることを確認
+      expect(result.current.activeUsers.length).toBeGreaterThanOrEqual(1);
+      const currentUser = result.current.activeUsers.find(
+        (u) => u.userId === "user1",
+      );
+      expect(currentUser).toMatchObject({
         userId: "user1",
         userName: "Test User",
       });
     });
 
-    it("ハートビートが30秒ごとに送信される", () => {
+    it("ハートビートが10秒ごとに送信される", () => {
       const { result } = renderHook(() => useShiftPresence(defaultProps));
 
-      // フックの初期化を待つ
-      expect(result.current.activeUsers).toHaveLength(1);
-
-      const initialLastActivity = result.current.activeUsers[0].lastActivity;
-
-      // 30秒経過
+      // 初期状態
       act(() => {
-        jest.advanceTimersByTime(30000);
+        jest.advanceTimersByTime(10);
+      });
+
+      const initialUser = result.current.activeUsers.find(
+        (u) => u.userId === "user1",
+      );
+      expect(initialUser).toBeDefined();
+      const initialLastActivity = initialUser?.lastActivity || 0;
+
+      // 10秒経過
+      act(() => {
+        jest.advanceTimersByTime(10000);
       });
 
       // アクティビティが更新されていることを確認
-      expect(result.current.activeUsers).toHaveLength(1);
-      expect(result.current.activeUsers[0].lastActivity).toBeGreaterThanOrEqual(
-        initialLastActivity,
+      const updatedUser = result.current.activeUsers.find(
+        (u) => u.userId === "user1",
       );
+      expect(updatedUser).toBeDefined();
+      expect((updatedUser?.lastActivity || 0) >= initialLastActivity).toBe(
+        true,
+      );
+    });
+
+    it("複数ユーザーが同時にアクティブな場合に両方表示される", () => {
+      // ユーザー1を初期化
+      const { result: result1 } = renderHook(() =>
+        useShiftPresence({
+          currentUserId: "user1",
+          currentUserName: "User One",
+        }),
+      );
+
+      // 初回のハートビート
+      act(() => {
+        jest.advanceTimersByTime(10);
+      });
+
+      // ユーザー2をシミュレート（ローカルストレージに直接追加）
+      act(() => {
+        const presenceData = {
+          userId: "user2",
+          userName: "User Two",
+          color: "#4caf50",
+          lastActivity: Date.now(),
+          timestamp: Date.now(),
+        };
+        localStorage.setItem(
+          "shift_presence_user2",
+          JSON.stringify(presenceData),
+        );
+      });
+
+      // ハートビート実行でローカルストレージから複数ユーザーを読み込む
+      act(() => {
+        jest.advanceTimersByTime(10000);
+      });
+
+      // 複数ユーザーが表示されることを確認
+      expect(result1.current.activeUsers.length).toBeGreaterThanOrEqual(2);
+      const user1 = result1.current.activeUsers.find(
+        (u) => u.userId === "user1",
+      );
+      const user2 = result1.current.activeUsers.find(
+        (u) => u.userId === "user2",
+      );
+      expect(user1).toBeDefined();
+      expect(user2).toBeDefined();
     });
 
     it("60秒以上非アクティブなユーザーを削除する", () => {
       const { result } = renderHook(() => useShiftPresence(defaultProps));
 
-      // 初期状態ではユーザーが存在
-      expect(result.current.activeUsers).toHaveLength(1);
-
-      // ユーザーの lastActivity を古い値に設定（70秒前）
+      // 初回のハートビート
       act(() => {
-        result.current.activeUsers[0].lastActivity = Date.now() - 70000;
+        jest.advanceTimersByTime(10);
       });
 
-      // 10秒経過（非アクティブチェックが実行される）
+      // 非アクティブユーザーをシミュレート
+      act(() => {
+        const presenceData = {
+          userId: "user2",
+          userName: "Inactive User",
+          color: "#4caf50",
+          lastActivity: Date.now() - 70000, // 70秒前
+          timestamp: Date.now() - 70000,
+        };
+        localStorage.setItem(
+          "shift_presence_user2",
+          JSON.stringify(presenceData),
+        );
+      });
+
+      // ハートビート実行（非アクティブユーザーはタイムスタンプが古いので除外される）
       act(() => {
         jest.advanceTimersByTime(10000);
       });
 
-      // 非アクティブユーザーが削除されることを確認
-      // ただし、ハートビートで再度追加される可能性があるため、
-      // このテストは実装に依存する
+      // 非アクティブユーザーが削除されてることを確認
+      const inactiveUser = result.current.activeUsers.find(
+        (u) => u.userId === "user2",
+      );
+      expect(inactiveUser).toBeUndefined();
     });
   });
 
@@ -103,6 +184,11 @@ describe("useShiftPresence", () => {
     it("編集中のセルを取得できる", () => {
       const { result } = renderHook(() => useShiftPresence(defaultProps));
 
+      // ハートビート実行（activeUsers に自分を追加）
+      act(() => {
+        jest.advanceTimersByTime(10);
+      });
+
       act(() => {
         result.current.startEditingCell("staff1", "2024-01-15");
       });
@@ -117,15 +203,36 @@ describe("useShiftPresence", () => {
     it("他のユーザーが編集中のセルを判定できる", () => {
       const { result } = renderHook(() => useShiftPresence(defaultProps));
 
-      // 自分のユーザーIDとは異なるユーザーが編集中の状態をシミュレート
+      // ハートビート実行（activeUsers に自分を追加）
+      act(() => {
+        jest.advanceTimersByTime(10);
+      });
+
+      // 自分のセルを編集開始
       act(() => {
         result.current.startEditingCell("staff1", "2024-01-15");
-        // editingCells を直接操作して他のユーザーが編集中の状態を作る
+      });
+
+      // 他のユーザーのセルを編集中として設定
+      act(() => {
         result.current.editingCells.set("staff2_2024-01-16", {
           userId: "user2",
           userName: "Other User",
           startTime: Date.now(),
         });
+
+        // activeUsers に他のユーザーを追加
+        const presenceData = {
+          userId: "user2",
+          userName: "Other User",
+          color: "#4caf50",
+          lastActivity: Date.now(),
+          timestamp: Date.now(),
+        };
+        localStorage.setItem(
+          "shift_presence_user2",
+          JSON.stringify(presenceData),
+        );
       });
 
       // 自分が編集中: false
@@ -230,8 +337,6 @@ describe("useShiftPresence", () => {
       });
 
       // アクティビティが更新されることを確認
-      // ただし、実装では lastActivityRef を更新するだけなので、
-      // activeUsers には即座に反映されない可能性がある
       expect(result.current.activeUsers).toBeDefined();
     });
   });

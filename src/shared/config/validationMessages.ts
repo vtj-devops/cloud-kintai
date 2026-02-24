@@ -23,6 +23,10 @@ export const validationMessages = {
       workTimeNotAllowed:
         "振替休日を設定している場合は勤務時間や休憩を入力できません。クリアしてください。",
     },
+    overtime: {
+      notRequested: "業務終了時間を超過しています。残業申請が必要です。",
+      exceededApprovedTime: "残業申請の終了時刻を超過しています。",
+    },
   },
   workflow: {
     paidLeave: {

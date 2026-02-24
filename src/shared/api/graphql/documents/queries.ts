@@ -100,6 +100,7 @@ export const getAppConfig = /* GraphQL */ `query GetAppConfig($id: ID!) {
       fixed
       __typename
     }
+    overTimeCheckEnabled
     createdAt
     updatedAt
     __typename
@@ -164,6 +165,7 @@ export const listAppConfigs = /* GraphQL */ `query ListAppConfigs(
         fixed
         __typename
       }
+      overTimeCheckEnabled
       createdAt
       updatedAt
       __typename

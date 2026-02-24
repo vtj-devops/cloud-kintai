@@ -48,6 +48,7 @@ export default function AppConfigUpdateForm(props) {
     absentEnabled: false,
     hourlyPaidHolidayEnabled: false,
     themeColor: "",
+    overTimeCheckEnabled: false,
   };
   const [name, setName] = React.useState(initialValues.name);
   const [workStartTime, setWorkStartTime] = React.useState(
@@ -92,6 +93,9 @@ export default function AppConfigUpdateForm(props) {
   const [hourlyPaidHolidayEnabled, setHourlyPaidHolidayEnabled] =
     React.useState(initialValues.hourlyPaidHolidayEnabled);
   const [themeColor, setThemeColor] = React.useState(initialValues.themeColor);
+  const [overTimeCheckEnabled, setOverTimeCheckEnabled] = React.useState(
+    initialValues.overTimeCheckEnabled
+  );
   const [errors, setErrors] = React.useState({});
   const resetStateValues = () => {
     const cleanValues = appConfigRecord
@@ -114,6 +118,7 @@ export default function AppConfigUpdateForm(props) {
     setAbsentEnabled(cleanValues.absentEnabled);
     setHourlyPaidHolidayEnabled(cleanValues.hourlyPaidHolidayEnabled);
     setThemeColor(cleanValues.themeColor);
+    setOverTimeCheckEnabled(cleanValues.overTimeCheckEnabled);
     setErrors({});
   };
   const [appConfigRecord, setAppConfigRecord] =
@@ -151,6 +156,7 @@ export default function AppConfigUpdateForm(props) {
     absentEnabled: [],
     hourlyPaidHolidayEnabled: [],
     themeColor: [],
+    overTimeCheckEnabled: [],
   };
   const runValidationTasks = async (
     fieldName,
@@ -195,6 +201,7 @@ export default function AppConfigUpdateForm(props) {
           absentEnabled: absentEnabled ?? null,
           hourlyPaidHolidayEnabled: hourlyPaidHolidayEnabled ?? null,
           themeColor: themeColor ?? null,
+          overTimeCheckEnabled: overTimeCheckEnabled ?? null,
         };
         const validationResponses = await Promise.all(
           Object.keys(validations).reduce((promises, fieldName) => {
@@ -272,6 +279,7 @@ export default function AppConfigUpdateForm(props) {
               absentEnabled,
               hourlyPaidHolidayEnabled,
               themeColor,
+              overTimeCheckEnabled,
             };
             const result = onChange(modelFields);
             value = result?.name ?? value;
@@ -312,6 +320,7 @@ export default function AppConfigUpdateForm(props) {
               absentEnabled,
               hourlyPaidHolidayEnabled,
               themeColor,
+              overTimeCheckEnabled,
             };
             const result = onChange(modelFields);
             value = result?.workStartTime ?? value;
@@ -352,6 +361,7 @@ export default function AppConfigUpdateForm(props) {
               absentEnabled,
               hourlyPaidHolidayEnabled,
               themeColor,
+              overTimeCheckEnabled,
             };
             const result = onChange(modelFields);
             value = result?.workEndTime ?? value;
@@ -392,6 +402,7 @@ export default function AppConfigUpdateForm(props) {
               absentEnabled,
               hourlyPaidHolidayEnabled,
               themeColor,
+              overTimeCheckEnabled,
             };
             const result = onChange(modelFields);
             value = result?.lunchRestStartTime ?? value;
@@ -434,6 +445,7 @@ export default function AppConfigUpdateForm(props) {
               absentEnabled,
               hourlyPaidHolidayEnabled,
               themeColor,
+              overTimeCheckEnabled,
             };
             const result = onChange(modelFields);
             value = result?.lunchRestEndTime ?? value;
@@ -478,6 +490,7 @@ export default function AppConfigUpdateForm(props) {
               absentEnabled,
               hourlyPaidHolidayEnabled,
               themeColor,
+              overTimeCheckEnabled,
             };
             const result = onChange(modelFields);
             value = result?.standardWorkHours ?? value;
@@ -520,6 +533,7 @@ export default function AppConfigUpdateForm(props) {
               absentEnabled,
               hourlyPaidHolidayEnabled,
               themeColor,
+              overTimeCheckEnabled,
             };
             const result = onChange(modelFields);
             value = result?.amHolidayStartTime ?? value;
@@ -562,6 +576,7 @@ export default function AppConfigUpdateForm(props) {
               absentEnabled,
               hourlyPaidHolidayEnabled,
               themeColor,
+              overTimeCheckEnabled,
             };
             const result = onChange(modelFields);
             value = result?.amHolidayEndTime ?? value;
@@ -602,6 +617,7 @@ export default function AppConfigUpdateForm(props) {
               absentEnabled,
               hourlyPaidHolidayEnabled,
               themeColor,
+              overTimeCheckEnabled,
             };
             const result = onChange(modelFields);
             value = result?.pmHolidayStartTime ?? value;
@@ -644,6 +660,7 @@ export default function AppConfigUpdateForm(props) {
               absentEnabled,
               hourlyPaidHolidayEnabled,
               themeColor,
+              overTimeCheckEnabled,
             };
             const result = onChange(modelFields);
             value = result?.pmHolidayEndTime ?? value;
@@ -684,6 +701,7 @@ export default function AppConfigUpdateForm(props) {
               absentEnabled,
               hourlyPaidHolidayEnabled,
               themeColor,
+              overTimeCheckEnabled,
             };
             const result = onChange(modelFields);
             value = result?.specialHolidayEnabled ?? value;
@@ -726,6 +744,7 @@ export default function AppConfigUpdateForm(props) {
               absentEnabled,
               hourlyPaidHolidayEnabled,
               themeColor,
+              overTimeCheckEnabled,
             };
             const result = onChange(modelFields);
             value = result?.amPmHolidayEnabled ?? value;
@@ -768,6 +787,7 @@ export default function AppConfigUpdateForm(props) {
               absentEnabled,
               hourlyPaidHolidayEnabled,
               themeColor,
+              overTimeCheckEnabled,
             };
             const result = onChange(modelFields);
             value = result?.officeMode ?? value;
@@ -808,6 +828,7 @@ export default function AppConfigUpdateForm(props) {
               absentEnabled,
               hourlyPaidHolidayEnabled,
               themeColor,
+              overTimeCheckEnabled,
             };
             const result = onChange(modelFields);
             value = result?.attendanceStatisticsEnabled ?? value;
@@ -853,6 +874,7 @@ export default function AppConfigUpdateForm(props) {
               absentEnabled: value,
               hourlyPaidHolidayEnabled,
               themeColor,
+              overTimeCheckEnabled,
             };
             const result = onChange(modelFields);
             value = result?.absentEnabled ?? value;
@@ -893,6 +915,7 @@ export default function AppConfigUpdateForm(props) {
               absentEnabled,
               hourlyPaidHolidayEnabled: value,
               themeColor,
+              overTimeCheckEnabled,
             };
             const result = onChange(modelFields);
             value = result?.hourlyPaidHolidayEnabled ?? value;
@@ -938,6 +961,7 @@ export default function AppConfigUpdateForm(props) {
               absentEnabled,
               hourlyPaidHolidayEnabled,
               themeColor: value,
+              overTimeCheckEnabled,
             };
             const result = onChange(modelFields);
             value = result?.themeColor ?? value;
@@ -952,6 +976,49 @@ export default function AppConfigUpdateForm(props) {
         hasError={errors.themeColor?.hasError}
         {...getOverrideProps(overrides, "themeColor")}
       ></TextField>
+      <SwitchField
+        label="Over time check enabled"
+        defaultChecked={false}
+        isDisabled={false}
+        isChecked={overTimeCheckEnabled}
+        onChange={(e) => {
+          let value = e.target.checked;
+          if (onChange) {
+            const modelFields = {
+              name,
+              workStartTime,
+              workEndTime,
+              lunchRestStartTime,
+              lunchRestEndTime,
+              standardWorkHours,
+              amHolidayStartTime,
+              amHolidayEndTime,
+              pmHolidayStartTime,
+              pmHolidayEndTime,
+              specialHolidayEnabled,
+              amPmHolidayEnabled,
+              officeMode,
+              attendanceStatisticsEnabled,
+              absentEnabled,
+              hourlyPaidHolidayEnabled,
+              themeColor,
+              overTimeCheckEnabled: value,
+            };
+            const result = onChange(modelFields);
+            value = result?.overTimeCheckEnabled ?? value;
+          }
+          if (errors.overTimeCheckEnabled?.hasError) {
+            runValidationTasks("overTimeCheckEnabled", value);
+          }
+          setOverTimeCheckEnabled(value);
+        }}
+        onBlur={() =>
+          runValidationTasks("overTimeCheckEnabled", overTimeCheckEnabled)
+        }
+        errorMessage={errors.overTimeCheckEnabled?.errorMessage}
+        hasError={errors.overTimeCheckEnabled?.hasError}
+        {...getOverrideProps(overrides, "overTimeCheckEnabled")}
+      ></SwitchField>
       <Flex
         justifyContent="space-between"
         {...getOverrideProps(overrides, "CTAFlex")}

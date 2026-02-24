@@ -18,7 +18,10 @@ import {
   DEFAULT_PM_HOLIDAY_START,
   TIME_FORMAT,
 } from "@/features/admin/configManagement/lib/constants";
-import { buildCreatePayload, buildUpdatePayload } from "@/features/admin/configManagement/lib/payloadHelpers";
+import {
+  buildCreatePayload,
+  buildUpdatePayload,
+} from "@/features/admin/configManagement/lib/payloadHelpers";
 import { validateAdminConfigForm } from "@/features/admin/configManagement/lib/validation";
 import {
   setSnackbarError,
@@ -57,6 +60,7 @@ export function useAdminConfigForm() {
     getSpecialHolidayEnabled,
     getAbsentEnabled,
     getAttendanceStatisticsEnabled,
+    getOverTimeCheckEnabled,
     getThemeTokens,
   } = useContext(AppConfigContext);
 
@@ -64,7 +68,7 @@ export function useAdminConfigForm() {
     () => getThemeTokens(),
     [
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    ]
+    ],
   );
   const sectionSpacing = adminPanelTokens.component.adminPanel.sectionSpacing;
 
@@ -81,22 +85,22 @@ export function useAdminConfigForm() {
   const [reasons, setReasons] = useState<ReasonItem[]>([]);
   const [officeMode, setOfficeMode] = useState<boolean>(false);
   const [lunchRestStartTime, setLunchRestStartTime] = useState<Dayjs | null>(
-    null
+    null,
   );
   const [lunchRestEndTime, setLunchRestEndTime] = useState<Dayjs | null>(null);
   const [hourlyPaidHolidayEnabled, setHourlyPaidHolidayEnabled] =
     useState<boolean>(false);
   const [amHolidayStartTime, setAmHolidayStartTime] = useState<Dayjs | null>(
-    dayjs(DEFAULT_AM_HOLIDAY_START, TIME_FORMAT)
+    dayjs(DEFAULT_AM_HOLIDAY_START, TIME_FORMAT),
   );
   const [amHolidayEndTime, setAmHolidayEndTime] = useState<Dayjs | null>(
-    dayjs(DEFAULT_AM_HOLIDAY_END, TIME_FORMAT)
+    dayjs(DEFAULT_AM_HOLIDAY_END, TIME_FORMAT),
   );
   const [pmHolidayStartTime, setPmHolidayStartTime] = useState<Dayjs | null>(
-    dayjs(DEFAULT_PM_HOLIDAY_START, TIME_FORMAT)
+    dayjs(DEFAULT_PM_HOLIDAY_START, TIME_FORMAT),
   );
   const [pmHolidayEndTime, setPmHolidayEndTime] = useState<Dayjs | null>(
-    dayjs(DEFAULT_PM_HOLIDAY_END, TIME_FORMAT)
+    dayjs(DEFAULT_PM_HOLIDAY_END, TIME_FORMAT),
   );
   const [attendanceStatisticsEnabled, setAttendanceStatisticsEnabled] =
     useState<boolean>(false);
@@ -104,6 +108,8 @@ export function useAdminConfigForm() {
   const [specialHolidayEnabled, setSpecialHolidayEnabled] =
     useState<boolean>(false);
   const [absentEnabled, setAbsentEnabled] = useState<boolean>(false);
+  const [overTimeCheckEnabled, setOverTimeCheckEnabled] =
+    useState<boolean>(false);
 
   const dispatch = useAppDispatchV2();
 
@@ -120,13 +126,13 @@ export function useAdminConfigForm() {
       startTimes.map((entry) => ({
         time: dayjs(entry.time, TIME_FORMAT),
         enabled: entry.enabled,
-      }))
+      })),
     );
     setQuickInputEndTimes(
       getQuickInputEndTimes().map((entry) => ({
         time: dayjs(entry.time, TIME_FORMAT),
         enabled: entry.enabled,
-      }))
+      })),
     );
 
     setLunchRestStartTime(getLunchRestStartTime());
@@ -138,6 +144,10 @@ export function useAdminConfigForm() {
     }
     if (typeof getAbsentEnabled === "function") {
       setAbsentEnabled(getAbsentEnabled());
+    }
+
+    if (typeof getOverTimeCheckEnabled === "function") {
+      setOverTimeCheckEnabled(getOverTimeCheckEnabled());
     }
 
     setAttendanceStatisticsEnabled(getAttendanceStatisticsEnabled());
@@ -173,14 +183,14 @@ export function useAdminConfigForm() {
 
   const handleAddLink = () => {
     setLinks(
-      appendItem(links, { label: "", url: "", enabled: true, icon: "" })
+      appendItem(links, { label: "", url: "", enabled: true, icon: "" }),
     );
   };
 
   const handleLinkChange = (
     index: number,
     field: keyof LinkItem,
-    value: string | boolean
+    value: string | boolean,
   ) => {
     setLinks(
       updateItem(
@@ -190,8 +200,8 @@ export function useAdminConfigForm() {
           ({
             ...link,
             [field]: value,
-          } as LinkItem)
-      )
+          }) as LinkItem,
+      ),
     );
   };
 
@@ -206,7 +216,7 @@ export function useAdminConfigForm() {
   const handleReasonChange = (
     index: number,
     field: keyof ReasonItem,
-    value: string | boolean
+    value: string | boolean,
   ) => {
     setReasons(
       updateItem(
@@ -216,8 +226,8 @@ export function useAdminConfigForm() {
           ({
             ...reason,
             [field]: value,
-          } as ReasonItem)
-      )
+          }) as ReasonItem,
+      ),
     );
   };
 
@@ -231,20 +241,20 @@ export function useAdminConfigForm() {
 
   const handleAddQuickInputStartTime = () => {
     setQuickInputStartTimes(
-      appendItem(quickInputStartTimes, { time: dayjs(), enabled: true })
+      appendItem(quickInputStartTimes, { time: dayjs(), enabled: true }),
     );
   };
 
   const handleQuickInputStartTimeChange = (
     index: number,
-    newValue: Dayjs | null
+    newValue: Dayjs | null,
   ) => {
     if (!newValue) return;
     setQuickInputStartTimes(
       updateItem(quickInputStartTimes, index, (entry) => ({
         ...entry,
         time: newValue,
-      }))
+      })),
     );
   };
 
@@ -258,19 +268,19 @@ export function useAdminConfigForm() {
 
   const handleAddQuickInputEndTime = () => {
     setQuickInputEndTimes(
-      appendItem(quickInputEndTimes, { time: dayjs(), enabled: true })
+      appendItem(quickInputEndTimes, { time: dayjs(), enabled: true }),
     );
   };
   const handleQuickInputEndTimeChange = (
     index: number,
-    newValue: Dayjs | null
+    newValue: Dayjs | null,
   ) => {
     if (!newValue) return;
     setQuickInputEndTimes(
       updateItem(quickInputEndTimes, index, (entry) => ({
         ...entry,
         time: newValue,
-      }))
+      })),
     );
   };
 
@@ -283,13 +293,13 @@ export function useAdminConfigForm() {
   };
 
   const handleHourlyPaidHolidayEnabledChange = (
-    event: ChangeEvent<HTMLInputElement>
+    event: ChangeEvent<HTMLInputElement>,
   ) => {
     setHourlyPaidHolidayEnabled(event.target.checked);
   };
 
   const handleSpecialHolidayEnabledChange = (
-    event: ChangeEvent<HTMLInputElement>
+    event: ChangeEvent<HTMLInputElement>,
   ) => {
     setSpecialHolidayEnabled(event.target.checked);
   };
@@ -300,9 +310,15 @@ export function useAdminConfigForm() {
 
   const handleAttendanceStatisticsEnabledChange = (
     _: ChangeEvent<HTMLInputElement>,
-    checked: boolean
+    checked: boolean,
   ) => {
     setAttendanceStatisticsEnabled(checked);
+  };
+
+  const handleOverTimeCheckEnabledChange = (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    setOverTimeCheckEnabled(event.target.checked);
   };
 
   const handleSave = async () => {
@@ -334,6 +350,7 @@ export function useAdminConfigForm() {
       amPmHolidayEnabled,
       specialHolidayEnabled,
       attendanceStatisticsEnabled,
+      overTimeCheckEnabled,
       startTime: startTime!,
       endTime: endTime!,
       lunchRestStartTime: lunchRestStartTime!,
@@ -380,6 +397,7 @@ export function useAdminConfigForm() {
     specialHolidayEnabled,
     absentEnabled,
     attendanceStatisticsEnabled,
+    overTimeCheckEnabled,
     setStartTime,
     setEndTime,
     setLunchRestStartTime,
@@ -394,6 +412,7 @@ export function useAdminConfigForm() {
     handleSpecialHolidayEnabledChange,
     handleAbsentEnabledChange,
     handleAttendanceStatisticsEnabledChange,
+    handleOverTimeCheckEnabledChange,
     handleAddLink,
     handleLinkChange,
     handleRemoveLink,

@@ -4,7 +4,10 @@ import {
 } from "@shared/api/graphql/types";
 import { Dayjs } from "dayjs";
 
-import { DEFAULT_CONFIG_NAME, TIME_FORMAT } from "@/features/admin/configManagement/lib/constants";
+import {
+  DEFAULT_CONFIG_NAME,
+  TIME_FORMAT,
+} from "@/features/admin/configManagement/lib/constants";
 
 export const formatTime = (time: Dayjs) => time.format(TIME_FORMAT);
 
@@ -12,7 +15,7 @@ export const buildStandardWorkHours = (
   start: Dayjs,
   end: Dayjs,
   restStart: Dayjs,
-  restEnd: Dayjs
+  restEnd: Dayjs,
 ) => {
   const baseHours = end.diff(start, "hour", true);
   const lunchHours = Math.max(restEnd.diff(restStart, "hour", true), 0);
@@ -41,6 +44,7 @@ type BuildBasePayloadOptions = {
   amPmHolidayEnabled: boolean;
   specialHolidayEnabled: boolean;
   attendanceStatisticsEnabled: boolean;
+  overTimeCheckEnabled: boolean;
 };
 
 export type BaseAppConfigPayload = {
@@ -63,11 +67,12 @@ export type BaseAppConfigPayload = {
   amPmHolidayEnabled: boolean;
   specialHolidayEnabled: boolean;
   attendanceStatisticsEnabled: boolean;
+  overTimeCheckEnabled: boolean;
 };
 
 export const buildBasePayload = (
   requiredTimes: RequiredTimes,
-  opts: BuildBasePayloadOptions
+  opts: BuildBasePayloadOptions,
 ): BaseAppConfigPayload => ({
   workStartTime: formatTime(requiredTimes.startTime),
   workEndTime: formatTime(requiredTimes.endTime),
@@ -75,7 +80,7 @@ export const buildBasePayload = (
     requiredTimes.startTime,
     requiredTimes.endTime,
     requiredTimes.lunchRestStartTime,
-    requiredTimes.lunchRestEndTime
+    requiredTimes.lunchRestEndTime,
   ),
   links: opts.links.map((link) => ({
     label: link.label,
@@ -107,6 +112,7 @@ export const buildBasePayload = (
   amPmHolidayEnabled: opts.amPmHolidayEnabled,
   specialHolidayEnabled: opts.specialHolidayEnabled,
   attendanceStatisticsEnabled: opts.attendanceStatisticsEnabled,
+  overTimeCheckEnabled: opts.overTimeCheckEnabled,
 });
 
 /**
@@ -125,6 +131,7 @@ export type ConfigFormState = {
   amPmHolidayEnabled: boolean;
   specialHolidayEnabled: boolean;
   attendanceStatisticsEnabled: boolean;
+  overTimeCheckEnabled: boolean;
   startTime: Dayjs;
   endTime: Dayjs;
   lunchRestStartTime: Dayjs;
@@ -140,7 +147,7 @@ export type ConfigFormState = {
  * CreateとUpdateで共通のフィールド変換を行う
  */
 const transformFormStateToPayload = (
-  state: Omit<ConfigFormState, "id">
+  state: Omit<ConfigFormState, "id">,
 ): Omit<CreateAppConfigInput, "name" | "id"> => {
   return buildBasePayload(
     {
@@ -164,7 +171,8 @@ const transformFormStateToPayload = (
       amPmHolidayEnabled: state.amPmHolidayEnabled,
       specialHolidayEnabled: state.specialHolidayEnabled,
       attendanceStatisticsEnabled: state.attendanceStatisticsEnabled,
-    }
+      overTimeCheckEnabled: state.overTimeCheckEnabled,
+    },
   );
 };
 
@@ -173,7 +181,7 @@ const transformFormStateToPayload = (
  * 新規作成時に使用。nameフィールドは"default"固定
  */
 export const buildCreatePayload = (
-  state: Omit<ConfigFormState, "id">
+  state: Omit<ConfigFormState, "id">,
 ): CreateAppConfigInput => {
   return {
     name: DEFAULT_CONFIG_NAME,
@@ -186,7 +194,7 @@ export const buildCreatePayload = (
  * 更新時に使用。idは必須
  */
 export const buildUpdatePayload = (
-  state: ConfigFormState
+  state: ConfigFormState,
 ): UpdateAppConfigInput => {
   if (!state.id) {
     throw new Error("ID is required for update payload");

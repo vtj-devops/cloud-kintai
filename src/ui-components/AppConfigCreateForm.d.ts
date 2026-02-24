@@ -39,6 +39,7 @@ export declare type AppConfigCreateFormInputValues = {
     absentEnabled?: boolean;
     hourlyPaidHolidayEnabled?: boolean;
     themeColor?: string;
+    overTimeCheckEnabled?: boolean;
 };
 export declare type AppConfigCreateFormValidationValues = {
     name?: ValidationFunction<string>;
@@ -58,6 +59,7 @@ export declare type AppConfigCreateFormValidationValues = {
     absentEnabled?: ValidationFunction<boolean>;
     hourlyPaidHolidayEnabled?: ValidationFunction<boolean>;
     themeColor?: ValidationFunction<string>;
+    overTimeCheckEnabled?: ValidationFunction<boolean>;
 };
 export declare type PrimitiveOverrideProps<T> = Partial<T> & React.DOMAttributes<HTMLDivElement>;
 export declare type AppConfigCreateFormOverridesProps = {
@@ -79,6 +81,7 @@ export declare type AppConfigCreateFormOverridesProps = {
     absentEnabled?: PrimitiveOverrideProps<SwitchFieldProps>;
     hourlyPaidHolidayEnabled?: PrimitiveOverrideProps<SwitchFieldProps>;
     themeColor?: PrimitiveOverrideProps<TextFieldProps>;
+    overTimeCheckEnabled?: PrimitiveOverrideProps<SwitchFieldProps>;
 } & EscapeHatchProps;
 export declare type AppConfigCreateFormProps = React.PropsWithChildren<{
     overrides?: AppConfigCreateFormOverridesProps | undefined | null;

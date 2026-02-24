@@ -12,6 +12,37 @@ interface UseShiftPresenceProps {
   _targetMonth?: string;
 }
 
+interface PresenceData {
+  userId: string;
+  userName: string;
+  color: string;
+  lastActivity: number;
+  timestamp: number;
+}
+
+const STORAGE_KEY_PREFIX = "shift_presence_";
+const INACTIVE_THRESHOLD = 60000; // 60秒
+
+/**
+ * ユーザーごとにユニークな色を生成
+ */
+const generateUserColor = (userId: string): string => {
+  const colors = [
+    "#2196f3", // blue
+    "#4caf50", // green
+    "#ff9800", // orange
+    "#f44336", // red
+    "#9c27b0", // purple
+    "#00bcd4", // cyan
+    "#e91e63", // pink
+    "#673ab7", // deep purple
+  ];
+  const hash = userId.split("").reduce((acc, char) => {
+    return acc + char.charCodeAt(0);
+  }, 0);
+  return colors[hash % colors.length];
+};
+
 export const useShiftPresence = ({
   currentUserId,
   currentUserName,
@@ -26,6 +57,7 @@ export const useShiftPresence = ({
   const editTimeoutCheckIntervalRef = useRef<NodeJS.Timeout | undefined>(
     undefined,
   );
+  const currentUserColorRef = useRef<string>(generateUserColor(currentUserId));
 
   /**
    * ユーザーのアクティビティを記録
@@ -99,23 +131,96 @@ export const useShiftPresence = ({
   );
 
   /**
+   * ローカルストレージにプレゼンス情報を保存
+   */
+  const savePresenceToStorage = useCallback(() => {
+    const storageKey = `${STORAGE_KEY_PREFIX}${currentUserId}`;
+    const presenceData: PresenceData = {
+      userId: currentUserId,
+      userName: currentUserName,
+      color: currentUserColorRef.current,
+      lastActivity: lastActivityRef.current,
+      timestamp: Date.now(),
+    };
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify(presenceData));
+    } catch (error) {
+      console.error("Failed to save presence to storage:", error);
+    }
+  }, [currentUserId, currentUserName]);
+
+  /**
+   * ローカルストレージからアクティブユーザーを読み込み
+   */
+  const loadActiveUsersFromStorage = useCallback(() => {
+    const now = Date.now();
+    const allUsers: CollaborativeUser[] = [];
+
+    try {
+      // ローカルストレージ内のすべてのユーザープレゼンス情報を取得
+      for (let i = 0; i < window.localStorage.length; i++) {
+        const key = window.localStorage.key(i);
+        if (key && key.startsWith(STORAGE_KEY_PREFIX)) {
+          const data = window.localStorage.getItem(key);
+          if (data) {
+            try {
+              const presenceData: PresenceData = JSON.parse(data);
+              // タイムアウトしていないユーザーのみを追加
+              if (now - presenceData.timestamp < INACTIVE_THRESHOLD) {
+                allUsers.push({
+                  userId: presenceData.userId,
+                  userName: presenceData.userName,
+                  color: presenceData.color,
+                  lastActivity: presenceData.lastActivity,
+                });
+              }
+            } catch (error) {
+              console.warn("Failed to parse presence data:", key, error);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Failed to load active users from storage:", error);
+    }
+
+    // ユーザーIDでソートしてデータの一貫性を保つ
+    const sortedUsers = allUsers.toSorted((a, b) =>
+      a.userId.localeCompare(b.userId),
+    );
+
+    // 重複を避けるため、アクティブユーザーが变わった場合のみ更新
+    setActiveUsers((prevUsers) => {
+      const prevIds = new Set(prevUsers.map((u) => u.userId));
+      const newIds = new Set(sortedUsers.map((u) => u.userId));
+
+      if (
+        prevIds.size !== newIds.size ||
+        ![...prevIds].every((id) => newIds.has(id))
+      ) {
+        return sortedUsers;
+      }
+
+      // ユーザー情報に変更がないか確認
+      const hasChanges = sortedUsers.some((newUser) => {
+        const prevUser = prevUsers.find((u) => u.userId === newUser.userId);
+        return !prevUser || prevUser.lastActivity !== newUser.lastActivity;
+      });
+
+      return hasChanges ? sortedUsers : prevUsers;
+    });
+  }, []);
+
+  /**
    * アクティブユーザーリストの更新
-   * Phase 1-3: ローカルのみ
-   * Phase 4: WebSocketで同期
+   * ローカルストレージとポーリングで複数ユーザーに対応
    */
   const updateActiveUsers = useCallback(() => {
-    // Phase 1-3では現在のユーザーのみ
-    setActiveUsers([
-      {
-        userId: currentUserId,
-        userName: currentUserName,
-        color: "#2196f3",
-        lastActivity: lastActivityRef.current,
-      },
-    ]);
-
-    // TODO: Phase 4でWebSocketからアクティブユーザーを取得
-  }, [currentUserId, currentUserName]);
+    // 自身のプレゼンス情報をローカルストレージに保存
+    savePresenceToStorage();
+    // ローカルストレージからアクティブユーザーを読み込み
+    loadActiveUsersFromStorage();
+  }, [savePresenceToStorage, loadActiveUsersFromStorage]);
 
   /**
    * ハートビート送信
@@ -124,16 +229,21 @@ export const useShiftPresence = ({
     // 初回のアクティビティ時刻を設定
     lastActivityRef.current = Date.now();
 
-    // 初回のアクティブユーザー登録
-    updateActiveUsers();
+    // 定期的にハートビートを送信（10秒ごと）
+    heartbeatIntervalRef.current = setInterval(() => {
+      updateActiveUsers();
+    }, 10000);
 
-    // 定期的にハートビートを送信（30秒ごと）
-    heartbeatIntervalRef.current = setInterval(updateActiveUsers, 30000);
+    // マウント直後に1回実行
+    const timeoutId = setTimeout(() => {
+      updateActiveUsers();
+    }, 0);
 
     return () => {
       if (heartbeatIntervalRef.current) {
         clearInterval(heartbeatIntervalRef.current);
       }
+      clearTimeout(timeoutId);
     };
   }, [updateActiveUsers]);
 

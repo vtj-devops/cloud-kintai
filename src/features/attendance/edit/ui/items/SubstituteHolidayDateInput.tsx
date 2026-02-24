@@ -50,6 +50,20 @@ export function SubstituteHolidayDateInput() {
                     size: "small",
                     error: !!fieldState.error,
                     helperText: fieldState.error?.message,
+                    sx: {
+                      "& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline":
+                        {
+                          borderColor: "divider",
+                        },
+                      "& .MuiOutlinedInput-root.Mui-error:hover .MuiOutlinedInput-notchedOutline":
+                        {
+                          borderColor: "divider",
+                        },
+                      "& .MuiOutlinedInput-root.Mui-error.Mui-focused .MuiOutlinedInput-notchedOutline":
+                        {
+                          borderColor: "divider",
+                        },
+                    },
                   },
                 }}
                 disabled={changeRequests.length > 0 || !!readOnly}

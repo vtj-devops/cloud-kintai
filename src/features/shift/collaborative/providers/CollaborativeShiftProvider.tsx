@@ -161,6 +161,7 @@ export const CollaborativeShiftProvider: React.FC<
       pushHistory(
         [update],
         `${update.staffId} の ${update.date} のシフトを更新`,
+        { userId: currentUserId, userName: currentUserName },
       );
 
       // オフライン対応の更新を実行
@@ -171,6 +172,8 @@ export const CollaborativeShiftProvider: React.FC<
       stopEditingCell,
       pushHistory,
       updateShiftWithOfflineSupport,
+      currentUserId,
+      currentUserName,
     ],
   );
 
@@ -187,7 +190,10 @@ export const CollaborativeShiftProvider: React.FC<
       });
 
       // 履歴に追加
-      pushHistory(updates, `${updates.length} 件のシフトを一括更新`);
+      pushHistory(updates, `${updates.length} 件のシフトを一括更新`, {
+        userId: currentUserId,
+        userName: currentUserName,
+      });
 
       // オフライン対応のバッチ更新を実行
       await batchUpdateShiftsWithOfflineSupport(updates);
@@ -197,6 +203,8 @@ export const CollaborativeShiftProvider: React.FC<
       stopEditingCell,
       pushHistory,
       batchUpdateShiftsWithOfflineSupport,
+      currentUserId,
+      currentUserName,
     ],
   );
 

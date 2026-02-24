@@ -39,6 +39,7 @@ export type DefaultAppConfig = Pick<
   | "themeColor"
   | "shiftGroups"
   | "attendanceStatisticsEnabled"
+  | "overTimeCheckEnabled"
 >;
 
 /**
@@ -58,6 +59,7 @@ export const DEFAULT_CONFIG: DefaultAppConfig = {
   themeColor: resolveThemeColor(),
   shiftGroups: [],
   attendanceStatisticsEnabled: false,
+  overTimeCheckEnabled: false,
 };
 
 const useAppConfig = () => {
@@ -93,37 +95,37 @@ const useAppConfig = () => {
 
       await createAppConfig(newConfig as CreateAppConfigInput).unwrap();
     },
-    [createAppConfig, updateAppConfig]
+    [createAppConfig, updateAppConfig],
   );
 
   const getConfigId = useCallback(() => config?.id ?? null, [config?.id]);
 
   const getStartTime = useCallback(
     () => dayjs(config?.workStartTime ?? DEFAULT_CONFIG.workStartTime, "HH:mm"),
-    [config?.workStartTime]
+    [config?.workStartTime],
   );
 
   const getEndTime = useCallback(
     () => dayjs(config?.workEndTime ?? DEFAULT_CONFIG.workEndTime, "HH:mm"),
-    [config?.workEndTime]
+    [config?.workEndTime],
   );
 
   const getLunchRestStartTime = useCallback(
     () =>
       dayjs(
         config?.lunchRestStartTime ?? DEFAULT_CONFIG.lunchRestStartTime,
-        "HH:mm"
+        "HH:mm",
       ),
-    [config?.lunchRestStartTime]
+    [config?.lunchRestStartTime],
   );
 
   const getLunchRestEndTime = useCallback(
     () =>
       dayjs(
         config?.lunchRestEndTime ?? DEFAULT_CONFIG.lunchRestEndTime,
-        "HH:mm"
+        "HH:mm",
       ),
-    [config?.lunchRestEndTime]
+    [config?.lunchRestEndTime],
   );
 
   const getStandardWorkHours = useCallback(() => {
@@ -178,12 +180,12 @@ const useAppConfig = () => {
 
   const getOfficeMode = useCallback(
     () => config?.officeMode ?? false,
-    [config?.officeMode]
+    [config?.officeMode],
   );
 
   const getAttendanceStatisticsEnabled = useCallback(
     () => config?.attendanceStatisticsEnabled ?? false,
-    [config?.attendanceStatisticsEnabled]
+    [config?.attendanceStatisticsEnabled],
   );
 
   const getQuickInputStartTimes = useCallback(
@@ -200,7 +202,7 @@ const useAppConfig = () => {
           enabled: time.enabled ?? false,
         }));
     },
-    [config?.quickInputStartTimes]
+    [config?.quickInputStartTimes],
   );
 
   const getQuickInputEndTimes = useCallback(
@@ -217,7 +219,7 @@ const useAppConfig = () => {
           enabled: time.enabled ?? false,
         }));
     },
-    [config?.quickInputEndTimes]
+    [config?.quickInputEndTimes],
   );
 
   const getShiftGroups = useCallback((): ShiftGroupConfig[] => {
@@ -238,42 +240,47 @@ const useAppConfig = () => {
 
   const getHourlyPaidHolidayEnabled = useCallback(
     () => config?.hourlyPaidHolidayEnabled ?? false,
-    [config?.hourlyPaidHolidayEnabled]
+    [config?.hourlyPaidHolidayEnabled],
   );
 
   const getAmHolidayStartTime = useCallback(
     () => dayjs(config?.amHolidayStartTime ?? "09:00", "HH:mm"),
-    [config?.amHolidayStartTime]
+    [config?.amHolidayStartTime],
   );
 
   const getAmHolidayEndTime = useCallback(
     () => dayjs(config?.amHolidayEndTime ?? "12:00", "HH:mm"),
-    [config?.amHolidayEndTime]
+    [config?.amHolidayEndTime],
   );
 
   const getPmHolidayStartTime = useCallback(
     () => dayjs(config?.pmHolidayStartTime ?? "13:00", "HH:mm"),
-    [config?.pmHolidayStartTime]
+    [config?.pmHolidayStartTime],
   );
 
   const getPmHolidayEndTime = useCallback(
     () => dayjs(config?.pmHolidayEndTime ?? "18:00", "HH:mm"),
-    [config?.pmHolidayEndTime]
+    [config?.pmHolidayEndTime],
   );
 
   const getAmPmHolidayEnabled = useCallback(
     () => config?.amPmHolidayEnabled ?? false,
-    [config?.amPmHolidayEnabled]
+    [config?.amPmHolidayEnabled],
   );
 
   const getSpecialHolidayEnabled = useCallback(
     () => config?.specialHolidayEnabled ?? false,
-    [config?.specialHolidayEnabled]
+    [config?.specialHolidayEnabled],
   );
 
   const getAbsentEnabled = useCallback(
     () => config?.absentEnabled ?? false,
-    [config?.absentEnabled]
+    [config?.absentEnabled],
+  );
+
+  const getOverTimeCheckEnabled = useCallback(
+    () => config?.overTimeCheckEnabled ?? false,
+    [config?.overTimeCheckEnabled],
   );
 
   const getThemeColor = useCallback(() => {
@@ -302,7 +309,7 @@ const useAppConfig = () => {
 
       return getDesignTokens({ brandPrimary: resolved });
     },
-    [config?.themeColor]
+    [config?.themeColor],
   );
 
   useEffect(() => {
@@ -312,7 +319,7 @@ const useAppConfig = () => {
 
   const loading = useMemo(
     () => isLoading || isFetching || isCreating || isUpdating,
-    [isLoading, isFetching, isCreating, isUpdating]
+    [isLoading, isFetching, isCreating, isUpdating],
   );
 
   return {
@@ -341,6 +348,7 @@ const useAppConfig = () => {
     getAmPmHolidayEnabled,
     getSpecialHolidayEnabled,
     getAbsentEnabled,
+    getOverTimeCheckEnabled,
     getThemeColor,
     getThemeTokens,
   };

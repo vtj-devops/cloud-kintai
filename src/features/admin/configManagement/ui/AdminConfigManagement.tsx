@@ -39,6 +39,7 @@ export default function AdminConfigManagement() {
     specialHolidayEnabled,
     absentEnabled,
     attendanceStatisticsEnabled,
+    overTimeCheckEnabled,
     setStartTime,
     setEndTime,
     setLunchRestStartTime,
@@ -53,6 +54,7 @@ export default function AdminConfigManagement() {
     handleSpecialHolidayEnabledChange,
     handleAbsentEnabledChange,
     handleAttendanceStatisticsEnabledChange,
+    handleOverTimeCheckEnabledChange,
     handleAddLink,
     handleLinkChange,
     handleRemoveLink,
@@ -219,6 +221,24 @@ export default function AdminConfigManagement() {
                 />
               }
               label={absentEnabled ? "有効" : "無効"}
+              sx={{ mb: 1 }}
+            />
+          </Stack>
+        </GroupSection>
+        <GroupSection
+          title="残業チェック機能"
+          description="勤怠編集画面で、残業申請がない場合にエラーを表示するかどうかを切り替えます。"
+        >
+          <Stack spacing={1}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={overTimeCheckEnabled}
+                  onChange={handleOverTimeCheckEnabledChange}
+                  color="primary"
+                />
+              }
+              label={overTimeCheckEnabled ? "有効" : "無効"}
               sx={{ mb: 1 }}
             />
           </Stack>

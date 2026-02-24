@@ -7,6 +7,8 @@ const mockUseGetShiftRequestsQuery = jest.fn();
 const mockUpdateShiftCell = jest.fn();
 const mockBatchUpdateShiftCells = jest.fn();
 const mockCreateShiftRequest = jest.fn();
+const mockSubscriptionUnsubscribe = jest.fn();
+const mockGraphqlSubscribe = jest.fn();
 
 jest.mock("@entities/shift/api/shiftApi", () => ({
   __esModule: true,
@@ -15,6 +17,12 @@ jest.mock("@entities/shift/api/shiftApi", () => ({
   useUpdateShiftCellMutation: () => [mockUpdateShiftCell, {}],
   useBatchUpdateShiftCellsMutation: () => [mockBatchUpdateShiftCells, {}],
   useCreateShiftRequestMutation: () => [mockCreateShiftRequest, {}],
+}));
+
+jest.mock("@/shared/api/amplify/graphqlClient", () => ({
+  graphqlClient: {
+    graphql: jest.fn((...args: unknown[]) => mockGraphqlSubscribe(...args)),
+  },
 }));
 
 describe("useCollaborativeShiftData", () => {
@@ -47,6 +55,15 @@ describe("useCollaborativeShiftData", () => {
     mockUpdateShiftCell.mockReset();
     mockBatchUpdateShiftCells.mockReset();
     mockCreateShiftRequest.mockReset();
+    mockSubscriptionUnsubscribe.mockReset();
+    mockGraphqlSubscribe.mockReset();
+
+    // デフォルトのサブスクリプションモック
+    mockGraphqlSubscribe.mockReturnValue({
+      subscribe: jest.fn(() => ({
+        unsubscribe: mockSubscriptionUnsubscribe,
+      })),
+    });
   });
 
   it("取得したシフトをShiftDataMapへ反映する", async () => {

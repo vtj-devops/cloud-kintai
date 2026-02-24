@@ -28,6 +28,7 @@ describe("Payload Builders", () => {
     amPmHolidayEnabled: true,
     specialHolidayEnabled: false,
     attendanceStatisticsEnabled: true,
+    overTimeCheckEnabled: true,
     startTime: dayjs("2020-01-01T09:00:00"),
     endTime: dayjs("2020-01-01T18:00:00"),
     lunchRestStartTime: dayjs("2020-01-01T12:00:00"),
@@ -126,7 +127,7 @@ describe("Payload Builders", () => {
       };
 
       expect(() => buildUpdatePayload(stateWithoutId)).toThrow(
-        "ID is required for update payload"
+        "ID is required for update payload",
       );
     });
 
@@ -138,27 +139,27 @@ describe("Payload Builders", () => {
       expect(updatePayload.workStartTime).toBe(createPayload.workStartTime);
       expect(updatePayload.workEndTime).toBe(createPayload.workEndTime);
       expect(updatePayload.lunchRestStartTime).toBe(
-        createPayload.lunchRestStartTime
+        createPayload.lunchRestStartTime,
       );
       expect(updatePayload.lunchRestEndTime).toBe(
-        createPayload.lunchRestEndTime
+        createPayload.lunchRestEndTime,
       );
       expect(updatePayload.standardWorkHours).toBe(
-        createPayload.standardWorkHours
+        createPayload.standardWorkHours,
       );
       expect(updatePayload.officeMode).toBe(createPayload.officeMode);
       expect(updatePayload.absentEnabled).toBe(createPayload.absentEnabled);
       expect(updatePayload.hourlyPaidHolidayEnabled).toBe(
-        createPayload.hourlyPaidHolidayEnabled
+        createPayload.hourlyPaidHolidayEnabled,
       );
       expect(updatePayload.amPmHolidayEnabled).toBe(
-        createPayload.amPmHolidayEnabled
+        createPayload.amPmHolidayEnabled,
       );
       expect(updatePayload.specialHolidayEnabled).toBe(
-        createPayload.specialHolidayEnabled
+        createPayload.specialHolidayEnabled,
       );
       expect(updatePayload.attendanceStatisticsEnabled).toBe(
-        createPayload.attendanceStatisticsEnabled
+        createPayload.attendanceStatisticsEnabled,
       );
     });
 

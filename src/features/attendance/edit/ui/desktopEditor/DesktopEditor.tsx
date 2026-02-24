@@ -165,7 +165,7 @@ export default function DesktopEditor() {
           if (!time.endTime) return acc;
           const diff = calcTotalHourlyPaidHolidayTime(
             time.startTime,
-            time.endTime
+            time.endTime,
           );
           return acc + diff;
         }, 0) ?? 0;
@@ -182,7 +182,23 @@ export default function DesktopEditor() {
     <DesktopContainer maxWidth={false}>
       <Stack direction="column" spacing={2}>
         <AttendanceEditBreadcrumb />
-        <BodyStack spacing={2}>
+        <BodyStack
+          spacing={2}
+          sx={{
+            "& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline":
+              {
+                borderColor: "divider",
+              },
+            "& .MuiOutlinedInput-root.Mui-error:hover .MuiOutlinedInput-notchedOutline":
+              {
+                borderColor: "divider",
+              },
+            "& .MuiOutlinedInput-root.Mui-error.Mui-focused .MuiOutlinedInput-notchedOutline":
+              {
+                borderColor: "divider",
+              },
+          }}
+        >
           <Title>勤怠編集</Title>
           {errorMessages.length > 0 && (
             <Alert severity="error">
@@ -200,7 +216,7 @@ export default function DesktopEditor() {
             <ChangeRequestingAlert changeRequests={changeRequests} />
           </Stack>
           <NoDataAlert />
-          <GroupContainer>
+          <GroupContainer hideAccent hideBorder>
             {setValue && restReplace && hourlyPaidHolidayTimeReplace && (
               <QuickInputButtons
                 setValue={setValue}
@@ -212,16 +228,16 @@ export default function DesktopEditor() {
               />
             )}
           </GroupContainer>
-          <GroupContainer>
+          <GroupContainer hideAccent hideBorder>
             <WorkDateItem />
           </GroupContainer>
-          <GroupContainer>
+          <GroupContainer hideAccent hideBorder>
             <Stack spacing={2}>
               <StaffNameItem />
               <WorkTypeItem />
             </Stack>
           </GroupContainer>
-          <GroupContainer>
+          <GroupContainer hideAccent hideBorder>
             <WorkTimeInput
               highlightStartTime={highlightStartTime}
               highlightEndTime={highlightEndTime}
@@ -238,8 +254,8 @@ export default function DesktopEditor() {
                       getStartTime(),
                       getValues?.("startTime") as string | null | undefined,
                       workDate ?? undefined,
-                      attendance?.workDate
-                    )
+                      attendance?.workDate,
+                    ),
                   );
                   // トリガーハイライトアニメーション
                   setHighlightStartTime(true);
@@ -255,7 +271,7 @@ export default function DesktopEditor() {
               hourlyPaidHolidayHours={totalHourlyPaidHolidayTime}
             />
           </GroupContainer>
-          <GroupContainer>
+          <GroupContainer hideAccent hideBorder>
             {(() => {
               const items: { label: string; content: JSX.Element }[] = [];
               items.push({
@@ -290,7 +306,7 @@ export default function DesktopEditor() {
                                   {...field}
                                   checked={!!field.value}
                                   onChange={(
-                                    e: React.ChangeEvent<HTMLInputElement>
+                                    e: React.ChangeEvent<HTMLInputElement>,
                                   ) => field.onChange(e.target.checked)}
                                   disabled={changeRequests.length > 0}
                                 />
@@ -326,7 +342,7 @@ export default function DesktopEditor() {
                               time={hourlyPaidHolidayTime}
                               index={index}
                             />
-                          )
+                          ),
                         )}
                         <Box>
                           <IconButton
@@ -364,10 +380,10 @@ export default function DesktopEditor() {
               );
             })()}
           </GroupContainer>
-          <GroupContainer title="備考">
+          <GroupContainer title="備考" hideAccent hideBorder>
             <RemarksInput />
           </GroupContainer>
-          <GroupContainer>
+          <GroupContainer hideAccent hideBorder>
             <StaffCommentInput register={register} setValue={setValue} />
           </GroupContainer>
           <Box>

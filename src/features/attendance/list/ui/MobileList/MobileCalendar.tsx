@@ -106,7 +106,6 @@ const CalendarDayCell = ({
     color = theme.palette.error.dark;
   } else if (status === AttendanceStatus.Late) {
     // 遅刻系：背景色なし、枠線のみ
-    borderColor = theme.palette.warning.main;
     color = theme.palette.warning.dark;
   } else if (status === AttendanceStatus.None && !isCurrentMonth) {
     // 月外のステータスなし：グレーアウト
@@ -200,7 +199,7 @@ type MonthTerm = {
 const resolveMonthlyTerms = (
   currentMonth: Dayjs,
   closeDates: CloseDate[] = [],
-  palette: string[]
+  palette: string[],
 ): MonthTerm[] => {
   const monthStart = currentMonth.startOf("month");
   const monthEnd = currentMonth.endOf("month");
@@ -210,7 +209,7 @@ const resolveMonthlyTerms = (
     end: monthEnd,
     source: "fallback",
     label: `${monthStart.format(
-      AttendanceDate.DisplayFormat
+      AttendanceDate.DisplayFormat,
     )} 〜 ${monthEnd.format(AttendanceDate.DisplayFormat)}`,
     color: palette[0] ?? "#90CAF9",
   };
@@ -238,10 +237,10 @@ const resolveMonthlyTerms = (
         end: end.startOf("day"),
         source: "closeDate",
         label: `${start.format(AttendanceDate.DisplayFormat)} 〜 ${end.format(
-          AttendanceDate.DisplayFormat
+          AttendanceDate.DisplayFormat,
         )}`,
         color: palette[index % palette.length] ?? palette[0] ?? "#90CAF9",
-      })
+      }),
     );
 
   if (terms.length === 0) return [fallback];
@@ -314,14 +313,14 @@ export default function MobileCalendar({
     const attendanceDates = Array.from(attendanceMap.keys()).toSorted();
     console.log(
       `[MobileCalendar] currentMonth=${currentMonth.format(
-        "YYYY-MM-DD"
+        "YYYY-MM-DD",
       )}, today=${today}, attendanceDates=${
         attendanceDates.length
       }件, todayData=${todayData ? "○" : "✗"}`,
       {
         attendanceDates: attendanceDates.slice(0, 10),
         todayData,
-      }
+      },
     );
   }
 
@@ -337,12 +336,12 @@ export default function MobileCalendar({
       theme.palette.success.main,
       theme.palette.warning.main,
       theme.palette.secondary.main,
-    ]
+    ],
   );
 
   const monthlyTerms = useMemo(
     () => resolveMonthlyTerms(currentMonth, closeDates ?? [], termPalette),
-    [closeDates, currentMonth, termPalette]
+    [closeDates, currentMonth, termPalette],
   );
 
   // カレンダーの日付配列を生成
@@ -381,7 +380,7 @@ export default function MobileCalendar({
 
     // 会社休日
     const companyHoliday = companyHolidayCalendars.find(
-      (h) => h.holidayDate === dateStr
+      (h) => h.holidayDate === dateStr,
     );
     if (companyHoliday) {
       return {
@@ -402,7 +401,7 @@ export default function MobileCalendar({
         staff,
         holidayCalendars,
         companyHolidayCalendars,
-        dayjs(selectedDate)
+        dayjs(selectedDate),
       )
     : AttendanceStatus.None;
 
@@ -493,7 +492,7 @@ export default function MobileCalendar({
             staff,
             holidayCalendars,
             companyHolidayCalendars,
-            day.date
+            day.date,
           );
           const hasError =
             (Array.isArray(attendance?.systemComments) &&
@@ -506,12 +505,12 @@ export default function MobileCalendar({
             day.date,
             staff,
             holidayCalendars,
-            companyHolidayCalendars
+            companyHolidayCalendars,
           );
           const termsForDay = monthlyTerms.filter(
             (term) =>
               !day.date.isBefore(term.start, "day") &&
-              !day.date.isAfter(term.end, "day")
+              !day.date.isAfter(term.end, "day"),
           );
           const allowTermHighlight =
             staff?.workType === "shift" ? true : !holidayLike && !isWeekend;
@@ -578,27 +577,27 @@ export default function MobileCalendar({
                     selectedDateStatus === AttendanceStatus.Error
                       ? "error.light"
                       : selectedDateStatus === AttendanceStatus.Late
-                      ? "warning.light"
-                      : selectedDateStatus === AttendanceStatus.Ok
-                      ? "success.light"
-                      : "grey.200",
+                        ? "warning.light"
+                        : selectedDateStatus === AttendanceStatus.Ok
+                          ? "success.light"
+                          : "grey.200",
                   color:
                     selectedDateStatus === AttendanceStatus.Error
                       ? "error.dark"
                       : selectedDateStatus === AttendanceStatus.Late
-                      ? "warning.dark"
-                      : selectedDateStatus === AttendanceStatus.Ok
-                      ? "success.dark"
-                      : "text.secondary",
+                        ? "warning.dark"
+                        : selectedDateStatus === AttendanceStatus.Ok
+                          ? "success.dark"
+                          : "text.secondary",
                 }}
               >
                 {selectedDateStatus === AttendanceStatus.Error
                   ? "エラー"
                   : selectedDateStatus === AttendanceStatus.Late
-                  ? "遅刻"
-                  : selectedDateStatus === AttendanceStatus.Ok
-                  ? "正常"
-                  : "未入力"}
+                    ? "遅刻"
+                    : selectedDateStatus === AttendanceStatus.Ok
+                      ? "正常"
+                      : "未入力"}
               </Box>
             </Stack>
 
@@ -611,25 +610,16 @@ export default function MobileCalendar({
                       sx={{
                         p: 1,
                         borderRadius: 1,
-                        backgroundColor:
-                          holidayInfo.type === "holiday"
-                            ? "#ffebee"
-                            : "#e3f2fd",
+                        backgroundColor: "background.default",
                         border: "1px solid",
-                        borderColor:
-                          holidayInfo.type === "holiday"
-                            ? "#ef5350"
-                            : "#42a5f5",
+                        borderColor: "divider",
                       }}
                     >
                       <Typography
                         variant="caption"
                         sx={{
                           fontWeight: "bold",
-                          color:
-                            holidayInfo.type === "holiday"
-                              ? "#d32f2f"
-                              : "#1976d2",
+                          color: "text.secondary",
                         }}
                       >
                         {holidayInfo.type === "holiday"
@@ -639,10 +629,7 @@ export default function MobileCalendar({
                       <Typography
                         variant="body2"
                         sx={{
-                          color:
-                            holidayInfo.type === "holiday"
-                              ? "#d32f2f"
-                              : "#1976d2",
+                          color: "text.secondary",
                         }}
                       >
                         {holidayInfo.name}
@@ -659,14 +646,14 @@ export default function MobileCalendar({
                     sx={{
                       p: 1,
                       borderRadius: 1,
-                      backgroundColor: "#fff3cd",
+                      backgroundColor: "background.default",
                       border: "1px solid",
-                      borderColor: "#ffc107",
+                      borderColor: "divider",
                     }}
                   >
                     <Typography
                       variant="body2"
-                      sx={{ color: "#856404", fontWeight: 500 }}
+                      sx={{ color: "text.secondary", fontWeight: 500 }}
                     >
                       本日の勤務データはまだ記録されていません
                     </Typography>
@@ -680,7 +667,7 @@ export default function MobileCalendar({
                 <Typography variant="body2">
                   {selectedAttendance?.startTime && selectedAttendance?.endTime
                     ? `${dayjs(selectedAttendance.startTime).format(
-                        "HH:mm"
+                        "HH:mm",
                       )} - ${dayjs(selectedAttendance.endTime).format("HH:mm")}`
                     : "未入力"}
                 </Typography>
@@ -694,13 +681,13 @@ export default function MobileCalendar({
                     </Typography>
                     {selectedAttendance.rests
                       .filter(
-                        (rest): rest is NonNullable<typeof rest> => !!rest
+                        (rest): rest is NonNullable<typeof rest> => !!rest,
                       )
                       .map((rest, idx) => (
                         <Typography key={idx} variant="body2">
                           {rest.startTime && rest.endTime
                             ? `${dayjs(rest.startTime).format(
-                                "HH:mm"
+                                "HH:mm",
                               )} - ${dayjs(rest.endTime).format("HH:mm")}`
                             : "-"}
                         </Typography>
@@ -722,7 +709,7 @@ export default function MobileCalendar({
                     {selectedAttendance?.absentFlag && "欠勤"}
                     {selectedAttendance?.substituteHolidayDate &&
                       `振替休日 (${dayjs(
-                        selectedAttendance.substituteHolidayDate
+                        selectedAttendance.substituteHolidayDate,
                       ).format("M/D")})`}
                   </Typography>
                 </Box>
@@ -737,7 +724,7 @@ export default function MobileCalendar({
                     {selectedAttendance.systemComments
                       .filter(
                         (comment): comment is NonNullable<typeof comment> =>
-                          !!comment
+                          !!comment,
                       )
                       .map((comment, idx) => (
                         <Typography key={idx} variant="body2" color="error">

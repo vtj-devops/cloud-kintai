@@ -294,6 +294,7 @@ type AppConfig @model {
   quickInputEndTimes: [QuickInputTime]
   themeColor: String
   shiftGroups: [ShiftGroup]
+  overTimeCheckEnabled: Boolean
 }
 
 type EmailResult {

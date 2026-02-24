@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 
 export type ShiftRequestRecordSnapshot = {
   id: string | null;
+  version?: number;
   histories: ShiftRequestHistoryInput[];
   note?: string | null;
   submittedAt?: string | null;
@@ -29,7 +30,7 @@ type ListShiftRequestHistoryItem = NonNullable<
 >;
 
 export const convertHistoryToInput = (
-  history: ListShiftRequestHistoryItem
+  history: ListShiftRequestHistoryItem,
 ): ShiftRequestHistoryInput => ({
   version: history.version,
   note: history.note ?? undefined,

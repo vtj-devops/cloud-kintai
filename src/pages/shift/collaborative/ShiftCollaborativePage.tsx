@@ -1055,6 +1055,7 @@ interface ShiftCollaborativePageInnerProps {
  */
 const ShiftCollaborativePageInner = memo<ShiftCollaborativePageInnerProps>(
   ({ staffs, targetMonth }: ShiftCollaborativePageInnerProps) => {
+    const { cognitoUser } = useContext(AuthContext);
     const {
       state,
       isCellBeingEdited,
@@ -1104,6 +1105,15 @@ const ShiftCollaborativePageInner = memo<ShiftCollaborativePageInnerProps>(
       addComment,
       getCommentsByCell,
     } = useCollaborativePageState(targetMonth);
+
+    // 現在のユーザーIDを取得
+    const currentUserId = useMemo(() => {
+      if (!cognitoUser?.id) return "";
+      const currentStaff = staffs.find(
+        (staff) => staff.cognitoUserId === cognitoUser.id,
+      );
+      return currentStaff?.id ?? "";
+    }, [cognitoUser, staffs]);
 
     // プレゼンス通知
     const { notifications, dismissNotification } = usePresenceNotifications();
@@ -1241,6 +1251,7 @@ const ShiftCollaborativePageInner = memo<ShiftCollaborativePageInnerProps>(
             getEventsForDay={getEventsForDay}
             ShiftCellComponent={ShiftCellWithComments}
             isWeekend={isWeekend}
+            currentUserId={currentUserId}
           />
 
           <BatchEditToolbar

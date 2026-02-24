@@ -14,7 +14,7 @@ const DEFAULT_THEME_TOKENS = getDesignTokens();
 type AppConfigContextProps = {
   fetchConfig: () => Promise<void>;
   saveConfig: (
-    newConfig: CreateAppConfigInput | UpdateAppConfigInput
+    newConfig: CreateAppConfigInput | UpdateAppConfigInput,
   ) => Promise<void>;
   getStartTime: () => dayjs.Dayjs;
   getEndTime: () => dayjs.Dayjs;
@@ -51,6 +51,7 @@ type AppConfigContextProps = {
   getAmPmHolidayEnabled: () => boolean;
   getSpecialHolidayEnabled?: () => boolean;
   getAbsentEnabled?: () => boolean;
+  getOverTimeCheckEnabled?: () => boolean;
   getThemeColor: () => string;
   getThemeTokens: (brandPrimaryOverride?: string) => DesignTokens;
 };
@@ -92,6 +93,7 @@ export const AppConfigContext = createContext<AppConfigContextProps>({
   getAmPmHolidayEnabled: () => false,
   getSpecialHolidayEnabled: () => false,
   getAbsentEnabled: () => false,
+  getOverTimeCheckEnabled: () => false,
   // Ensure a string is always returned to satisfy the context type
   getThemeColor: () => DEFAULT_CONFIG.themeColor ?? "",
   getThemeTokens: () => DEFAULT_THEME_TOKENS,

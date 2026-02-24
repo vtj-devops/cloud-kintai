@@ -109,6 +109,7 @@ export const createAppConfig = /* GraphQL */ `mutation CreateAppConfig(
       fixed
       __typename
     }
+    overTimeCheckEnabled
     createdAt
     updatedAt
     __typename
@@ -171,6 +172,7 @@ export const updateAppConfig = /* GraphQL */ `mutation UpdateAppConfig(
       fixed
       __typename
     }
+    overTimeCheckEnabled
     createdAt
     updatedAt
     __typename
@@ -233,6 +235,7 @@ export const deleteAppConfig = /* GraphQL */ `mutation DeleteAppConfig(
       fixed
       __typename
     }
+    overTimeCheckEnabled
     createdAt
     updatedAt
     __typename

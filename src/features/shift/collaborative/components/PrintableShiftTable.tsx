@@ -170,14 +170,14 @@ const PrintableShiftTableComponent = ({
                   {staffNameMap.get(staff.id) || staff.id}
                 </TableCell>
                 {days.map((day) => {
-                  const dateStr = day.format("YYYY-MM-DD");
-                  const state = getShiftState(staff.id, dateStr);
+                  const dayKey = day.format("DD");
+                  const state = getShiftState(staff.id, dayKey);
                   const color = getCellColor(state);
                   const label = getShiftLabel(state);
 
                   return (
                     <TableCell
-                      key={`${staff.id}-${dateStr}`}
+                      key={`${staff.id}-${dayKey}`}
                       sx={{
                         border: "1px solid #ccc",
                         padding: "4px",

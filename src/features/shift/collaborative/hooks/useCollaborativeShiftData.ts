@@ -9,6 +9,9 @@ import type { ShiftRequestDayPreferenceInput } from "@shared/api/graphql/types";
 import dayjs from "dayjs";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { graphqlClient } from "@/shared/api/amplify/graphqlClient";
+import { onUpdateShiftRequest } from "@/shared/api/graphql/documents/subscriptions";
+
 import {
   applyShiftCellUpdateToMap,
   applyShiftRequestToShiftDataMap,
@@ -462,6 +465,79 @@ export const useCollaborativeShiftData = ({
     const pendingUpdates = Array.from(pendingChangesRef.current.values());
     await batchUpdateShifts(pendingUpdates);
   }, [batchUpdateShifts]);
+
+  /**
+   * リアルタイム更新のためのサブスクリプション
+   *
+   * 同時にアクセスしている他のユーザーによるシフト変更を即座に反映します。
+   *
+   * 【動作の仕組み】
+   * 1. 各スタッフのシフト更新イベント（onUpdateShiftRequest）をサブスクライブ
+   * 2. 他のユーザーが変更を保存すると、GraphQLサブスクリプション経由で通知を受信
+   * 3. 受信した変更をローカルの shiftDataMap に即座に反映
+   *
+   * 【自分の更新の扱い】
+   * - 自分の更新は楽観的更新（optimistic update）として既にUIに反映済み
+   * - サブスクリプションで自分の更新も受信するが、二重適用を防ぐため除外
+   * - サーバー応答は persistShiftUpdate 内で処理され、最終的な値を確定
+   *
+   * 【注意事項】
+   * - サブスクリプションは staffIds または targetMonth が変更されると再設定される
+   * - クリーンアップ関数で unsubscribe を呼び出し、メモリリークを防止
+   */
+  useEffect(() => {
+    if (!targetMonth || staffIds.length === 0) {
+      return;
+    }
+
+    // 各スタッフのシフト更新をサブスクライブ
+    const subscriptions = staffIds.map((staffId) => {
+      const subscription = graphqlClient
+        .graphql({
+          query: onUpdateShiftRequest,
+          variables: {
+            filter: {
+              staffId: { eq: staffId },
+              targetMonth: { eq: targetMonth },
+            },
+          },
+        })
+        .subscribe({
+          next: ({ data }) => {
+            if (!data?.onUpdateShiftRequest) return;
+
+            const updatedRequest = data.onUpdateShiftRequest;
+
+            // 自分の更新による無限ループと二重適用を防ぐ
+            // 自分の更新は楽観的更新として既に反映済みのためスキップ
+            if (updatedRequest.updatedBy === currentUserId) {
+              return;
+            }
+
+            // 他のユーザーの更新をローカルステートに反映
+            const normalized = normalizeShiftRequest(updatedRequest);
+            updateShiftRequestState(normalized);
+
+            console.log(
+              `[Realtime Update] Shift updated by another user for staff ${staffId}`,
+            );
+          },
+          error: (error) => {
+            console.error(
+              `[Subscription Error] Failed to subscribe for staff ${staffId}:`,
+              error,
+            );
+          },
+        });
+
+      return subscription;
+    });
+
+    // クリーンアップ：コンポーネントのアンマウント時や依存配列の変更時にサブスクリプションを解除
+    return () => {
+      subscriptions.forEach((sub) => sub.unsubscribe());
+    };
+  }, [staffIdsKey, targetMonth, currentUserId, updateShiftRequestState]);
 
   return {
     shiftDataMap,

@@ -278,7 +278,7 @@ const createDesignTokens = (brandPrimaryHex: string = BRAND_PRIMARY_HEX) => {
       accentWidth: 6,
       accentWidthMobile: 4,
       borderColor: color.neutral[200],
-      accentColor: color.brand.primary.base,
+      accentColor: color.neutral[200],
       borderRadius: radius.md,
       padding: spacing.lg,
       paddingMobile: spacing.md,

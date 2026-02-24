@@ -26,7 +26,10 @@ import { useMemo, useState } from "react";
 import { NavigateFunction } from "react-router-dom";
 
 import { AttendanceDate } from "@/entities/attendance/lib/AttendanceDate";
-import { AttendanceState, AttendanceStatus } from "@/entities/attendance/lib/AttendanceState";
+import {
+  AttendanceState,
+  AttendanceStatus,
+} from "@/entities/attendance/lib/AttendanceState";
 import { AttendanceGraph } from "@/entities/attendance/ui/adminStaffAttendance/AttendanceGraph";
 import { CreatedAtTableCell } from "@/entities/attendance/ui/adminStaffAttendance/CreatedAtTableCell";
 import { RestTimeTableCell } from "@/entities/attendance/ui/adminStaffAttendance/RestTimeTableCell";
@@ -77,7 +80,7 @@ export default function DesktopList({
   onMonthChange?: (nextMonth: Dayjs) => void;
 }) {
   const [internalMonth, setInternalMonth] = useState(() =>
-    dayjs().startOf("month")
+    dayjs().startOf("month"),
   );
   const currentMonth = externalCurrentMonth ?? internalMonth;
 
@@ -95,7 +98,7 @@ export default function DesktopList({
       .filter((attendance) =>
         attendance.workDate
           ? dayjs(attendance.workDate).isSame(currentMonth, "month")
-          : false
+          : false,
       )
       .toSorted((a, b) => {
         const aValue = a.workDate ? dayjs(a.workDate).valueOf() : 0;
@@ -117,13 +120,13 @@ export default function DesktopList({
     return getAttendanceRowVariant(
       attendance,
       holidayCalendars,
-      companyHolidayCalendars
+      companyHolidayCalendars,
     );
   };
   const handleEdit = (attendance: Attendance) => {
     const { workDate } = attendance;
     const formattedWorkDate = dayjs(workDate).format(
-      AttendanceDate.QueryParamFormat
+      AttendanceDate.QueryParamFormat,
     );
     navigate(`/attendance/${formattedWorkDate}/edit`);
   };
@@ -138,7 +141,7 @@ export default function DesktopList({
         staff,
         a,
         holidayCalendars,
-        companyHolidayCalendars
+        companyHolidayCalendars,
       ).get();
       return (
         status === AttendanceStatus.Error || status === AttendanceStatus.Late
@@ -152,10 +155,10 @@ export default function DesktopList({
           <Box
             sx={{
               border: "1px solid",
-              borderColor: "warning.main",
+              borderColor: "divider",
               borderRadius: 2,
               p: 2,
-              backgroundColor: "rgba(255,243,205,0.12)",
+              backgroundColor: "background.paper",
             }}
           >
             <Typography variant="h4" sx={{ mb: 1 }}>
