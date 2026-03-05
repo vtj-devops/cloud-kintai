@@ -3,6 +3,7 @@ import { attendanceApi } from "@entities/attendance/api/attendanceApi";
 import { calendarApi } from "@entities/calendar/api/calendarApi";
 import { shiftApi } from "@entities/shift/api/shiftApi";
 import { workflowApi } from "@entities/workflow/api/workflowApi";
+import { workflowTemplateApi } from "@entities/workflow-template/api/workflowTemplateApi";
 import type { Middleware, Reducer } from "@reduxjs/toolkit";
 
 export type RegisteredRtkApi = {
@@ -20,4 +21,5 @@ export const rtkApis: RegisteredRtkApi[] = [
   appConfigApi,
   shiftApi,
   workflowApi,
+  workflowTemplateApi,
 ];

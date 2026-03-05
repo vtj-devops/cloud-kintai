@@ -39,7 +39,7 @@ export async function handleSyncCognitoUser(
         return;
       }
 
-      await createStaff({
+      const createInput = {
         cognitoUserId: cognitoUser.sub,
         familyName: cognitoUser.familyName,
         givenName: cognitoUser.givenName,
@@ -48,7 +48,10 @@ export async function handleSyncCognitoUser(
         enabled: cognitoUser.enabled,
         status: cognitoUser.status,
         owner: cognitoUser.owner,
-      }).catch(() => {
+        attendanceManagementEnabled: true,
+      } as CreateStaffInput & { attendanceManagementEnabled?: boolean };
+
+      await createStaff(createInput).catch(() => {
         throw new Error(MESSAGE_CODE.E05002);
       });
     }),

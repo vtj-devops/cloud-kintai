@@ -1,0 +1,5 @@
+# OSS版で追加で除外するファイル
+amplify/team-provider-info.json
+src/aws-exports.js
+.env*
+!.env.example

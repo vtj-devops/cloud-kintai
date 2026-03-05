@@ -100,6 +100,16 @@ export const getAppConfig = /* GraphQL */ `query GetAppConfig($id: ID!) {
       fixed
       __typename
     }
+    workflowCategoryOrder {
+      categories {
+        category
+        label
+        displayOrder
+        enabled
+        __typename
+      }
+      __typename
+    }
     overTimeCheckEnabled
     createdAt
     updatedAt
@@ -165,6 +175,16 @@ export const listAppConfigs = /* GraphQL */ `query ListAppConfigs(
         fixed
         __typename
       }
+      workflowCategoryOrder {
+        categories {
+          category
+          label
+          displayOrder
+          enabled
+          __typename
+        }
+        __typename
+      }
       overTimeCheckEnabled
       createdAt
       updatedAt
@@ -210,6 +230,7 @@ export const getStaff = /* GraphQL */ `query GetStaff($id: ID!) {
     approverMultiple
     approverMultipleMode
     shiftGroup
+    attendanceManagementEnabled
     createdAt
     updatedAt
     __typename
@@ -253,6 +274,7 @@ export const listStaff = /* GraphQL */ `query ListStaff(
       approverMultiple
       approverMultipleMode
       shiftGroup
+      attendanceManagementEnabled
       createdAt
       updatedAt
       __typename
@@ -309,6 +331,7 @@ export const staffByCognitoUserId = /* GraphQL */ `query StaffByCognitoUserId(
       approverMultiple
       approverMultipleMode
       shiftGroup
+      attendanceManagementEnabled
       createdAt
       updatedAt
       __typename
@@ -1116,6 +1139,8 @@ export const getWorkflow = /* GraphQL */ `query GetWorkflow($id: ID!) {
     rejectedStaffIds
     finalDecisionTimestamp
     category
+    customWorkflowTitle
+    customWorkflowContent
     staffId
     status
     assignedApproverStaffIds
@@ -1168,6 +1193,8 @@ export const listWorkflows = /* GraphQL */ `query ListWorkflows(
       rejectedStaffIds
       finalDecisionTimestamp
       category
+      customWorkflowTitle
+      customWorkflowContent
       staffId
       status
       assignedApproverStaffIds
@@ -1231,6 +1258,8 @@ export const workflowsByStaffId = /* GraphQL */ `query WorkflowsByStaffId(
       rejectedStaffIds
       finalDecisionTimestamp
       category
+      customWorkflowTitle
+      customWorkflowContent
       staffId
       status
       assignedApproverStaffIds
@@ -1273,6 +1302,78 @@ export const workflowsByStaffId = /* GraphQL */ `query WorkflowsByStaffId(
 ` as GeneratedQuery<
   APITypes.WorkflowsByStaffIdQueryVariables,
   APITypes.WorkflowsByStaffIdQuery
+>;
+export const getWorkflowTemplate = /* GraphQL */ `query GetWorkflowTemplate($id: ID!) {
+  getWorkflowTemplate(id: $id) {
+    id
+    name
+    title
+    content
+    organizationId
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetWorkflowTemplateQueryVariables,
+  APITypes.GetWorkflowTemplateQuery
+>;
+export const listWorkflowTemplates = /* GraphQL */ `query ListWorkflowTemplates(
+  $filter: ModelWorkflowTemplateFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listWorkflowTemplates(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      id
+      name
+      title
+      content
+      organizationId
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListWorkflowTemplatesQueryVariables,
+  APITypes.ListWorkflowTemplatesQuery
+>;
+export const workflowTemplatesByOrganizationId = /* GraphQL */ `query WorkflowTemplatesByOrganizationId(
+  $organizationId: String!
+  $sortDirection: ModelSortDirection
+  $filter: ModelWorkflowTemplateFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  workflowTemplatesByOrganizationId(
+    organizationId: $organizationId
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      name
+      title
+      content
+      organizationId
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.WorkflowTemplatesByOrganizationIdQueryVariables,
+  APITypes.WorkflowTemplatesByOrganizationIdQuery
 >;
 export const getOperationLog = /* GraphQL */ `query GetOperationLog($id: ID!) {
   getOperationLog(id: $id) {

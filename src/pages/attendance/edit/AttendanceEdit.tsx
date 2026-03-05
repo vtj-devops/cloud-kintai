@@ -5,7 +5,10 @@ import {
 } from "@entities/attendance/api/attendanceApi";
 import { attendanceEditSchema } from "@entities/attendance/validation/attendanceEditSchema";
 import { collectAttendanceErrorMessages } from "@entities/attendance/validation/collectErrorMessages";
-import { StaffType, useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
+import {
+  StaffType,
+  useStaffs,
+} from "@entities/staff/model/useStaffs/useStaffs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Alert,
@@ -67,7 +70,11 @@ export default function AttendanceEdit() {
 
   const { authStatus } = useContext(AuthContext);
   const isAuthenticated = authStatus === "authenticated";
-  const { staffs, loading: staffsLoading, error: staffSError } = useStaffs({
+  const {
+    staffs,
+    loading: staffsLoading,
+    error: staffSError,
+  } = useStaffs({
     isAuthenticated,
   });
   const [createAttendanceMutation] = useCreateAttendanceMutation();
@@ -76,13 +83,13 @@ export default function AttendanceEdit() {
   const createAttendance = useCallback(
     (input: Parameters<typeof createAttendanceMutation>[0]) =>
       createAttendanceMutation(input).unwrap(),
-    [createAttendanceMutation]
+    [createAttendanceMutation],
   );
 
   const updateAttendance = useCallback(
     (input: Parameters<typeof updateAttendanceMutation>[0]) =>
       updateAttendanceMutation(input).unwrap(),
-    [updateAttendanceMutation]
+    [updateAttendanceMutation],
   );
 
   const targetWorkDateISO = useMemo(() => {
@@ -107,7 +114,7 @@ export default function AttendanceEdit() {
       staffId: staffId ?? "",
       workDate: targetWorkDateISO ?? "",
     },
-    { skip: !shouldFetchAttendance }
+    { skip: !shouldFetchAttendance },
   );
 
   const attendance: Attendance | null = attendanceData ?? null;
@@ -196,7 +203,7 @@ export default function AttendanceEdit() {
               cognitoUser,
               dayjs(attendance.workDate),
               staffs,
-              data.staffComment
+              data.staffComment,
             );
           } catch (mailError) {
             logger.error("Failed to send change request mail:", mailError);
@@ -249,7 +256,7 @@ export default function AttendanceEdit() {
               cognitoUser,
               dayjs(targetWorkDate),
               staffs,
-              data.staffComment
+              data.staffComment,
             );
           } catch (mailError) {
             console.error("Failed to send change request mail:", mailError);
@@ -368,7 +375,7 @@ export default function AttendanceEdit() {
       if (!flag && has) {
         setValue(
           "remarkTags",
-          tags.filter((t) => t !== "欠勤")
+          tags.filter((t) => t !== "欠勤"),
         );
       }
     } catch {
@@ -398,13 +405,13 @@ export default function AttendanceEdit() {
           getStartTime(),
           getValues("startTime") as string | null | undefined,
           targetWorkDate,
-          attendance?.workDate
+          attendance?.workDate,
         );
         const desiredEnd = resolveConfigTimeOnDate(
           getEndTime(),
           getValues("endTime") as string | null | undefined,
           targetWorkDate,
-          attendance?.workDate
+          attendance?.workDate,
         );
         if (getValues("startTime") !== desiredStart) {
           setValue("startTime", desiredStart);
@@ -425,8 +432,8 @@ export default function AttendanceEdit() {
         const baseDay = dateStr
           ? dayjs(dateStr)
           : targetWorkDate
-          ? dayjs(targetWorkDate)
-          : dayjs();
+            ? dayjs(targetWorkDate)
+            : dayjs();
         const desiredRests = [
           {
             startTime: baseDay
@@ -487,7 +494,7 @@ export default function AttendanceEdit() {
       if (tags.includes("特別休暇")) {
         setValue(
           "remarkTags",
-          tags.filter((t) => t !== "特別休暇")
+          tags.filter((t) => t !== "特別休暇"),
         );
       }
     }
@@ -511,13 +518,13 @@ export default function AttendanceEdit() {
             getStartTime(),
             getValues("startTime") as string | null | undefined,
             targetWorkDate,
-            attendance?.workDate
+            attendance?.workDate,
           );
           const desiredEnd = resolveConfigTimeOnDate(
             getEndTime(),
             getValues("endTime") as string | null | undefined,
             targetWorkDate,
-            attendance?.workDate
+            attendance?.workDate,
           );
           if (getValues("startTime") !== desiredStart) {
             setValue("startTime", desiredStart);
@@ -537,8 +544,8 @@ export default function AttendanceEdit() {
           const baseDay = dateStr
             ? dayjs(dateStr)
             : targetWorkDate
-            ? dayjs(targetWorkDate)
-            : dayjs();
+              ? dayjs(targetWorkDate)
+              : dayjs();
           const desiredRests = [
             {
               startTime: baseDay
@@ -597,7 +604,7 @@ export default function AttendanceEdit() {
         if (tags.includes("有給休暇")) {
           setValue(
             "remarkTags",
-            tags.filter((t) => t !== "有給休暇")
+            tags.filter((t) => t !== "有給休暇"),
           );
         }
       }
@@ -613,7 +620,7 @@ export default function AttendanceEdit() {
     : [];
   const errorMessages = useMemo(
     () => collectAttendanceErrorMessages(errors),
-    [errors]
+    [errors],
   );
 
   // 休憩中かどうかを判定（勤務開始時間と最初の休憩時間が入力されている状態）
@@ -628,7 +635,7 @@ export default function AttendanceEdit() {
         restsValue[0]?.startTime &&
         !restsValue[0]?.endTime
       ),
-    [startTimeValue, restsValue]
+    [startTimeValue, restsValue],
   );
 
   if (!targetWorkDate) {
@@ -678,7 +685,14 @@ export default function AttendanceEdit() {
         isOnBreak,
       }}
     >
-      <Box data-testid="attendance-edit-root">
+      <Box
+        data-testid="attendance-edit-root"
+        sx={{
+          width: "100%",
+          maxWidth: { md: 1280 },
+          mx: "auto",
+        }}
+      >
         {errorMessages.length > 0 && (
           <Box mb={2}>
             <Alert severity="error">

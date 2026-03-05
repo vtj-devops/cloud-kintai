@@ -7,7 +7,7 @@ import {
 import { WorkflowCategory, WorkflowStatus } from "@shared/api/graphql/types";
 
 const baseState = (
-  overrides: Partial<WorkflowFormState> = {}
+  overrides: Partial<WorkflowFormState> = {},
 ): WorkflowFormState => ({
   categoryLabel: "",
   startDate: "",
@@ -19,13 +19,15 @@ const baseState = (
   overtimeStart: "",
   overtimeEnd: "",
   overtimeReason: "",
+  customWorkflowTitle: "",
+  customWorkflowContent: "",
   ...overrides,
 });
 
 describe("validateWorkflowForm", () => {
   it("detects missing paid leave dates", () => {
     const result = validateWorkflowForm(
-      baseState({ categoryLabel: "有給休暇申請", startDate: "", endDate: "" })
+      baseState({ categoryLabel: "有給休暇申請", startDate: "", endDate: "" }),
     );
     expect(result.isValid).toBe(false);
     expect(result.errors.dateError).toBe("開始日と終了日を入力してください");
@@ -38,11 +40,11 @@ describe("validateWorkflowForm", () => {
         overtimeDate: "2024-01-10",
         overtimeStart: "20:00",
         overtimeEnd: "18:00",
-      })
+      }),
     );
     expect(result.isValid).toBe(false);
     expect(result.errors.overtimeError).toBe(
-      "開始時刻は終了時刻より前にしてください"
+      "開始時刻は終了時刻より前にしてください",
     );
   });
 });

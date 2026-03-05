@@ -1,5 +1,5 @@
 import { Alert, Snackbar, Stack, Typography } from "@mui/material";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 export type PresenceNotificationType =
   | "user-joined"
@@ -93,11 +93,24 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
   autoHideDuration,
 }) => {
   const [open, setOpen] = useState(true);
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleClose = useCallback(() => {
     setOpen(false);
-    setTimeout(onClose, 300); // アニメーション完了後に削除
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+    }
+    closeTimeoutRef.current = setTimeout(onClose, 300); // アニメーション完了後に削除
   }, [onClose]);
+
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+        closeTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   const getMessage = () => {
     switch (notification.type) {

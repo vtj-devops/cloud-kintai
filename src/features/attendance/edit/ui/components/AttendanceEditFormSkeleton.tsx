@@ -87,14 +87,14 @@ export function AttendanceEditFormSkeleton({
     <Stack spacing={2}>
       {additionalTopContent}
 
-      <GroupContainer>
+      <GroupContainer hideAccent hideBorder>
         <Stack spacing={2}>
           <StaffNameItem />
           <WorkTypeItem />
         </Stack>
       </GroupContainer>
 
-      <GroupContainer>
+      <GroupContainer hideAccent hideBorder>
         <WorkTimeItem
           highlightStartTime={highlightStartTime}
           highlightEndTime={highlightEndTime}
@@ -161,11 +161,15 @@ export function AttendanceEditFormSkeleton({
       </GroupContainer>
 
       {vacationTabsContent && (
-        <GroupContainer>{vacationTabsContent}</GroupContainer>
+        <GroupContainer hideAccent hideBorder>
+          {vacationTabsContent}
+        </GroupContainer>
       )}
 
       {remarksContent && (
-        <GroupContainer title="備考">{remarksContent}</GroupContainer>
+        <GroupContainer title="備考" hideAccent hideBorder>
+          {remarksContent}
+        </GroupContainer>
       )}
 
       {additionalBottomContent}

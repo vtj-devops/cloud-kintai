@@ -7,10 +7,13 @@ import {
 } from "@features/workflow/list/workflowListModel";
 import { WorkflowCategory, WorkflowStatus } from "@shared/api/graphql/types";
 
-import { CATEGORY_LABELS, STATUS_LABELS } from "@/entities/workflow/lib/workflowLabels";
+import {
+  CATEGORY_LABELS,
+  STATUS_LABELS,
+} from "@/entities/workflow/lib/workflowLabels";
 
 const buildWorkflow = (
-  overrides: Partial<WorkflowLike> = {}
+  overrides: Partial<WorkflowLike> = {},
 ): WorkflowLike => ({
   id: "wf-default",
   staffId: "staff-1",
@@ -52,8 +55,10 @@ describe("mapWorkflowsToListItems", () => {
     const result = mapWorkflowsToListItems(workflows, "staff-1");
 
     expect(result).toHaveLength(3);
-    expect(result.map((it) => it.rawId)).toEqual(["wf-1", "wf-3", "wf-4"]);
+    expect(result.map((it) => it.rawId)).toEqual(["wf-4", "wf-1", "wf-3"]);
     expect(result.every((it) => it.rawStaffId === "staff-1")).toBe(true);
+    const wf4 = result.find((it) => it.rawId === "wf-4");
+    expect(wf4?.applicationDate).toBe("2024-03-01");
   });
 });
 
@@ -80,7 +85,7 @@ describe("applyWorkflowFilters", () => {
         overTimeDetails: null,
       }),
     ],
-    "staff-1"
+    "staff-1",
   );
 
   const filter = (filters: WorkflowListFilters) =>
@@ -93,26 +98,26 @@ describe("applyWorkflowFilters", () => {
   it("filters by category label or raw value", () => {
     expect(filter({ category: WorkflowCategory.ABSENCE })).toEqual(["wf-a"]);
     expect(
-      filter({ category: CATEGORY_LABELS[WorkflowCategory.PAID_LEAVE] })
+      filter({ category: CATEGORY_LABELS[WorkflowCategory.PAID_LEAVE] }),
     ).toEqual(["wf-c"]);
   });
 
   it("filters by status label or raw value", () => {
     expect(filter({ status: [WorkflowStatus.PENDING] })).toEqual(["wf-b"]);
     expect(
-      filter({ status: [STATUS_LABELS[WorkflowStatus.APPROVED]] })
+      filter({ status: [STATUS_LABELS[WorkflowStatus.APPROVED]] }),
     ).toEqual(["wf-a"]);
   });
 
   it("filters by application date range", () => {
     expect(
-      filter({ applicationFrom: "2024-04-01", applicationTo: "2024-04-30" })
+      filter({ applicationFrom: "2024-04-01", applicationTo: "2024-04-30" }),
     ).toEqual(["wf-a"]);
   });
 
   it("filters by created date range when application date missing", () => {
     expect(
-      filter({ createdFrom: "2024-06-01", createdTo: "2024-06-30" })
+      filter({ createdFrom: "2024-06-01", createdTo: "2024-06-30" }),
     ).toEqual(["wf-c"]);
   });
 });
@@ -121,7 +126,7 @@ describe("isWorkflowFilterActive", () => {
   it("detects when any filter is populated", () => {
     expect(isWorkflowFilterActive({})).toBe(false);
     expect(isWorkflowFilterActive({ status: [WorkflowStatus.DRAFT] })).toBe(
-      true
+      true,
     );
   });
 });

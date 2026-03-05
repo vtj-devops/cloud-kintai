@@ -58,6 +58,7 @@ export type StaffType = {
   approverMultiple?: (string | null)[] | null;
   approverMultipleMode?: ApproverMultipleMode | null;
   shiftGroup?: string | null;
+  attendanceManagementEnabled?: boolean | null;
 };
 
 export function mappingStaffRole(role: Staff["role"]): StaffRole {
@@ -129,8 +130,11 @@ export function useStaffs({ isAuthenticated }: UseStaffsParams) {
             approverMultiple: staff.approverMultiple ?? null,
             approverMultipleMode: staff.approverMultipleMode ?? null,
             shiftGroup: staff.shiftGroup ?? null,
-          }))
-        )
+            attendanceManagementEnabled: (
+              staff as unknown as Record<string, unknown>
+            ).attendanceManagementEnabled as boolean | null | undefined,
+          })),
+        ),
       )
       .catch((e: Error) => {
         setError(e);
@@ -171,7 +175,10 @@ export function useStaffs({ isAuthenticated }: UseStaffsParams) {
             approverMultiple: staff.approverMultiple ?? null,
             approverMultipleMode: staff.approverMultipleMode ?? null,
             shiftGroup: staff.shiftGroup ?? null,
-          }))
+            attendanceManagementEnabled: (
+              staff as unknown as Record<string, unknown>
+            ).attendanceManagementEnabled as boolean | null | undefined,
+          })),
         );
       })
       .catch((e: Error) => {
@@ -187,7 +194,17 @@ export function useStaffs({ isAuthenticated }: UseStaffsParams) {
 
   const createStaff = async (input: CreateStaffInput) => {
     ensureAuthenticated();
-    return createStaffData(input)
+    const inputWithDefault = {
+      ...input,
+      attendanceManagementEnabled:
+        (
+          input as CreateStaffInput & {
+            attendanceManagementEnabled?: boolean | null;
+          }
+        ).attendanceManagementEnabled ?? true,
+    } as CreateStaffInput;
+
+    return createStaffData(inputWithDefault)
       .then((staff) => {
         setStaffs([
           ...staffs,
@@ -215,6 +232,9 @@ export function useStaffs({ isAuthenticated }: UseStaffsParams) {
             approverMultiple: staff.approverMultiple ?? null,
             approverMultipleMode: staff.approverMultipleMode ?? null,
             shiftGroup: staff.shiftGroup ?? null,
+            attendanceManagementEnabled: (
+              staff as unknown as Record<string, unknown>
+            ).attendanceManagementEnabled as boolean | null | undefined,
           },
         ]);
       })
@@ -254,10 +274,13 @@ export function useStaffs({ isAuthenticated }: UseStaffsParams) {
                 approverMultiple: staff.approverMultiple ?? null,
                 approverMultipleMode: staff.approverMultipleMode ?? null,
                 shiftGroup: staff.shiftGroup ?? null,
+                attendanceManagementEnabled: (
+                  staff as unknown as Record<string, unknown>
+                ).attendanceManagementEnabled as boolean | null | undefined,
               };
             }
             return s;
-          })
+          }),
         );
         return; // keep Promise<void> signature
       })
@@ -305,6 +328,8 @@ export function useStaffs({ isAuthenticated }: UseStaffsParams) {
       approverMultiple: staff.approverMultiple ?? null,
       approverMultipleMode: staff.approverMultipleMode ?? null,
       shiftGroup: staff.shiftGroup ?? null,
+      attendanceManagementEnabled: (staff as unknown as Record<string, unknown>)
+        .attendanceManagementEnabled as boolean | null | undefined,
     }));
   };
 

@@ -84,16 +84,17 @@ const BodyStack = styled(Stack)(({ theme }) => ({
 const RequestButton = styled(Button)(({ theme }) => ({
   color: theme.palette.primary.contrastText,
   backgroundColor: theme.palette.primary.main,
-  border: `3px solid ${theme.palette.primary.main}`,
+  border: "none",
+  boxShadow: theme.shadows[2],
   width: 150,
   "&:hover": {
-    color: theme.palette.primary.main,
-    backgroundColor: theme.palette.primary.contrastText,
+    backgroundColor: theme.palette.primary.dark,
+    boxShadow: theme.shadows[4],
   },
   "&:disabled": {
     color: theme.palette.text.disabled,
     backgroundColor: theme.palette.action.disabledBackground,
-    border: "3px solid #E0E0E0",
+    boxShadow: "none",
   },
 }));
 

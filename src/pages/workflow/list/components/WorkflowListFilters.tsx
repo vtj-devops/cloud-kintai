@@ -1,3 +1,4 @@
+import useAppConfig from "@entities/app-config/model/useAppConfig";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
@@ -19,10 +20,14 @@ import {
   type Ref,
   useCallback,
   useImperativeHandle,
+  useMemo,
   useState,
 } from "react";
 
-import { CATEGORY_LABELS, STATUS_LABELS } from "@/entities/workflow/lib/workflowLabels";
+import {
+  CATEGORY_LABELS,
+  STATUS_LABELS,
+} from "@/entities/workflow/lib/workflowLabels";
 import type { UseWorkflowListFiltersResult } from "@/features/workflow/list/useWorkflowListFilters";
 import { designTokenVar } from "@/shared/designSystem";
 
@@ -83,7 +88,7 @@ const useWorkflowListFiltersState = ({
   const [applicationAnchorEl, setApplicationAnchorEl] =
     useState<HTMLElement | null>(null);
   const [createdAnchorEl, setCreatedAnchorEl] = useState<HTMLElement | null>(
-    null
+    null,
   );
 
   const closeAllPopovers = useCallback(() => {
@@ -94,16 +99,16 @@ const useWorkflowListFiltersState = ({
   const handleDateChange = useCallback(
     (
       key: "applicationFrom" | "applicationTo" | "createdFrom" | "createdTo",
-      value: Dayjs | null
+      value: Dayjs | null,
     ) => {
       const str = value ? value.format("YYYY-MM-DD") : "";
       setFilter(key, str);
     },
-    [setFilter]
+    [setFilter],
   );
 
   const handleApplicationFieldClick = (
-    event: React.MouseEvent<HTMLElement>
+    event: React.MouseEvent<HTMLElement>,
   ) => {
     setApplicationAnchorEl(event.currentTarget);
   };
@@ -152,7 +157,7 @@ type DateFieldProps = {
   toValue: string | undefined;
   onChange: (
     key: "applicationFrom" | "applicationTo" | "createdFrom" | "createdTo",
-    value: Dayjs | null
+    value: Dayjs | null,
   ) => void;
   fromKey: "applicationFrom" | "createdFrom";
   toKey: "applicationTo" | "createdTo";
@@ -216,21 +221,22 @@ const DateRangeField = ({
             gap: FILTER_PANEL_BUTTON_GAP,
           }}
         >
-      <Button size="small" onClick={onClear}>
-        クリア
-      </Button>
-    </Box>
-  </Box>
-</Popover>
+          <Button size="small" onClick={onClear}>
+            クリア
+          </Button>
+        </Box>
+      </Box>
+    </Popover>
   </Box>
 );
 
 function WorkflowListFilters(
   { filters, setFilter }: WorkflowListFiltersProps,
-  ref: Ref<WorkflowListFiltersHandle>
+  ref: Ref<WorkflowListFiltersHandle>,
 ) {
   const theme = useTheme();
   const isCompact = useMediaQuery(theme.breakpoints.down("sm"));
+  const { config, getAbsentEnabled, getWorkflowCategoryOrder } = useAppConfig();
   const {
     categoryFilter,
     statusFilter,
@@ -249,12 +255,23 @@ function WorkflowListFilters(
     setCreatedAnchorEl,
   } = useWorkflowListFiltersState({ filters, setFilter });
 
+  const categoryOptions = useMemo(
+    () =>
+      getWorkflowCategoryOrder()
+        .filter((item) => item.enabled)
+        .filter(
+          (item) =>
+            item.category !== WorkflowCategory.ABSENCE || getAbsentEnabled(),
+        ),
+    [config, getAbsentEnabled, getWorkflowCategoryOrder],
+  );
+
   useImperativeHandle(
     ref,
     () => ({
       closeAllPopovers,
     }),
-    [closeAllPopovers]
+    [closeAllPopovers],
   );
 
   return (
@@ -268,15 +285,11 @@ function WorkflowListFilters(
           onChange={(e) => setFilter("category", e.target.value)}
         >
           <MenuItem value="">すべて</MenuItem>
-          <MenuItem value={WorkflowCategory.PAID_LEAVE}>
-            {CATEGORY_LABELS[WorkflowCategory.PAID_LEAVE]}
-          </MenuItem>
-          <MenuItem value={WorkflowCategory.ABSENCE}>
-            {CATEGORY_LABELS[WorkflowCategory.ABSENCE]}
-          </MenuItem>
-          <MenuItem value={WorkflowCategory.OVERTIME}>
-            {CATEGORY_LABELS[WorkflowCategory.OVERTIME]}
-          </MenuItem>
+          {categoryOptions.map((item) => (
+            <MenuItem key={item.category} value={item.category}>
+              {CATEGORY_LABELS[item.category] ?? item.label}
+            </MenuItem>
+          ))}
         </Select>
       </TableCell>
       <TableCell>
@@ -316,7 +329,7 @@ function WorkflowListFilters(
               : selected
                   .map(
                     (status) =>
-                      STATUS_LABELS[status as WorkflowStatus] || String(status)
+                      STATUS_LABELS[status as WorkflowStatus] || String(status),
                   )
                   .join("、")
           }
@@ -373,10 +386,12 @@ function WorkflowListFilters(
 export const WorkflowListFiltersPanel = forwardRef(
   (
     { filters, setFilter }: WorkflowListFiltersProps,
-    ref: Ref<WorkflowListFiltersHandle>
+    ref: Ref<WorkflowListFiltersHandle>,
   ) => {
     const theme = useTheme();
     const isCompact = useMediaQuery(theme.breakpoints.down("sm"));
+    const { config, getAbsentEnabled, getWorkflowCategoryOrder } =
+      useAppConfig();
     const {
       categoryFilter,
       statusFilter,
@@ -395,12 +410,23 @@ export const WorkflowListFiltersPanel = forwardRef(
       setCreatedAnchorEl,
     } = useWorkflowListFiltersState({ filters, setFilter });
 
+    const categoryOptions = useMemo(
+      () =>
+        getWorkflowCategoryOrder()
+          .filter((item) => item.enabled)
+          .filter(
+            (item) =>
+              item.category !== WorkflowCategory.ABSENCE || getAbsentEnabled(),
+          ),
+      [config, getAbsentEnabled, getWorkflowCategoryOrder],
+    );
+
     useImperativeHandle(
       ref,
       () => ({
         closeAllPopovers,
       }),
-      [closeAllPopovers]
+      [closeAllPopovers],
     );
 
     return (
@@ -414,7 +440,13 @@ export const WorkflowListFiltersPanel = forwardRef(
         }}
       >
         <Stack spacing={FILTER_SECTION_GAP}>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: FILTER_FIELD_GAP }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: FILTER_FIELD_GAP,
+            }}
+          >
             <Typography variant="caption" color="text.secondary">
               {FIELD_LABELS.category}
             </Typography>
@@ -426,19 +458,21 @@ export const WorkflowListFiltersPanel = forwardRef(
               onChange={(e) => setFilter("category", e.target.value)}
             >
               <MenuItem value="">すべて</MenuItem>
-              <MenuItem value={WorkflowCategory.PAID_LEAVE}>
-                {CATEGORY_LABELS[WorkflowCategory.PAID_LEAVE]}
-              </MenuItem>
-              <MenuItem value={WorkflowCategory.ABSENCE}>
-                {CATEGORY_LABELS[WorkflowCategory.ABSENCE]}
-              </MenuItem>
-              <MenuItem value={WorkflowCategory.OVERTIME}>
-                {CATEGORY_LABELS[WorkflowCategory.OVERTIME]}
-              </MenuItem>
+              {categoryOptions.map((item) => (
+                <MenuItem key={item.category} value={item.category}>
+                  {CATEGORY_LABELS[item.category] ?? item.label}
+                </MenuItem>
+              ))}
             </Select>
           </Box>
 
-          <Box sx={{ display: "flex", flexDirection: "column", gap: FILTER_FIELD_GAP }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: FILTER_FIELD_GAP,
+            }}
+          >
             <Typography variant="caption" color="text.secondary">
               {FIELD_LABELS.application}
             </Typography>
@@ -465,7 +499,13 @@ export const WorkflowListFiltersPanel = forwardRef(
             />
           </Box>
 
-          <Box sx={{ display: "flex", flexDirection: "column", gap: FILTER_FIELD_GAP }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: FILTER_FIELD_GAP,
+            }}
+          >
             <Typography variant="caption" color="text.secondary">
               {FIELD_LABELS.status}
             </Typography>
@@ -482,7 +522,8 @@ export const WorkflowListFiltersPanel = forwardRef(
                   : selected
                       .map(
                         (status) =>
-                          STATUS_LABELS[status as WorkflowStatus] || String(status)
+                          STATUS_LABELS[status as WorkflowStatus] ||
+                          String(status),
                       )
                       .join("、")
               }
@@ -509,7 +550,13 @@ export const WorkflowListFiltersPanel = forwardRef(
             </Select>
           </Box>
 
-          <Box sx={{ display: "flex", flexDirection: "column", gap: FILTER_FIELD_GAP }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: FILTER_FIELD_GAP,
+            }}
+          >
             <Typography variant="caption" color="text.secondary">
               {FIELD_LABELS.created}
             </Typography>
@@ -538,7 +585,7 @@ export const WorkflowListFiltersPanel = forwardRef(
         </Stack>
       </Box>
     );
-  }
+  },
 );
 
 WorkflowListFiltersPanel.displayName = "WorkflowListFiltersPanel";

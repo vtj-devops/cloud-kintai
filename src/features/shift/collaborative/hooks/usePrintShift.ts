@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
  * 印刷用フック
@@ -8,6 +8,21 @@ import { useCallback, useRef, useState } from "react";
 export const usePrintShift = () => {
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
   const printWindowRef = useRef<Window | null>(null);
+  const printTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (printTimeoutRef.current) {
+        clearTimeout(printTimeoutRef.current);
+        printTimeoutRef.current = null;
+      }
+
+      if (printWindowRef.current) {
+        printWindowRef.current.onload = null;
+        printWindowRef.current.onunload = null;
+      }
+    };
+  }, []);
 
   /**
    * 印刷ダイアログを開く
@@ -42,13 +57,21 @@ export const usePrintShift = () => {
 
       // ウィンドウが読み込まれた後に印刷を実行
       printWindow.onload = () => {
-        setTimeout(() => {
+        if (printTimeoutRef.current) {
+          clearTimeout(printTimeoutRef.current);
+        }
+
+        printTimeoutRef.current = setTimeout(() => {
           printWindow.print();
         }, 250);
       };
 
       // ウィンドウが閉じられたらリファレンスをクリア
       printWindow.onunload = () => {
+        if (printTimeoutRef.current) {
+          clearTimeout(printTimeoutRef.current);
+          printTimeoutRef.current = null;
+        }
         printWindowRef.current = null;
       };
     },

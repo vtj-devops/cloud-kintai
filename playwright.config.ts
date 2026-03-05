@@ -13,6 +13,18 @@ import dotenv from "dotenv";
 
 dotenv.config({ path: ".env.local" });
 
+const playwrightBaseUrl =
+  process.env.PLAYWRIGHT_BASE_URL ||
+  process.env.VITE_BASE_PATH ||
+  "http://localhost:4173";
+
+const useLocalWebServer =
+  !process.env.PLAYWRIGHT_BASE_URL && !process.env.VITE_BASE_PATH;
+
+console.info(
+  `[playwright] baseURL=${playwrightBaseUrl} mode=${useLocalWebServer ? "local-webserver" : "external-base-url"}`,
+);
+
 export default defineConfig({
   testDir: "./playwright/tests",
   /* Run tests in files in parallel */
@@ -27,7 +39,7 @@ export default defineConfig({
   reporter: [["html", { open: "never" }]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    baseURL: process.env.VITE_BASE_PATH || "http://localhost:5173",
+    baseURL: playwrightBaseUrl,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
@@ -39,14 +51,16 @@ export default defineConfig({
   },
 
   /* Start dev server before running tests */
-  webServer: {
-    command: "npm start",
-    url: "http://localhost:5173",
-    reuseExistingServer: !process.env.CI,
-    env: {
-      VITE_CHECKER_OVERLAY: "false",
-    },
-  },
+  webServer: useLocalWebServer
+    ? {
+        command: "npm start -- --port 4173",
+        url: "http://localhost:4173",
+        reuseExistingServer: false,
+        env: {
+          VITE_CHECKER_OVERLAY: "false",
+        },
+      }
+    : undefined,
 
   /* Configure projects for major browsers */
   projects: [

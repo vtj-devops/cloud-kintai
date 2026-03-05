@@ -24,6 +24,7 @@ export { CLOCK_CORRECTION_CHECK_OUT_LABEL, CLOCK_CORRECTION_LABEL };
 const VACATION_LABEL = "有給休暇申請";
 const ABSENCE_LABEL = "欠勤申請";
 const OVERTIME_LABEL = "残業申請";
+const CUSTOM_LABEL = "その他";
 
 const defaultOvertimeDateFactory = () => new Date().toISOString().slice(0, 10);
 
@@ -40,6 +41,8 @@ export type WorkflowFormState = {
   /** ISO 8601形式の日時文字列 (例: "2024-01-15T18:00:00+09:00") または空文字列 */
   overtimeEnd: string | null;
   overtimeReason: string;
+  customWorkflowTitle: string;
+  customWorkflowContent: string;
 };
 
 export type WorkflowFormErrors = {
@@ -47,6 +50,8 @@ export type WorkflowFormErrors = {
   absenceDateError?: string;
   overtimeDateError?: string;
   overtimeError?: string;
+  customWorkflowTitleError?: string;
+  customWorkflowContentError?: string;
 };
 
 export type WorkflowFormValidationResult = {
@@ -67,6 +72,8 @@ const workflowFormSchema = z
     overtimeStart: z.string().nullable(),
     overtimeEnd: z.string().nullable(),
     overtimeReason: z.string(),
+    customWorkflowTitle: z.string().optional().default(""),
+    customWorkflowContent: z.string().optional().default(""),
   })
   .superRefine((data, ctx) => {
     // 有給休暇のバリデーション
@@ -146,10 +153,27 @@ const workflowFormSchema = z
         });
       }
     }
+
+    if (data.categoryLabel === CUSTOM_LABEL) {
+      if (!data.customWorkflowTitle.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["customWorkflowTitleError"],
+          message: "タイトルを入力してください。",
+        });
+      }
+      if (!data.customWorkflowContent.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["customWorkflowContentError"],
+          message: "詳細を入力してください。",
+        });
+      }
+    }
   });
 
 export const validateWorkflowForm = (
-  state: WorkflowFormState
+  state: WorkflowFormState,
 ): WorkflowFormValidationResult => {
   const result = workflowFormSchema.safeParse(state);
 
@@ -189,7 +213,7 @@ type SubmissionCommentPayloadOptions = SubmissionCommentOptions & {
 };
 
 const buildSubmissionCommentsPayload = (
-  options: SubmissionCommentPayloadOptions
+  options: SubmissionCommentPayloadOptions,
 ): WorkflowCommentInput[] | undefined => {
   if (!options.include) return undefined;
   const existing = options.existingComments
@@ -209,7 +233,7 @@ type OvertimeDetailsOptions = {
 
 const buildWorkflowOvertimeDetails = (
   state: WorkflowFormState,
-  options?: OvertimeDetailsOptions
+  options?: OvertimeDetailsOptions,
 ): CreateWorkflowInput["overTimeDetails"] | undefined => {
   const isOvertime = state.categoryLabel === OVERTIME_LABEL;
   const isVacation = state.categoryLabel === VACATION_LABEL;
@@ -302,11 +326,17 @@ export const buildCreateWorkflowInput = ({
   overtimeDateFallbackFactory,
 }: BuildCreateWorkflowInputParams): CreateWorkflowInput => {
   const status = draftMode ? WorkflowStatus.DRAFT : WorkflowStatus.SUBMITTED;
+  const normalizedCategory = normalizeCategory(state.categoryLabel);
   const input: CreateWorkflowInput = {
     staffId,
     status,
-    category: normalizeCategory(state.categoryLabel),
+    category: normalizedCategory,
   };
+
+  if (normalizedCategory === WorkflowCategory.CUSTOM) {
+    input.customWorkflowTitle = state.customWorkflowTitle.trim();
+    input.customWorkflowContent = state.customWorkflowContent.trim();
+  }
 
   const overtimeDetails = buildWorkflowOvertimeDetails(state, {
     fallbackDateFactory: overtimeDateFallbackFactory,
@@ -338,7 +368,12 @@ export const buildUpdateWorkflowInput = ({
   };
 
   if (state.categoryLabel) {
-    input.category = normalizeCategory(state.categoryLabel);
+    const normalizedCategory = normalizeCategory(state.categoryLabel);
+    input.category = normalizedCategory;
+    if (normalizedCategory === WorkflowCategory.CUSTOM) {
+      input.customWorkflowTitle = state.customWorkflowTitle.trim();
+      input.customWorkflowContent = state.customWorkflowContent.trim();
+    }
   }
 
   const overtimeDetails = buildWorkflowOvertimeDetails(state);

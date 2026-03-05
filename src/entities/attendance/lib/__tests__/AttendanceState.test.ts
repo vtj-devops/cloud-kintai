@@ -33,12 +33,14 @@ describe("AttendanceState", () => {
 
   const buildState = (
     attendanceOverrides: Partial<Attendance> = {},
-    staffOverrides: Partial<Staff> = {}
+    staffOverrides: Partial<
+      Staff & { attendanceManagementEnabled?: boolean | null }
+    > = {},
   ) => {
     const staff: Staff = {
       ...baseStaff,
       workType: "weekday",
-      ...staffOverrides,
+      ...(staffOverrides as Partial<Staff>),
     };
 
     const attendance: Attendance = {
@@ -58,6 +60,34 @@ describe("AttendanceState", () => {
     expect(state.get()).toBe(AttendanceStatus.None);
   });
 
+  it("returns None when attendance management is disabled", () => {
+    const state = buildState(
+      {
+        workDate: "2024-01-10",
+        startTime: undefined,
+      },
+      { attendanceManagementEnabled: false },
+    );
+
+    setMockToday(state, "2024-02-01");
+
+    expect(state.get()).toBe(AttendanceStatus.None);
+  });
+
+  it("keeps existing checks when attendance management flag is null", () => {
+    const state = buildState(
+      {
+        workDate: "2024-01-10",
+        startTime: undefined,
+      },
+      { attendanceManagementEnabled: null },
+    );
+
+    setMockToday(state, "2024-02-01");
+
+    expect(state.get()).toBe(AttendanceStatus.Error);
+  });
+
   it("keeps weekday error evaluation for past dates", () => {
     const today = "2024-01-05";
     const pastDate = "2024-01-04";
@@ -74,7 +104,7 @@ describe("AttendanceState", () => {
 
     // Mock today as 2024-01-01T15:00:00Z (~2024-01-02 00:00+ in many timezones)
     (state as unknown as { today: Dayjs }).today = dayjs(
-      "2024-01-01T15:00:00Z"
+      "2024-01-01T15:00:00Z",
     );
 
     // Current implementation compares formatted date strings; if they match, returns None
@@ -84,7 +114,7 @@ describe("AttendanceState", () => {
   it("returns None when staff usageStartDate is after workDate", () => {
     const state = buildState(
       { workDate: "2024-01-10" },
-      { usageStartDate: "2024-02-01" }
+      { usageStartDate: "2024-02-01" },
     );
 
     setMockToday(state, "2024-02-10");
@@ -193,7 +223,7 @@ describe("AttendanceState", () => {
         workDate: "2024-01-09",
         isDeemedHoliday: true,
       },
-      { workType: "shift" }
+      { workType: "shift" },
     );
 
     setMockToday(state, "2024-01-10");
@@ -207,7 +237,7 @@ describe("AttendanceState", () => {
         workDate: "2024-01-06", // Saturday
         startTime: undefined,
       },
-      { workType: "shift" }
+      { workType: "shift" },
     );
 
     setMockToday(state, "2024-01-10");
@@ -229,7 +259,7 @@ describe("AttendanceState", () => {
           updatedAt: "2024-01-01T00:00:00.000Z",
         },
       ],
-      []
+      [],
     );
 
     setMockToday(state, "2024-02-01");
@@ -251,7 +281,7 @@ describe("AttendanceState", () => {
           createdAt: "2024-01-01T00:00:00.000Z",
           updatedAt: "2024-01-01T00:00:00.000Z",
         },
-      ]
+      ],
     );
 
     setMockToday(state, "2024-02-01");
@@ -282,7 +312,7 @@ describe("AttendanceState", () => {
           updatedAt: "2024-01-01T00:00:00.000Z",
         },
       ],
-      []
+      [],
     );
 
     setMockToday(state, "2024-03-01");
@@ -313,7 +343,7 @@ describe("AttendanceState", () => {
           },
         ],
       },
-      { usageStartDate: "2024-05-01" }
+      { usageStartDate: "2024-05-01" },
     );
 
     setMockToday(state, "2024-05-10");
@@ -333,7 +363,7 @@ describe("AttendanceState", () => {
           },
         ],
       },
-      { workType: "shift" }
+      { workType: "shift" },
     );
 
     setMockToday(state, "2024-06-20");

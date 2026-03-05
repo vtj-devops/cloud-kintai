@@ -57,6 +57,12 @@ const GroupContainerMobile = ({
   children,
   sx,
 }: GroupContainerMobileProps) => {
+  const borderClassName = hideBorder
+    ? "border-0"
+    : "border-[var(--group-border-width)] border-[var(--group-border-color)]";
+  const accentClassName = hideAccent
+    ? "border-l-0"
+    : "border-l-[var(--group-accent-width)] border-l-[var(--group-accent-color)]";
   const groupVars: CSSProperties & Record<`--${string}`, string> = {
     "--group-border-width": GROUP_BORDER_WIDTH,
     "--group-accent-width": GROUP_ACCENT_WIDTH,
@@ -78,7 +84,7 @@ const GroupContainerMobile = ({
 
   return (
     <Box
-      className="rounded-[var(--group-radius)] border-[var(--group-border-width)] border-[var(--group-border-color)] border-l-[var(--group-accent-width)] border-l-[var(--group-accent-color)] border-solid bg-[var(--group-background)] p-[var(--group-padding)]"
+      className={`rounded-[var(--group-radius)] border-solid bg-[var(--group-background)] p-[var(--group-padding)] ${borderClassName} ${accentClassName}`}
       style={groupVars}
       sx={sx}
     >

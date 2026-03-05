@@ -26,6 +26,8 @@ export declare type WorkflowCreateFormInputValues = {
     rejectedStaffIds?: string[];
     finalDecisionTimestamp?: string;
     category?: string;
+    customWorkflowTitle?: string;
+    customWorkflowContent?: string;
     staffId?: string;
     status?: string;
     assignedApproverStaffIds?: string[];
@@ -40,6 +42,8 @@ export declare type WorkflowCreateFormValidationValues = {
     rejectedStaffIds?: ValidationFunction<string>;
     finalDecisionTimestamp?: ValidationFunction<string>;
     category?: ValidationFunction<string>;
+    customWorkflowTitle?: ValidationFunction<string>;
+    customWorkflowContent?: ValidationFunction<string>;
     staffId?: ValidationFunction<string>;
     status?: ValidationFunction<string>;
     assignedApproverStaffIds?: ValidationFunction<string>;
@@ -56,6 +60,8 @@ export declare type WorkflowCreateFormOverridesProps = {
     rejectedStaffIds?: PrimitiveOverrideProps<TextFieldProps>;
     finalDecisionTimestamp?: PrimitiveOverrideProps<TextFieldProps>;
     category?: PrimitiveOverrideProps<SelectFieldProps>;
+    customWorkflowTitle?: PrimitiveOverrideProps<TextFieldProps>;
+    customWorkflowContent?: PrimitiveOverrideProps<TextFieldProps>;
     staffId?: PrimitiveOverrideProps<TextFieldProps>;
     status?: PrimitiveOverrideProps<SelectFieldProps>;
     assignedApproverStaffIds?: PrimitiveOverrideProps<TextFieldProps>;

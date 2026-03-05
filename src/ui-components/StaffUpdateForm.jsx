@@ -210,6 +210,7 @@ export default function StaffUpdateForm(props) {
     approverMultiple: [],
     approverMultipleMode: "",
     shiftGroup: "",
+    attendanceManagementEnabled: false,
   };
   const [cognitoUserId, setCognitoUserId] = React.useState(
     initialValues.cognitoUserId
@@ -242,6 +243,8 @@ export default function StaffUpdateForm(props) {
     initialValues.approverMultipleMode
   );
   const [shiftGroup, setShiftGroup] = React.useState(initialValues.shiftGroup);
+  const [attendanceManagementEnabled, setAttendanceManagementEnabled] =
+    React.useState(initialValues.attendanceManagementEnabled);
   const [errors, setErrors] = React.useState({});
   const resetStateValues = () => {
     const cleanValues = staffRecord
@@ -265,6 +268,7 @@ export default function StaffUpdateForm(props) {
     setCurrentApproverMultipleValue("");
     setApproverMultipleMode(cleanValues.approverMultipleMode);
     setShiftGroup(cleanValues.shiftGroup);
+    setAttendanceManagementEnabled(cleanValues.attendanceManagementEnabled);
     setErrors({});
   };
   const [staffRecord, setStaffRecord] = React.useState(staffModelProp);
@@ -304,6 +308,7 @@ export default function StaffUpdateForm(props) {
     approverMultiple: [],
     approverMultipleMode: [],
     shiftGroup: [],
+    attendanceManagementEnabled: [],
   };
   const runValidationTasks = async (
     fieldName,
@@ -348,6 +353,7 @@ export default function StaffUpdateForm(props) {
           approverMultiple: approverMultiple ?? null,
           approverMultipleMode: approverMultipleMode ?? null,
           shiftGroup: shiftGroup ?? null,
+          attendanceManagementEnabled: attendanceManagementEnabled ?? null,
         };
         const validationResponses = await Promise.all(
           Object.keys(validations).reduce((promises, fieldName) => {
@@ -425,6 +431,7 @@ export default function StaffUpdateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.cognitoUserId ?? value;
@@ -465,6 +472,7 @@ export default function StaffUpdateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.familyName ?? value;
@@ -505,6 +513,7 @@ export default function StaffUpdateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.givenName ?? value;
@@ -545,6 +554,7 @@ export default function StaffUpdateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.mailAddress ?? value;
@@ -585,6 +595,7 @@ export default function StaffUpdateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.role ?? value;
@@ -625,6 +636,7 @@ export default function StaffUpdateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.enabled ?? value;
@@ -665,6 +677,7 @@ export default function StaffUpdateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.status ?? value;
@@ -705,6 +718,7 @@ export default function StaffUpdateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.owner ?? value;
@@ -745,6 +759,7 @@ export default function StaffUpdateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.usageStartDate ?? value;
@@ -785,6 +800,7 @@ export default function StaffUpdateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.sortKey ?? value;
@@ -825,6 +841,7 @@ export default function StaffUpdateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.workType ?? value;
@@ -865,6 +882,7 @@ export default function StaffUpdateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.developer ?? value;
@@ -905,6 +923,7 @@ export default function StaffUpdateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.approverSetting ?? value;
@@ -961,6 +980,7 @@ export default function StaffUpdateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.approverSingle ?? value;
@@ -997,6 +1017,7 @@ export default function StaffUpdateForm(props) {
               approverMultiple: values,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             values = result?.approverMultiple ?? values;
@@ -1067,6 +1088,7 @@ export default function StaffUpdateForm(props) {
               approverMultiple,
               approverMultipleMode: value,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.approverMultipleMode ?? value;
@@ -1120,6 +1142,7 @@ export default function StaffUpdateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup: value,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.shiftGroup ?? value;
@@ -1134,6 +1157,52 @@ export default function StaffUpdateForm(props) {
         hasError={errors.shiftGroup?.hasError}
         {...getOverrideProps(overrides, "shiftGroup")}
       ></TextField>
+      <SwitchField
+        label="Attendance management enabled"
+        defaultChecked={false}
+        isDisabled={false}
+        isChecked={attendanceManagementEnabled}
+        onChange={(e) => {
+          let value = e.target.checked;
+          if (onChange) {
+            const modelFields = {
+              cognitoUserId,
+              familyName,
+              givenName,
+              mailAddress,
+              role,
+              enabled,
+              status,
+              owner,
+              usageStartDate,
+              sortKey,
+              workType,
+              developer,
+              approverSetting,
+              approverSingle,
+              approverMultiple,
+              approverMultipleMode,
+              shiftGroup,
+              attendanceManagementEnabled: value,
+            };
+            const result = onChange(modelFields);
+            value = result?.attendanceManagementEnabled ?? value;
+          }
+          if (errors.attendanceManagementEnabled?.hasError) {
+            runValidationTasks("attendanceManagementEnabled", value);
+          }
+          setAttendanceManagementEnabled(value);
+        }}
+        onBlur={() =>
+          runValidationTasks(
+            "attendanceManagementEnabled",
+            attendanceManagementEnabled
+          )
+        }
+        errorMessage={errors.attendanceManagementEnabled?.errorMessage}
+        hasError={errors.attendanceManagementEnabled?.hasError}
+        {...getOverrideProps(overrides, "attendanceManagementEnabled")}
+      ></SwitchField>
       <Flex
         justifyContent="space-between"
         {...getOverrideProps(overrides, "CTAFlex")}

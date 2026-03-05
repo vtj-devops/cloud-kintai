@@ -16,7 +16,7 @@ const CATEGORY_LABELS_REVERSE = Object.entries(CATEGORY_LABELS).reduce(
   {
     [CLOCK_CORRECTION_LABEL]: WorkflowCategory.CLOCK_CORRECTION,
     [CLOCK_CORRECTION_CHECK_OUT_LABEL]: WorkflowCategory.CLOCK_CORRECTION,
-  } as Record<string, string>
+  } as Record<string, string>,
 );
 
 const STATUS_LABELS_REVERSE = Object.entries(STATUS_LABELS).reduce(
@@ -24,7 +24,7 @@ const STATUS_LABELS_REVERSE = Object.entries(STATUS_LABELS).reduce(
     acc[value] = key;
     return acc;
   },
-  {} as Record<string, string>
+  {} as Record<string, string>,
 );
 
 export type WorkflowLike = {
@@ -73,7 +73,7 @@ const formatIsoDate = (value?: string | null): string => {
 
 export function mapWorkflowsToListItems<T extends WorkflowLike>(
   workflows: T[] | null | undefined,
-  currentStaffId?: string
+  currentStaffId?: string,
 ): WorkflowListItem[] {
   if (!workflows || !currentStaffId) {
     return [];
@@ -85,16 +85,17 @@ export function mapWorkflowsToListItems<T extends WorkflowLike>(
       const status = workflow.status ?? undefined;
       const category = workflow.category ?? undefined;
       const categoryLabel = category ? getWorkflowCategoryLabel(workflow) : "";
+      const createdDate = formatIsoDate(workflow.createdAt);
       return {
         name: workflow.id ?? "",
         rawStaffId: workflow.staffId ?? undefined,
         rawId: workflow.id ?? undefined,
         rawStatus: status,
-        status: status ? STATUS_LABELS[status] ?? status : "",
+        status: status ? (STATUS_LABELS[status] ?? status) : "",
         rawCategory: category,
         category: categoryLabel,
-        createdAt: formatIsoDate(workflow.createdAt),
-        applicationDate: workflow.overTimeDetails?.date ?? undefined,
+        createdAt: createdDate,
+        applicationDate: workflow.overTimeDetails?.date ?? createdDate,
       } satisfies WorkflowListItem;
     });
 
@@ -110,7 +111,7 @@ export function mapWorkflowsToListItems<T extends WorkflowLike>(
 
 export function applyWorkflowFilters(
   items: WorkflowListItem[],
-  filters: WorkflowListFilters
+  filters: WorkflowListFilters,
 ): WorkflowListItem[] {
   return items.filter((item) => {
     if (filters.name && !item.name.includes(filters.name)) return false;
@@ -173,7 +174,7 @@ export function applyWorkflowFilters(
 }
 
 export const isWorkflowFilterActive = (
-  filters: WorkflowListFilters
+  filters: WorkflowListFilters,
 ): boolean => {
   const statusFilters = filters.status?.filter(Boolean) ?? [];
   const statusDiffersFromDefault =
@@ -182,11 +183,11 @@ export const isWorkflowFilterActive = (
 
   return Boolean(
     filters.name ||
-      filters.category ||
-      (statusFilters.length > 0 && statusDiffersFromDefault) ||
-      filters.applicationFrom ||
-      filters.applicationTo ||
-      filters.createdFrom ||
-      filters.createdTo
+    filters.category ||
+    (statusFilters.length > 0 && statusDiffersFromDefault) ||
+    filters.applicationFrom ||
+    filters.applicationTo ||
+    filters.createdFrom ||
+    filters.createdTo,
   );
 };

@@ -91,15 +91,15 @@ const SaveButton = styled(Button)(({ theme }) => ({
   width: 150,
   color: theme.palette.primary.contrastText,
   backgroundColor: theme.palette.primary.main,
-  border: `3px solid ${theme.palette.primary.main}`,
+  border: "none",
+  boxShadow: theme.shadows[2],
   "&:hover": {
-    color: theme.palette.primary.main,
-    backgroundColor: theme.palette.primary.contrastText,
-    border: `3px solid ${theme.palette.primary.light}`,
+    backgroundColor: theme.palette.primary.dark,
+    boxShadow: theme.shadows[4],
   },
   "&:disabled": {
     backgroundColor: "#E0E0E0",
-    border: "3px solid #E0E0E0",
+    boxShadow: "none",
   },
 }));
 
@@ -953,7 +953,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
               </Stack>
 
               {!readOnly && (
-                <GroupContainer>
+                <GroupContainer hideAccent hideBorder>
                   <QuickInputButtons
                     setValue={setValue}
                     restReplace={restReplace}
@@ -966,7 +966,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
                 </GroupContainer>
               )}
 
-              <GroupContainer>
+              <GroupContainer hideAccent hideBorder>
                 <Box>
                   <WorkDateItem
                     staffId={targetStaffId}
@@ -1171,7 +1171,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
                 remarksContent={<RemarksItem />}
                 additionalBottomContent={
                   !readOnly ? (
-                    <GroupContainer>
+                    <GroupContainer hideAccent hideBorder>
                       {attendance?.updatedAt && (
                         <Stack direction="row" alignItems={"center"}>
                           <Box sx={{ fontWeight: "bold", width: "150px" }}>

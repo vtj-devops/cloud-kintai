@@ -12,7 +12,11 @@ import {
 } from "@/entities/workflow/lib/workflowLabels";
 import { extractExistingWorkflowComments } from "@/features/workflow/comment-thread/model/workflowCommentBuilder";
 import type { WorkflowEntity } from "@/features/workflow/hooks/useWorkflowLoaderWorkflow";
-import { formatDateSlash, isoDateFromTimestamp , parseTimeToISO } from "@/shared/lib/time";
+import {
+  formatDateSlash,
+  isoDateFromTimestamp,
+  parseTimeToISO,
+} from "@/shared/lib/time";
 
 export type WorkflowEditLoaderState = {
   category: string;
@@ -36,6 +40,10 @@ export type WorkflowEditLoaderState = {
   setOvertimeEnd: (value: string | null) => void;
   overtimeReason: string;
   setOvertimeReason: (value: string) => void;
+  customWorkflowTitle: string;
+  setCustomWorkflowTitle: (value: string) => void;
+  customWorkflowContent: string;
+  setCustomWorkflowContent: (value: string) => void;
   draftMode: boolean;
   setDraftMode: (value: boolean) => void;
   applicant: StaffType | null;
@@ -45,7 +53,7 @@ export type WorkflowEditLoaderState = {
 
 export function useWorkflowEditLoaderState(
   workflow: WorkflowEntity,
-  staffs: StaffType[]
+  staffs: StaffType[],
 ): WorkflowEditLoaderState {
   const [category, setCategory] = useState("");
   const [applicationDate, setApplicationDate] = useState("");
@@ -58,6 +66,8 @@ export function useWorkflowEditLoaderState(
   const [overtimeStart, setOvertimeStart] = useState<string | null>(null);
   const [overtimeEnd, setOvertimeEnd] = useState<string | null>(null);
   const [overtimeReason, setOvertimeReason] = useState("");
+  const [customWorkflowTitle, setCustomWorkflowTitle] = useState("");
+  const [customWorkflowContent, setCustomWorkflowContent] = useState("");
   const [draftMode, setDraftMode] = useState(true);
   const [applicant, setApplicant] = useState<StaffType | null>(null);
   const [existingComments, setExistingComments] = useState<
@@ -101,7 +111,7 @@ export function useWorkflowEditLoaderState(
         const startTime = workflow.overTimeDetails.startTime;
         const endTime = workflow.overTimeDetails.endTime;
         setOvertimeStart(
-          startTime ? parseTimeToISO(startTime, overtimeDate) : null
+          startTime ? parseTimeToISO(startTime, overtimeDate) : null,
         );
         setOvertimeEnd(endTime ? parseTimeToISO(endTime, overtimeDate) : null);
         setOvertimeReason(workflow.overTimeDetails.reason || "");
@@ -114,7 +124,7 @@ export function useWorkflowEditLoaderState(
         const startTime = workflow.overTimeDetails.startTime;
         const endTime = workflow.overTimeDetails.endTime;
         setOvertimeStart(
-          startTime ? parseTimeToISO(startTime, overtimeDate) : null
+          startTime ? parseTimeToISO(startTime, overtimeDate) : null,
         );
         setOvertimeEnd(endTime ? parseTimeToISO(endTime, overtimeDate) : null);
         setOvertimeReason(workflow.overTimeDetails.reason || "");
@@ -125,6 +135,9 @@ export function useWorkflowEditLoaderState(
       setOvertimeEnd(null);
       setOvertimeReason("");
     }
+
+    setCustomWorkflowTitle(workflow.customWorkflowTitle || "");
+    setCustomWorkflowContent(workflow.customWorkflowContent || "");
 
     setDraftMode(workflow.status === WorkflowStatus.DRAFT);
     setExistingComments(extractExistingWorkflowComments(workflow));
@@ -144,7 +157,7 @@ export function useWorkflowEditLoaderState(
           id: workflow.staffId,
           familyName: "",
           givenName: "",
-        } as StaffType)
+        } as StaffType),
     );
   }, [workflow.staffId, staffs]);
 
@@ -170,6 +183,10 @@ export function useWorkflowEditLoaderState(
     setOvertimeEnd,
     overtimeReason,
     setOvertimeReason,
+    customWorkflowTitle,
+    setCustomWorkflowTitle,
+    customWorkflowContent,
+    setCustomWorkflowContent,
     draftMode,
     setDraftMode,
     applicant,

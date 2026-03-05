@@ -109,6 +109,16 @@ export const createAppConfig = /* GraphQL */ `mutation CreateAppConfig(
       fixed
       __typename
     }
+    workflowCategoryOrder {
+      categories {
+        category
+        label
+        displayOrder
+        enabled
+        __typename
+      }
+      __typename
+    }
     overTimeCheckEnabled
     createdAt
     updatedAt
@@ -170,6 +180,16 @@ export const updateAppConfig = /* GraphQL */ `mutation UpdateAppConfig(
       min
       max
       fixed
+      __typename
+    }
+    workflowCategoryOrder {
+      categories {
+        category
+        label
+        displayOrder
+        enabled
+        __typename
+      }
       __typename
     }
     overTimeCheckEnabled
@@ -235,6 +255,16 @@ export const deleteAppConfig = /* GraphQL */ `mutation DeleteAppConfig(
       fixed
       __typename
     }
+    workflowCategoryOrder {
+      categories {
+        category
+        label
+        displayOrder
+        enabled
+        __typename
+      }
+      __typename
+    }
     overTimeCheckEnabled
     createdAt
     updatedAt
@@ -280,6 +310,7 @@ export const createStaff = /* GraphQL */ `mutation CreateStaff(
     approverMultiple
     approverMultipleMode
     shiftGroup
+    attendanceManagementEnabled
     createdAt
     updatedAt
     __typename
@@ -324,6 +355,7 @@ export const updateStaff = /* GraphQL */ `mutation UpdateStaff(
     approverMultiple
     approverMultipleMode
     shiftGroup
+    attendanceManagementEnabled
     createdAt
     updatedAt
     __typename
@@ -368,6 +400,7 @@ export const deleteStaff = /* GraphQL */ `mutation DeleteStaff(
     approverMultiple
     approverMultipleMode
     shiftGroup
+    attendanceManagementEnabled
     createdAt
     updatedAt
     __typename
@@ -1200,6 +1233,8 @@ export const createWorkflow = /* GraphQL */ `mutation CreateWorkflow(
     rejectedStaffIds
     finalDecisionTimestamp
     category
+    customWorkflowTitle
+    customWorkflowContent
     staffId
     status
     assignedApproverStaffIds
@@ -1250,6 +1285,8 @@ export const updateWorkflow = /* GraphQL */ `mutation UpdateWorkflow(
     rejectedStaffIds
     finalDecisionTimestamp
     category
+    customWorkflowTitle
+    customWorkflowContent
     staffId
     status
     assignedApproverStaffIds
@@ -1300,6 +1337,8 @@ export const deleteWorkflow = /* GraphQL */ `mutation DeleteWorkflow(
     rejectedStaffIds
     finalDecisionTimestamp
     category
+    customWorkflowTitle
+    customWorkflowContent
     staffId
     status
     assignedApproverStaffIds
@@ -1339,6 +1378,63 @@ export const deleteWorkflow = /* GraphQL */ `mutation DeleteWorkflow(
 ` as GeneratedMutation<
   APITypes.DeleteWorkflowMutationVariables,
   APITypes.DeleteWorkflowMutation
+>;
+export const createWorkflowTemplate = /* GraphQL */ `mutation CreateWorkflowTemplate(
+  $input: CreateWorkflowTemplateInput!
+  $condition: ModelWorkflowTemplateConditionInput
+) {
+  createWorkflowTemplate(input: $input, condition: $condition) {
+    id
+    name
+    title
+    content
+    organizationId
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateWorkflowTemplateMutationVariables,
+  APITypes.CreateWorkflowTemplateMutation
+>;
+export const updateWorkflowTemplate = /* GraphQL */ `mutation UpdateWorkflowTemplate(
+  $input: UpdateWorkflowTemplateInput!
+  $condition: ModelWorkflowTemplateConditionInput
+) {
+  updateWorkflowTemplate(input: $input, condition: $condition) {
+    id
+    name
+    title
+    content
+    organizationId
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateWorkflowTemplateMutationVariables,
+  APITypes.UpdateWorkflowTemplateMutation
+>;
+export const deleteWorkflowTemplate = /* GraphQL */ `mutation DeleteWorkflowTemplate(
+  $input: DeleteWorkflowTemplateInput!
+  $condition: ModelWorkflowTemplateConditionInput
+) {
+  deleteWorkflowTemplate(input: $input, condition: $condition) {
+    id
+    name
+    title
+    content
+    organizationId
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteWorkflowTemplateMutationVariables,
+  APITypes.DeleteWorkflowTemplateMutation
 >;
 export const createOperationLog = /* GraphQL */ `mutation CreateOperationLog(
   $input: CreateOperationLogInput!

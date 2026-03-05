@@ -3,6 +3,7 @@ import {
   useGetAppConfigQuery,
   useUpdateAppConfigMutation,
 } from "@entities/app-config/api/appConfigApi";
+import { getWorkflowCategoryOrder } from "@entities/workflow/lib/workflowLabels";
 import type {
   AppConfig,
   CreateAppConfigInput,
@@ -283,6 +284,11 @@ const useAppConfig = () => {
     [config?.overTimeCheckEnabled],
   );
 
+  const getWorkflowCategoryOrderFromConfig = useCallback(
+    () => getWorkflowCategoryOrder(config),
+    [config],
+  );
+
   const getThemeColor = useCallback(() => {
     const fallbackColor = DEFAULT_CONFIG.themeColor;
     const candidate = config?.themeColor ?? fallbackColor;
@@ -349,6 +355,7 @@ const useAppConfig = () => {
     getSpecialHolidayEnabled,
     getAbsentEnabled,
     getOverTimeCheckEnabled,
+    getWorkflowCategoryOrder: getWorkflowCategoryOrderFromConfig,
     getThemeColor,
     getThemeTokens,
   };

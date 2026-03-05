@@ -1,5 +1,6 @@
 import type { ShiftGroupConfig } from "@entities/app-config/model/shiftGroupTypes";
 import { DEFAULT_CONFIG } from "@entities/app-config/model/useAppConfig";
+import type { WorkflowCategoryOrderItem } from "@entities/workflow/lib/workflowLabels";
 import {
   CreateAppConfigInput,
   UpdateAppConfigInput,
@@ -52,6 +53,7 @@ type AppConfigContextProps = {
   getSpecialHolidayEnabled?: () => boolean;
   getAbsentEnabled?: () => boolean;
   getOverTimeCheckEnabled?: () => boolean;
+  getWorkflowCategoryOrder: () => WorkflowCategoryOrderItem[];
   getThemeColor: () => string;
   getThemeTokens: (brandPrimaryOverride?: string) => DesignTokens;
 };
@@ -94,6 +96,7 @@ export const AppConfigContext = createContext<AppConfigContextProps>({
   getSpecialHolidayEnabled: () => false,
   getAbsentEnabled: () => false,
   getOverTimeCheckEnabled: () => false,
+  getWorkflowCategoryOrder: () => [],
   // Ensure a string is always returned to satisfy the context type
   getThemeColor: () => DEFAULT_CONFIG.themeColor ?? "",
   getThemeTokens: () => DEFAULT_THEME_TOKENS,

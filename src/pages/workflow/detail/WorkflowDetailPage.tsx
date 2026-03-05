@@ -178,6 +178,10 @@ export default function WorkflowDetailPage() {
                     applicationDate={applicationDate}
                     status={workflow.status ?? null}
                     overTimeDetails={workflow.overTimeDetails ?? null}
+                    customWorkflowTitle={workflow.customWorkflowTitle ?? null}
+                    customWorkflowContent={
+                      workflow.customWorkflowContent ?? null
+                    }
                     approvalSteps={approvalSteps}
                   />
                 </Stack>

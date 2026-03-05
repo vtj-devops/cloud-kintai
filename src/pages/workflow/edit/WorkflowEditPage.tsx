@@ -74,6 +74,10 @@ export default function WorkflowEditPage() {
     setOvertimeEnd,
     overtimeReason,
     setOvertimeReason,
+    customWorkflowTitle,
+    setCustomWorkflowTitle,
+    customWorkflowContent,
+    setCustomWorkflowContent,
     draftMode,
     setDraftMode,
     applicant,
@@ -84,6 +88,9 @@ export default function WorkflowEditPage() {
   const [absenceDateError, setAbsenceDateError] = useState("");
   const [overtimeDateError, setOvertimeDateError] = useState("");
   const [overtimeError, setOvertimeError] = useState("");
+  const [customWorkflowTitleError, setCustomWorkflowTitleError] = useState("");
+  const [customWorkflowContentError, setCustomWorkflowContentError] =
+    useState("");
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,6 +105,8 @@ export default function WorkflowEditPage() {
       overtimeStart,
       overtimeEnd,
       overtimeReason,
+      customWorkflowTitle,
+      customWorkflowContent,
     };
 
     const validation = validateWorkflowForm(formState);
@@ -105,6 +114,12 @@ export default function WorkflowEditPage() {
     setAbsenceDateError(validation.errors.absenceDateError ?? "");
     setOvertimeDateError(validation.errors.overtimeDateError ?? "");
     setOvertimeError(validation.errors.overtimeError ?? "");
+    setCustomWorkflowTitleError(
+      validation.errors.customWorkflowTitleError ?? "",
+    );
+    setCustomWorkflowContentError(
+      validation.errors.customWorkflowContentError ?? "",
+    );
     if (!validation.isValid) return;
 
     (async () => {
@@ -270,6 +285,12 @@ export default function WorkflowEditPage() {
               overtimeError={overtimeError}
               overtimeReason={overtimeReason}
               setOvertimeReason={setOvertimeReason}
+              customWorkflowTitle={customWorkflowTitle}
+              setCustomWorkflowTitle={setCustomWorkflowTitle}
+              customWorkflowContent={customWorkflowContent}
+              setCustomWorkflowContent={setCustomWorkflowContent}
+              customWorkflowTitleError={customWorkflowTitleError}
+              customWorkflowContentError={customWorkflowContentError}
             />
 
             <Grid item xs={12} sm={3}>

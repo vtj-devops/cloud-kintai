@@ -31,6 +31,7 @@ export default function AdminMasterLayout() {
     { name: "カレンダー設定", path: "/admin/master/holiday_calendar" },
     { name: "テーマ", path: "/admin/master/theme" },
     { name: "シフト", path: "/admin/master/shift" },
+    { name: "ワークフロー", path: "/admin/master/workflow" },
     {
       name: "勤怠",
       path: "/admin/master/feature_management",

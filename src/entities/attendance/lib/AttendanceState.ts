@@ -33,10 +33,18 @@ export class AttendanceState {
     private staff: Staff,
     private attendance: Attendance,
     private holidayCalendars: HolidayCalendar[],
-    private companyHolidayCalendars: CompanyHolidayCalendar[]
+    private companyHolidayCalendars: CompanyHolidayCalendar[],
   ) {}
 
   get(): AttendanceStatus {
+    const attendanceManagementEnabled = (
+      this.staff as Staff & { attendanceManagementEnabled?: boolean | null }
+    ).attendanceManagementEnabled;
+
+    if (attendanceManagementEnabled === false) {
+      return AttendanceStatus.None;
+    }
+
     // 当日の勤怠は確定前のためステータス判定から除外する
     if (this.isToday()) {
       return AttendanceStatus.None;
@@ -67,7 +75,7 @@ export class AttendanceState {
     const isWeekday = isShift
       ? true
       : new DayOfWeek(this.holidayCalendars).isWeekday(
-          this.attendance.workDate
+          this.attendance.workDate,
         );
 
     if (isWeekday) {
@@ -115,14 +123,14 @@ export class AttendanceState {
   private isHoliday() {
     return new Holiday(
       this.holidayCalendars,
-      this.attendance.workDate
+      this.attendance.workDate,
     ).isHoliday();
   }
 
   private isCompanyHoliday() {
     return new CompanyHoliday(
       this.companyHolidayCalendars,
-      this.attendance.workDate
+      this.attendance.workDate,
     ).isHoliday();
   }
 
@@ -132,7 +140,7 @@ export class AttendanceState {
     }
 
     const changeRequests = this.attendance.changeRequests.filter(
-      (item): item is NonNullable<typeof item> => !!item
+      (item): item is NonNullable<typeof item> => !!item,
     );
 
     return changeRequests.filter((item) => !item.completed).length > 0;

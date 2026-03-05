@@ -208,6 +208,7 @@ export default function StaffCreateForm(props) {
     approverMultiple: [],
     approverMultipleMode: "",
     shiftGroup: "",
+    attendanceManagementEnabled: false,
   };
   const [cognitoUserId, setCognitoUserId] = React.useState(
     initialValues.cognitoUserId
@@ -240,6 +241,8 @@ export default function StaffCreateForm(props) {
     initialValues.approverMultipleMode
   );
   const [shiftGroup, setShiftGroup] = React.useState(initialValues.shiftGroup);
+  const [attendanceManagementEnabled, setAttendanceManagementEnabled] =
+    React.useState(initialValues.attendanceManagementEnabled);
   const [errors, setErrors] = React.useState({});
   const resetStateValues = () => {
     setCognitoUserId(initialValues.cognitoUserId);
@@ -260,6 +263,7 @@ export default function StaffCreateForm(props) {
     setCurrentApproverMultipleValue("");
     setApproverMultipleMode(initialValues.approverMultipleMode);
     setShiftGroup(initialValues.shiftGroup);
+    setAttendanceManagementEnabled(initialValues.attendanceManagementEnabled);
     setErrors({});
   };
   const [currentApproverMultipleValue, setCurrentApproverMultipleValue] =
@@ -283,6 +287,7 @@ export default function StaffCreateForm(props) {
     approverMultiple: [],
     approverMultipleMode: [],
     shiftGroup: [],
+    attendanceManagementEnabled: [],
   };
   const runValidationTasks = async (
     fieldName,
@@ -327,6 +332,7 @@ export default function StaffCreateForm(props) {
           approverMultiple,
           approverMultipleMode,
           shiftGroup,
+          attendanceManagementEnabled,
         };
         const validationResponses = await Promise.all(
           Object.keys(validations).reduce((promises, fieldName) => {
@@ -406,6 +412,7 @@ export default function StaffCreateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.cognitoUserId ?? value;
@@ -446,6 +453,7 @@ export default function StaffCreateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.familyName ?? value;
@@ -486,6 +494,7 @@ export default function StaffCreateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.givenName ?? value;
@@ -526,6 +535,7 @@ export default function StaffCreateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.mailAddress ?? value;
@@ -566,6 +576,7 @@ export default function StaffCreateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.role ?? value;
@@ -606,6 +617,7 @@ export default function StaffCreateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.enabled ?? value;
@@ -646,6 +658,7 @@ export default function StaffCreateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.status ?? value;
@@ -686,6 +699,7 @@ export default function StaffCreateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.owner ?? value;
@@ -726,6 +740,7 @@ export default function StaffCreateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.usageStartDate ?? value;
@@ -766,6 +781,7 @@ export default function StaffCreateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.sortKey ?? value;
@@ -806,6 +822,7 @@ export default function StaffCreateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.workType ?? value;
@@ -846,6 +863,7 @@ export default function StaffCreateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.developer ?? value;
@@ -886,6 +904,7 @@ export default function StaffCreateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.approverSetting ?? value;
@@ -942,6 +961,7 @@ export default function StaffCreateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.approverSingle ?? value;
@@ -978,6 +998,7 @@ export default function StaffCreateForm(props) {
               approverMultiple: values,
               approverMultipleMode,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             values = result?.approverMultiple ?? values;
@@ -1048,6 +1069,7 @@ export default function StaffCreateForm(props) {
               approverMultiple,
               approverMultipleMode: value,
               shiftGroup,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.approverMultipleMode ?? value;
@@ -1101,6 +1123,7 @@ export default function StaffCreateForm(props) {
               approverMultiple,
               approverMultipleMode,
               shiftGroup: value,
+              attendanceManagementEnabled,
             };
             const result = onChange(modelFields);
             value = result?.shiftGroup ?? value;
@@ -1115,6 +1138,52 @@ export default function StaffCreateForm(props) {
         hasError={errors.shiftGroup?.hasError}
         {...getOverrideProps(overrides, "shiftGroup")}
       ></TextField>
+      <SwitchField
+        label="Attendance management enabled"
+        defaultChecked={false}
+        isDisabled={false}
+        isChecked={attendanceManagementEnabled}
+        onChange={(e) => {
+          let value = e.target.checked;
+          if (onChange) {
+            const modelFields = {
+              cognitoUserId,
+              familyName,
+              givenName,
+              mailAddress,
+              role,
+              enabled,
+              status,
+              owner,
+              usageStartDate,
+              sortKey,
+              workType,
+              developer,
+              approverSetting,
+              approverSingle,
+              approverMultiple,
+              approverMultipleMode,
+              shiftGroup,
+              attendanceManagementEnabled: value,
+            };
+            const result = onChange(modelFields);
+            value = result?.attendanceManagementEnabled ?? value;
+          }
+          if (errors.attendanceManagementEnabled?.hasError) {
+            runValidationTasks("attendanceManagementEnabled", value);
+          }
+          setAttendanceManagementEnabled(value);
+        }}
+        onBlur={() =>
+          runValidationTasks(
+            "attendanceManagementEnabled",
+            attendanceManagementEnabled
+          )
+        }
+        errorMessage={errors.attendanceManagementEnabled?.errorMessage}
+        hasError={errors.attendanceManagementEnabled?.hasError}
+        {...getOverrideProps(overrides, "attendanceManagementEnabled")}
+      ></SwitchField>
       <Flex
         justifyContent="space-between"
         {...getOverrideProps(overrides, "CTAFlex")}

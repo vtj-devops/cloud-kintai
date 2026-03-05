@@ -27,6 +27,7 @@ import {
 import { EditButton } from "@/features/admin/staff/ui/EditButton";
 import {
   AccountStatusTableCell,
+  AttendanceManagementTableCell,
   CreatedAtTableCell,
   RoleTableCell,
   StaffNameTableCell,
@@ -104,6 +105,7 @@ export default function AdminStaff() {
                   <TableCell>名前</TableCell>
                   <TableCell>メールアドレス</TableCell>
                   <TableCell>権限</TableCell>
+                  <TableCell>勤怠管理</TableCell>
                   <TableCell>勤務形態</TableCell>
                   <TableCell>汎用コード</TableCell>
                   <TableCell>作成日時</TableCell>
@@ -144,6 +146,7 @@ export default function AdminStaff() {
                       <StaffNameTableCell staff={staff} />
                       <TableCell>{staff.mailAddress}</TableCell>
                       <RoleTableCell staff={staff} />
+                      <AttendanceManagementTableCell staff={staff} />
                       <WorkTypeTableCell staff={staff} />
                       <TableCell>{staff.sortKey || ""}</TableCell>
                       <CreatedAtTableCell staff={staff} />

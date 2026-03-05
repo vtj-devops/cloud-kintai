@@ -13,6 +13,97 @@ export const CATEGORY_LABELS: Record<string, string> = {
   [WorkflowCategory.CUSTOM]: "その他",
 };
 
+export type WorkflowCategoryOrderItem = {
+  category: WorkflowCategory;
+  label: string;
+  displayOrder: number;
+  enabled: boolean;
+};
+
+type WorkflowCategoryOrderConfigLike = {
+  workflowCategoryOrder?: {
+    categories?: Array<{
+      category?: WorkflowCategory | null;
+      label?: string | null;
+      displayOrder?: number | null;
+      enabled?: boolean | null;
+    } | null> | null;
+  } | null;
+};
+
+const DEFAULT_WORKFLOW_CATEGORY_ORDER: readonly WorkflowCategory[] = [
+  WorkflowCategory.PAID_LEAVE,
+  WorkflowCategory.ABSENCE,
+  WorkflowCategory.CLOCK_CORRECTION,
+  WorkflowCategory.OVERTIME,
+  WorkflowCategory.CUSTOM,
+];
+
+export const getDefaultWorkflowCategoryOrder =
+  (): WorkflowCategoryOrderItem[] =>
+    DEFAULT_WORKFLOW_CATEGORY_ORDER.map((category, index) => ({
+      category,
+      label: CATEGORY_LABELS[category],
+      displayOrder: index,
+      enabled: true,
+    }));
+
+const isWorkflowCategory = (value?: string | null): value is WorkflowCategory =>
+  typeof value === "string" && value in CATEGORY_LABELS;
+
+export const normalizeWorkflowCategoryOrder = (
+  categories?: Array<{
+    category?: WorkflowCategory | null;
+    label?: string | null;
+    displayOrder?: number | null;
+    enabled?: boolean | null;
+  } | null> | null,
+): WorkflowCategoryOrderItem[] => {
+  const fallback = getDefaultWorkflowCategoryOrder();
+  if (!categories || categories.length === 0) {
+    return fallback;
+  }
+
+  const inputByCategory = new Map<
+    WorkflowCategory,
+    WorkflowCategoryOrderItem
+  >();
+  categories.forEach((item) => {
+    if (!item || !isWorkflowCategory(item.category)) {
+      return;
+    }
+
+    inputByCategory.set(item.category, {
+      category: item.category,
+      label: item.label?.trim() || CATEGORY_LABELS[item.category],
+      displayOrder: item.displayOrder ?? Number.MAX_SAFE_INTEGER,
+      enabled: item.enabled ?? true,
+    });
+  });
+
+  fallback.forEach((item) => {
+    if (!inputByCategory.has(item.category)) {
+      inputByCategory.set(item.category, item);
+    }
+  });
+
+  return Array.from(inputByCategory.values())
+    .toSorted((a, b) => a.displayOrder - b.displayOrder)
+    .map((item, index) => ({ ...item, displayOrder: index }));
+};
+
+export const getWorkflowCategoryOrder = (
+  appConfig?: WorkflowCategoryOrderConfigLike | null,
+): WorkflowCategoryOrderItem[] => {
+  const configured = appConfig?.workflowCategoryOrder?.categories;
+  return normalizeWorkflowCategoryOrder(configured);
+};
+
+export const getEnabledWorkflowCategories = (
+  appConfig?: WorkflowCategoryOrderConfigLike | null,
+): WorkflowCategoryOrderItem[] =>
+  getWorkflowCategoryOrder(appConfig).filter((item) => item.enabled);
+
 export const STATUS_LABELS: Record<string, string> = {
   [WorkflowStatus.DRAFT]: "下書き",
   [WorkflowStatus.SUBMITTED]: "提出済",
@@ -24,13 +115,13 @@ export const STATUS_LABELS: Record<string, string> = {
 
 export const REVERSE_CATEGORY: Record<string, string> = {
   ...Object.fromEntries(
-    Object.entries(CATEGORY_LABELS).map(([k, v]) => [v, k])
+    Object.entries(CATEGORY_LABELS).map(([k, v]) => [v, k]),
   ),
   [CLOCK_CORRECTION_CHECK_IN_LABEL]: WorkflowCategory.CLOCK_CORRECTION,
   [CLOCK_CORRECTION_CHECK_OUT_LABEL]: WorkflowCategory.CLOCK_CORRECTION,
 };
 export const REVERSE_STATUS: Record<string, string> = Object.fromEntries(
-  Object.entries(STATUS_LABELS).map(([k, v]) => [v, k])
+  Object.entries(STATUS_LABELS).map(([k, v]) => [v, k]),
 );
 
 type WorkflowLike = {

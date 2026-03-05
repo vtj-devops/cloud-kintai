@@ -1,4 +1,12 @@
-import { Box, Grid, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Grid,
+  MenuItem,
+  Select,
+  TextField,
+  Typography,
+} from "@mui/material";
 
 import {
   CLOCK_CORRECTION_CHECK_OUT_LABEL,
@@ -31,6 +39,20 @@ type Props = {
   overtimeError: string;
   overtimeReason?: string;
   setOvertimeReason?: (v: string) => void;
+  customWorkflowTitle?: string;
+  setCustomWorkflowTitle?: (v: string) => void;
+  customWorkflowContent?: string;
+  setCustomWorkflowContent?: (v: string) => void;
+  customWorkflowTitleError?: string;
+  customWorkflowContentError?: string;
+  templateOptions?: Array<{
+    id: string;
+    name: string;
+  }>;
+  selectedTemplateId?: string;
+  setSelectedTemplateId?: (v: string) => void;
+  onApplyTemplate?: () => void;
+  disableTemplateApply?: boolean;
 };
 
 export default function WorkflowTypeFields({
@@ -58,6 +80,17 @@ export default function WorkflowTypeFields({
   overtimeError,
   overtimeReason,
   setOvertimeReason,
+  customWorkflowTitle,
+  setCustomWorkflowTitle,
+  customWorkflowContent,
+  setCustomWorkflowContent,
+  customWorkflowTitleError,
+  customWorkflowContentError,
+  templateOptions,
+  selectedTemplateId,
+  setSelectedTemplateId,
+  onApplyTemplate,
+  disableTemplateApply,
 }: Props) {
   return (
     <>
@@ -300,6 +333,87 @@ export default function WorkflowTypeFields({
               helperText={overtimeError}
               disabled={disabled}
               sx={{ maxWidth: 160 }}
+            />
+          </Grid>
+        </>
+      )}
+
+      {category === "その他" && (
+        <>
+          <Grid item xs={12} sm={3}>
+            <Typography variant="body2" color="text.secondary">
+              テンプレート
+            </Typography>
+          </Grid>
+          <Grid item xs={12} sm={9}>
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+              <Select
+                size="small"
+                fullWidth
+                value={selectedTemplateId ?? ""}
+                onChange={(e) =>
+                  setSelectedTemplateId && setSelectedTemplateId(e.target.value)
+                }
+                disabled={disabled}
+                displayEmpty
+              >
+                <MenuItem value="">
+                  <em>テンプレートを選択</em>
+                </MenuItem>
+                {(templateOptions ?? []).map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              <Button
+                variant="outlined"
+                onClick={() => onApplyTemplate && onApplyTemplate()}
+                disabled={disabled || disableTemplateApply}
+              >
+                適用
+              </Button>
+            </Box>
+          </Grid>
+
+          <Grid item xs={12} sm={3}>
+            <Typography variant="body2" color="text.secondary">
+              タイトル
+            </Typography>
+          </Grid>
+          <Grid item xs={12} sm={9}>
+            <TextField
+              size="small"
+              fullWidth
+              value={customWorkflowTitle ?? ""}
+              onChange={(e) =>
+                setCustomWorkflowTitle && setCustomWorkflowTitle(e.target.value)
+              }
+              disabled={disabled}
+              error={Boolean(customWorkflowTitleError)}
+              helperText={customWorkflowTitleError}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={3}>
+            <Typography variant="body2" color="text.secondary">
+              詳細
+            </Typography>
+          </Grid>
+          <Grid item xs={12} sm={9}>
+            <TextField
+              size="small"
+              fullWidth
+              multiline
+              minRows={6}
+              value={customWorkflowContent ?? ""}
+              onChange={(e) =>
+                setCustomWorkflowContent &&
+                setCustomWorkflowContent(e.target.value)
+              }
+              disabled={disabled}
+              error={Boolean(customWorkflowContentError)}
+              helperText={customWorkflowContentError}
             />
           </Grid>
         </>

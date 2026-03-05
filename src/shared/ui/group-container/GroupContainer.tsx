@@ -79,6 +79,12 @@ const GroupContainer = ({
   sx,
 }: GroupContainerProps) => {
   const [collapsed, setCollapsed] = useState<boolean>(defaultCollapsed);
+  const borderClassName = hideBorder
+    ? "border-0"
+    : "border-[var(--group-border-width)] border-[var(--group-border-color)]";
+  const accentClassName = hideAccent
+    ? "border-l-0"
+    : "border-l-[var(--group-accent-width)] border-l-[var(--group-accent-color)]";
   const groupVars: CSSProperties & Record<`--${string}`, string> = {
     "--group-border-width": GROUP_BORDER_WIDTH,
     "--group-accent-width": GROUP_ACCENT_WIDTH,
@@ -102,7 +108,7 @@ const GroupContainer = ({
 
   return (
     <Box
-      className="rounded-[var(--group-radius)] border-b-[var(--group-border-width)] border-t-[var(--group-border-width)] border-b-[var(--group-border-color)] border-t-[var(--group-border-color)] border-l-[var(--group-accent-width)] border-l-[var(--group-accent-color)] border-solid bg-[var(--group-background)] p-[var(--group-padding)] shadow-[var(--group-shadow)]"
+      className={`rounded-[var(--group-radius)] border-solid bg-[var(--group-background)] p-[var(--group-padding)] shadow-[var(--group-shadow)] ${borderClassName} ${accentClassName}`}
       style={groupVars}
       sx={sx}
     >

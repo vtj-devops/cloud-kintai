@@ -4,114 +4,114 @@ import AdminShiftGuard from "../pages/admin/AdminShiftGuard";
 import { createLazyRoute } from "./lazyRoute";
 
 const AdminAttendanceRoute = createLazyRoute(
-  () => import("../pages/admin/AdminAttendance")
+  () => import("../pages/admin/AdminAttendance"),
 );
 const AdminAttendanceEditorRoute = createLazyRoute(
-  () => import("../pages/admin/AdminAttendanceEditor")
+  () => import("../pages/admin/AdminAttendanceEditor"),
 );
 const AdminAttendanceHistoryRoute = createLazyRoute(
-  () => import("../pages/admin/AdminAttendanceHistory")
+  () => import("../pages/admin/AdminAttendanceHistory"),
 );
 const AdminAttendancePrintRoute = createLazyRoute(
-  () => import("../pages/admin/AdminAttendancePrint")
+  () => import("../pages/admin/AdminAttendancePrint"),
 );
 const AbsentRoute = createLazyRoute(
-  () => import("@/features/admin/configManagement/ui/Absent")
+  () => import("@/features/admin/configManagement/ui/Absent"),
 );
 const AdminConfigManagementRoute = createLazyRoute(
-  () => import("@/features/admin/configManagement/ui/AdminConfigManagement")
+  () => import("@/features/admin/configManagement/ui/AdminConfigManagement"),
 );
 const AmPmHolidayRoute = createLazyRoute(
-  () => import("@/features/admin/configManagement/ui/AmPmHoliday")
+  () => import("@/features/admin/configManagement/ui/AmPmHoliday"),
 );
 const LinksRoute = createLazyRoute(
-  () => import("@/features/admin/configManagement/ui/Links")
+  () => import("@/features/admin/configManagement/ui/Links"),
 );
 const AttendanceStatisticsRoute = createLazyRoute(
-  () => import("@/features/admin/configManagement/ui/AttendanceStatistics")
+  () => import("@/features/admin/configManagement/ui/AttendanceStatistics"),
 );
 const OfficeModeRoute = createLazyRoute(
-  () => import("@/features/admin/configManagement/ui/OfficeMode")
+  () => import("@/features/admin/configManagement/ui/OfficeMode"),
 );
 const QuickInputRoute = createLazyRoute(
-  () => import("@/features/admin/configManagement/ui/QuickInput")
+  () => import("@/features/admin/configManagement/ui/QuickInput"),
 );
 const ReasonsRoute = createLazyRoute(
-  () => import("@/features/admin/configManagement/ui/Reasons")
+  () => import("@/features/admin/configManagement/ui/Reasons"),
 );
 const SpecialHolidayRoute = createLazyRoute(
-  () => import("@/features/admin/configManagement/ui/SpecialHoliday")
+  () => import("@/features/admin/configManagement/ui/SpecialHoliday"),
 );
 const WorkingTimeRoute = createLazyRoute(
-  () => import("@/features/admin/configManagement/ui/WorkingTime")
+  () => import("@/features/admin/configManagement/ui/WorkingTime"),
 );
 const AdminDailyReportDetailRoute = createLazyRoute(
   () =>
-    import("../pages/admin/AdminDailyReportManagement/AdminDailyReportDetail")
+    import("../pages/admin/AdminDailyReportManagement/AdminDailyReportDetail"),
 );
 const AdminDailyReportManagementRoute = createLazyRoute(
   () =>
-    import(
-      "../pages/admin/AdminDailyReportManagement/AdminDailyReportManagement"
-    )
+    import("../pages/admin/AdminDailyReportManagement/AdminDailyReportManagement"),
 );
 const AdminHolidayCalendarRoute = createLazyRoute(
   () =>
-    import(
-      "@/features/admin/holidayCalendar/ui/HolidayCalendar/AdminHolidayCalendar"
-    )
+    import("@/features/admin/holidayCalendar/ui/HolidayCalendar/AdminHolidayCalendar"),
 );
 const AdminLogsRoute = createLazyRoute(
-  () => import("../pages/admin/AdminLogs/AdminLogsClean")
+  () => import("../pages/admin/AdminLogs/AdminLogsClean"),
 );
 const AdminMasterLayoutRoute = createLazyRoute(
-  () => import("../pages/admin/AdminMasterLayout")
+  () => import("../pages/admin/AdminMasterLayout"),
 );
 const AdminShiftSettingsRoute = createLazyRoute(
-  () => import("../pages/admin/AdminShiftSettings/AdminShiftSettings")
+  () => import("../pages/admin/AdminShiftSettings/AdminShiftSettings"),
+);
+const AdminWorkflowCategorySettingsRoute = createLazyRoute(
+  () =>
+    import("@/features/admin-config-workflow/AdminWorkflowCategorySettings"),
 );
 const AdminStaffRoute = createLazyRoute(
-  () => import("@/features/admin/staff/ui/AdminStaff")
+  () => import("@/features/admin/staff/ui/AdminStaff"),
 );
 const AdminStaffAttendanceListRoute = createLazyRoute(
   () =>
-    import("@/features/admin/staffAttendanceList/ui/AdminStaffAttendanceList")
+    import("@/features/admin/staffAttendanceList/ui/AdminStaffAttendanceList"),
 );
 const AdminStaffEditorRoute = createLazyRoute(
-  () => import("@/features/admin/staff/ui/editor/AdminStaffEditor")
+  () => import("@/features/admin/staff/ui/editor/AdminStaffEditor"),
 );
 const AdminThemeRoute = createLazyRoute(
-  () => import("../pages/admin/AdminTheme/AdminTheme")
+  () => import("../pages/admin/AdminTheme/AdminTheme"),
 );
 const AdminWorkflowRoute = createLazyRoute(
-  () => import("../pages/admin/AdminWorkflow/AdminWorkflow")
+  () => import("../pages/admin/AdminWorkflow/AdminWorkflow"),
 );
 const AdminWorkflowDetailRoute = createLazyRoute(
-  () => import("../pages/admin/AdminWorkflow/AdminWorkflowDetail")
+  () => import("../pages/admin/AdminWorkflow/AdminWorkflowDetail"),
 );
 const JobTermRoute = createLazyRoute(
-  () => import("@/features/admin/jobTerm/ui/JobTerm")
+  () => import("@/features/admin/jobTerm/ui/JobTerm"),
 );
 const ShiftPlanManagementRoute = createLazyRoute(
-  () => import("../pages/admin/ShiftPlanManagement/ShiftPlanManagement")
+  () => import("../pages/admin/ShiftPlanManagement/ShiftPlanManagement"),
 );
 const ShiftDayViewRoute = createLazyRoute(
   () => import("../pages/shift/day-view"),
   {
     wrap: (node) => <AdminShiftGuard>{node}</AdminShiftGuard>,
-  }
+  },
 );
 const ShiftManagementRoute = createLazyRoute(
   () => import("../pages/shift/management"),
   {
     wrap: (node) => <AdminShiftGuard>{node}</AdminShiftGuard>,
-  }
+  },
 );
 const StaffShiftListRoute = createLazyRoute(
   () => import("../pages/shift/staff"),
   {
     wrap: (node) => <AdminShiftGuard>{node}</AdminShiftGuard>,
-  }
+  },
 );
 
 export const adminChildRoutes: RouteObject[] = [
@@ -205,6 +205,10 @@ export const adminChildRoutes: RouteObject[] = [
       {
         path: "shift",
         lazy: AdminShiftSettingsRoute,
+      },
+      {
+        path: "workflow",
+        lazy: AdminWorkflowCategorySettingsRoute,
       },
       {
         path: "feature_management",

@@ -21,6 +21,8 @@ type WorkflowMetadataPanelProps = {
     endTime?: string | null;
     reason?: string | null;
   } | null;
+  customWorkflowTitle?: string | null;
+  customWorkflowContent?: string | null;
   approvalSteps: WorkflowApprovalStepView[];
 };
 
@@ -33,6 +35,8 @@ export default function WorkflowMetadataPanel({
   applicationDate,
   status,
   overTimeDetails,
+  customWorkflowTitle,
+  customWorkflowContent,
   approvalSteps,
 }: WorkflowMetadataPanelProps) {
   const displayId = workflowId ?? fallbackId ?? "-";
@@ -40,6 +44,7 @@ export default function WorkflowMetadataPanel({
   const isPaidLeave = category === WorkflowCategory.PAID_LEAVE;
   const isAbsence = category === WorkflowCategory.ABSENCE;
   const isClockCorrection = category === WorkflowCategory.CLOCK_CORRECTION;
+  const isCustom = category === WorkflowCategory.CUSTOM;
 
   const overtimeDate = formatDateSlash(overTimeDetails?.date);
   const overtimeTimeRange = overTimeDetails?.startTime
@@ -225,6 +230,30 @@ export default function WorkflowMetadataPanel({
                 </Grid>
               </>
             )}
+          </>
+        )}
+
+        {isCustom && (
+          <>
+            <Grid item xs={12} sm={3}>
+              <Typography variant="body2" color="text.secondary">
+                タイトル
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={9}>
+              <Typography>{customWorkflowTitle || "-"}</Typography>
+            </Grid>
+
+            <Grid item xs={12} sm={3}>
+              <Typography variant="body2" color="text.secondary">
+                詳細
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={9}>
+              <Typography sx={{ whiteSpace: "pre-wrap" }}>
+                {customWorkflowContent || "-"}
+              </Typography>
+            </Grid>
           </>
         )}
 

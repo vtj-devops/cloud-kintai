@@ -103,6 +103,16 @@ export const onCreateAppConfig = /* GraphQL */ `subscription OnCreateAppConfig($
       fixed
       __typename
     }
+    workflowCategoryOrder {
+      categories {
+        category
+        label
+        displayOrder
+        enabled
+        __typename
+      }
+      __typename
+    }
     overTimeCheckEnabled
     createdAt
     updatedAt
@@ -161,6 +171,16 @@ export const onUpdateAppConfig = /* GraphQL */ `subscription OnUpdateAppConfig($
       min
       max
       fixed
+      __typename
+    }
+    workflowCategoryOrder {
+      categories {
+        category
+        label
+        displayOrder
+        enabled
+        __typename
+      }
       __typename
     }
     overTimeCheckEnabled
@@ -223,6 +243,16 @@ export const onDeleteAppConfig = /* GraphQL */ `subscription OnDeleteAppConfig($
       fixed
       __typename
     }
+    workflowCategoryOrder {
+      categories {
+        category
+        label
+        displayOrder
+        enabled
+        __typename
+      }
+      __typename
+    }
     overTimeCheckEnabled
     createdAt
     updatedAt
@@ -265,6 +295,7 @@ export const onCreateStaff = /* GraphQL */ `subscription OnCreateStaff($filter: 
     approverMultiple
     approverMultipleMode
     shiftGroup
+    attendanceManagementEnabled
     createdAt
     updatedAt
     __typename
@@ -306,6 +337,7 @@ export const onUpdateStaff = /* GraphQL */ `subscription OnUpdateStaff($filter: 
     approverMultiple
     approverMultipleMode
     shiftGroup
+    attendanceManagementEnabled
     createdAt
     updatedAt
     __typename
@@ -347,6 +379,7 @@ export const onDeleteStaff = /* GraphQL */ `subscription OnDeleteStaff($filter: 
     approverMultiple
     approverMultipleMode
     shiftGroup
+    attendanceManagementEnabled
     createdAt
     updatedAt
     __typename
@@ -1140,6 +1173,8 @@ export const onCreateWorkflow = /* GraphQL */ `subscription OnCreateWorkflow($fi
     rejectedStaffIds
     finalDecisionTimestamp
     category
+    customWorkflowTitle
+    customWorkflowContent
     staffId
     status
     assignedApproverStaffIds
@@ -1187,6 +1222,8 @@ export const onUpdateWorkflow = /* GraphQL */ `subscription OnUpdateWorkflow($fi
     rejectedStaffIds
     finalDecisionTimestamp
     category
+    customWorkflowTitle
+    customWorkflowContent
     staffId
     status
     assignedApproverStaffIds
@@ -1234,6 +1271,8 @@ export const onDeleteWorkflow = /* GraphQL */ `subscription OnDeleteWorkflow($fi
     rejectedStaffIds
     finalDecisionTimestamp
     category
+    customWorkflowTitle
+    customWorkflowContent
     staffId
     status
     assignedApproverStaffIds
@@ -1273,6 +1312,60 @@ export const onDeleteWorkflow = /* GraphQL */ `subscription OnDeleteWorkflow($fi
 ` as GeneratedSubscription<
   APITypes.OnDeleteWorkflowSubscriptionVariables,
   APITypes.OnDeleteWorkflowSubscription
+>;
+export const onCreateWorkflowTemplate = /* GraphQL */ `subscription OnCreateWorkflowTemplate(
+  $filter: ModelSubscriptionWorkflowTemplateFilterInput
+) {
+  onCreateWorkflowTemplate(filter: $filter) {
+    id
+    name
+    title
+    content
+    organizationId
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateWorkflowTemplateSubscriptionVariables,
+  APITypes.OnCreateWorkflowTemplateSubscription
+>;
+export const onUpdateWorkflowTemplate = /* GraphQL */ `subscription OnUpdateWorkflowTemplate(
+  $filter: ModelSubscriptionWorkflowTemplateFilterInput
+) {
+  onUpdateWorkflowTemplate(filter: $filter) {
+    id
+    name
+    title
+    content
+    organizationId
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateWorkflowTemplateSubscriptionVariables,
+  APITypes.OnUpdateWorkflowTemplateSubscription
+>;
+export const onDeleteWorkflowTemplate = /* GraphQL */ `subscription OnDeleteWorkflowTemplate(
+  $filter: ModelSubscriptionWorkflowTemplateFilterInput
+) {
+  onDeleteWorkflowTemplate(filter: $filter) {
+    id
+    name
+    title
+    content
+    organizationId
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteWorkflowTemplateSubscriptionVariables,
+  APITypes.OnDeleteWorkflowTemplateSubscription
 >;
 export const onCreateOperationLog = /* GraphQL */ `subscription OnCreateOperationLog(
   $filter: ModelSubscriptionOperationLogFilterInput

@@ -194,6 +194,8 @@ export default function WorkflowCreateForm(props) {
     rejectedStaffIds: [],
     finalDecisionTimestamp: "",
     category: "",
+    customWorkflowTitle: "",
+    customWorkflowContent: "",
     staffId: "",
     status: "",
     assignedApproverStaffIds: [],
@@ -213,6 +215,12 @@ export default function WorkflowCreateForm(props) {
     initialValues.finalDecisionTimestamp
   );
   const [category, setCategory] = React.useState(initialValues.category);
+  const [customWorkflowTitle, setCustomWorkflowTitle] = React.useState(
+    initialValues.customWorkflowTitle
+  );
+  const [customWorkflowContent, setCustomWorkflowContent] = React.useState(
+    initialValues.customWorkflowContent
+  );
   const [staffId, setStaffId] = React.useState(initialValues.staffId);
   const [status, setStatus] = React.useState(initialValues.status);
   const [assignedApproverStaffIds, setAssignedApproverStaffIds] =
@@ -238,6 +246,8 @@ export default function WorkflowCreateForm(props) {
     setCurrentRejectedStaffIdsValue("");
     setFinalDecisionTimestamp(initialValues.finalDecisionTimestamp);
     setCategory(initialValues.category);
+    setCustomWorkflowTitle(initialValues.customWorkflowTitle);
+    setCustomWorkflowContent(initialValues.customWorkflowContent);
     setStaffId(initialValues.staffId);
     setStatus(initialValues.status);
     setAssignedApproverStaffIds(initialValues.assignedApproverStaffIds);
@@ -273,6 +283,8 @@ export default function WorkflowCreateForm(props) {
     rejectedStaffIds: [],
     finalDecisionTimestamp: [],
     category: [],
+    customWorkflowTitle: [],
+    customWorkflowContent: [],
     staffId: [{ type: "Required" }],
     status: [{ type: "Required" }],
     assignedApproverStaffIds: [],
@@ -312,6 +324,8 @@ export default function WorkflowCreateForm(props) {
           rejectedStaffIds,
           finalDecisionTimestamp,
           category,
+          customWorkflowTitle,
+          customWorkflowContent,
           staffId,
           status,
           assignedApproverStaffIds,
@@ -382,6 +396,8 @@ export default function WorkflowCreateForm(props) {
               rejectedStaffIds,
               finalDecisionTimestamp,
               category,
+              customWorkflowTitle,
+              customWorkflowContent,
               staffId,
               status,
               assignedApproverStaffIds,
@@ -443,6 +459,8 @@ export default function WorkflowCreateForm(props) {
               rejectedStaffIds: values,
               finalDecisionTimestamp,
               category,
+              customWorkflowTitle,
+              customWorkflowContent,
               staffId,
               status,
               assignedApproverStaffIds,
@@ -508,6 +526,8 @@ export default function WorkflowCreateForm(props) {
               rejectedStaffIds,
               finalDecisionTimestamp: value,
               category,
+              customWorkflowTitle,
+              customWorkflowContent,
               staffId,
               status,
               assignedApproverStaffIds,
@@ -545,6 +565,8 @@ export default function WorkflowCreateForm(props) {
               rejectedStaffIds,
               finalDecisionTimestamp,
               category: value,
+              customWorkflowTitle,
+              customWorkflowContent,
               staffId,
               status,
               assignedApproverStaffIds,
@@ -594,6 +616,84 @@ export default function WorkflowCreateForm(props) {
         ></option>
       </SelectField>
       <TextField
+        label="Custom workflow title"
+        isRequired={false}
+        isReadOnly={false}
+        value={customWorkflowTitle}
+        onChange={(e) => {
+          let { value } = e.target;
+          if (onChange) {
+            const modelFields = {
+              approvedStaffIds,
+              rejectedStaffIds,
+              finalDecisionTimestamp,
+              category,
+              customWorkflowTitle: value,
+              customWorkflowContent,
+              staffId,
+              status,
+              assignedApproverStaffIds,
+              nextApprovalStepIndex,
+              submitterApproverSetting,
+              submitterApproverId,
+              submitterApproverIds,
+              submitterApproverMultipleMode,
+            };
+            const result = onChange(modelFields);
+            value = result?.customWorkflowTitle ?? value;
+          }
+          if (errors.customWorkflowTitle?.hasError) {
+            runValidationTasks("customWorkflowTitle", value);
+          }
+          setCustomWorkflowTitle(value);
+        }}
+        onBlur={() =>
+          runValidationTasks("customWorkflowTitle", customWorkflowTitle)
+        }
+        errorMessage={errors.customWorkflowTitle?.errorMessage}
+        hasError={errors.customWorkflowTitle?.hasError}
+        {...getOverrideProps(overrides, "customWorkflowTitle")}
+      ></TextField>
+      <TextField
+        label="Custom workflow content"
+        isRequired={false}
+        isReadOnly={false}
+        value={customWorkflowContent}
+        onChange={(e) => {
+          let { value } = e.target;
+          if (onChange) {
+            const modelFields = {
+              approvedStaffIds,
+              rejectedStaffIds,
+              finalDecisionTimestamp,
+              category,
+              customWorkflowTitle,
+              customWorkflowContent: value,
+              staffId,
+              status,
+              assignedApproverStaffIds,
+              nextApprovalStepIndex,
+              submitterApproverSetting,
+              submitterApproverId,
+              submitterApproverIds,
+              submitterApproverMultipleMode,
+            };
+            const result = onChange(modelFields);
+            value = result?.customWorkflowContent ?? value;
+          }
+          if (errors.customWorkflowContent?.hasError) {
+            runValidationTasks("customWorkflowContent", value);
+          }
+          setCustomWorkflowContent(value);
+        }}
+        onBlur={() =>
+          runValidationTasks("customWorkflowContent", customWorkflowContent)
+        }
+        errorMessage={errors.customWorkflowContent?.errorMessage}
+        hasError={errors.customWorkflowContent?.hasError}
+        {...getOverrideProps(overrides, "customWorkflowContent")}
+      ></TextField>
+      <TextField
         label="Staff id"
         isRequired={true}
         isReadOnly={false}
@@ -606,6 +706,8 @@ export default function WorkflowCreateForm(props) {
               rejectedStaffIds,
               finalDecisionTimestamp,
               category,
+              customWorkflowTitle,
+              customWorkflowContent,
               staffId: value,
               status,
               assignedApproverStaffIds,
@@ -641,6 +743,8 @@ export default function WorkflowCreateForm(props) {
               rejectedStaffIds,
               finalDecisionTimestamp,
               category,
+              customWorkflowTitle,
+              customWorkflowContent,
               staffId,
               status: value,
               assignedApproverStaffIds,
@@ -703,6 +807,8 @@ export default function WorkflowCreateForm(props) {
               rejectedStaffIds,
               finalDecisionTimestamp,
               category,
+              customWorkflowTitle,
+              customWorkflowContent,
               staffId,
               status,
               assignedApproverStaffIds: values,
@@ -775,6 +881,8 @@ export default function WorkflowCreateForm(props) {
               rejectedStaffIds,
               finalDecisionTimestamp,
               category,
+              customWorkflowTitle,
+              customWorkflowContent,
               staffId,
               status,
               assignedApproverStaffIds,
@@ -812,6 +920,8 @@ export default function WorkflowCreateForm(props) {
               rejectedStaffIds,
               finalDecisionTimestamp,
               category,
+              customWorkflowTitle,
+              customWorkflowContent,
               staffId,
               status,
               assignedApproverStaffIds,
@@ -868,6 +978,8 @@ export default function WorkflowCreateForm(props) {
               rejectedStaffIds,
               finalDecisionTimestamp,
               category,
+              customWorkflowTitle,
+              customWorkflowContent,
               staffId,
               status,
               assignedApproverStaffIds,
@@ -901,6 +1013,8 @@ export default function WorkflowCreateForm(props) {
               rejectedStaffIds,
               finalDecisionTimestamp,
               category,
+              customWorkflowTitle,
+              customWorkflowContent,
               staffId,
               status,
               assignedApproverStaffIds,
@@ -969,6 +1083,8 @@ export default function WorkflowCreateForm(props) {
               rejectedStaffIds,
               finalDecisionTimestamp,
               category,
+              customWorkflowTitle,
+              customWorkflowContent,
               staffId,
               status,
               assignedApproverStaffIds,

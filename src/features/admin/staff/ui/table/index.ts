@@ -1,4 +1,5 @@
 export { AccountStatusTableCell } from "./AccountStatusTableCell";
+export { AttendanceManagementTableCell } from "./AttendanceManagementTableCell";
 export { CreatedAtTableCell } from "./CreatedAtTableCell";
 export { RoleTableCell } from "./RoleTableCell";
 export { StaffNameTableCell } from "./StaffNameTableCell";

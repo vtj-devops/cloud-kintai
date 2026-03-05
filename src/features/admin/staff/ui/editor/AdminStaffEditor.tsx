@@ -34,12 +34,7 @@ import {
 // Breadcrumbs/Title removed per admin UI simplification
 import dayjs from "dayjs";
 import { Activity, useContext, useEffect, useMemo, useState } from "react";
-import {
-  Control,
-  Controller,
-  useForm,
-  UseFormRegister,
-} from "react-hook-form";
+import { Control, Controller, useForm, UseFormRegister } from "react-hook-form";
 import { useParams } from "react-router-dom";
 
 import { useAppDispatchV2 } from "@/app/hooks";
@@ -47,7 +42,10 @@ import { AppConfigContext } from "@/context/AppConfigContext";
 import { AuthContext } from "@/context/AuthContext";
 import WORK_TYPE_OPTIONS from "@/entities/staff/lib/workTypeOptions";
 import * as MESSAGE_CODE from "@/errors";
-import { StaffNameTableCell , StaffRoleTableCell } from "@/features/admin/staff/ui/editor";
+import {
+  StaffNameTableCell,
+  StaffRoleTableCell,
+} from "@/features/admin/staff/ui/editor";
 import {
   setSnackbarError,
   setSnackbarSuccess,
@@ -64,6 +62,7 @@ type Inputs = {
   usageStartDate?: string | null;
   workType?: string | null;
   shiftGroup?: string | null;
+  attendanceManagementEnabled?: boolean;
   role?: string | null;
   approverSetting?: ApproverSettingMode | null;
   approverSingle?: string | null;
@@ -81,6 +80,7 @@ type AutocompleteOption = {
 type ExtendedStaff = StaffType & {
   workType?: string;
   developer?: boolean;
+  attendanceManagementEnabled?: boolean | null;
 };
 
 export default function AdminStaffEditor() {
@@ -106,7 +106,11 @@ export default function AdminStaffEditor() {
     formState: { isValid, isDirty, isSubmitting },
   } = useForm<Inputs>({
     mode: "onChange",
-    defaultValues: { owner: false, developer: false },
+    defaultValues: {
+      owner: false,
+      developer: false,
+      attendanceManagementEnabled: true,
+    },
   });
 
   const [tabIndex, setTabIndex] = useState(0);
@@ -129,6 +133,10 @@ export default function AdminStaffEditor() {
     setValue("usageStartDate", staff.usageStartDate ?? null);
     setValue("workType", extendedStaff.workType ?? "weekday");
     setValue("shiftGroup", staff.shiftGroup ?? null);
+    setValue(
+      "attendanceManagementEnabled",
+      extendedStaff.attendanceManagementEnabled ?? true,
+    );
     setValue("role", staff.role ?? null);
     setValue("developer", extendedStaff.developer ?? false);
   }, [staffId, staffs, setValue]);
@@ -140,7 +148,7 @@ export default function AdminStaffEditor() {
         label: group.label,
         description: group.description ?? "",
       })),
-    [getShiftGroups]
+    [getShiftGroups],
   );
 
   if (staffLoading) return <LinearProgress />;
@@ -169,6 +177,7 @@ export default function AdminStaffEditor() {
         usageStartDate: string | null | undefined;
         workType: string | null | undefined;
         shiftGroup: string | null | undefined;
+        attendanceManagementEnabled?: boolean;
         approverSingle?: string | null;
         approverMultiple?: string[] | null;
         approverMultipleMode?: ApproverMultipleMode | null;
@@ -185,6 +194,7 @@ export default function AdminStaffEditor() {
         usageStartDate: data.usageStartDate,
         workType: data.workType,
         shiftGroup: data.shiftGroup ?? null,
+        attendanceManagementEnabled: data.attendanceManagementEnabled ?? true,
       };
 
       // approver related
@@ -340,6 +350,30 @@ export default function AdminStaffEditor() {
                   </TableRow>
 
                   <TableRow>
+                    <TableCell>勤怠管理対象</TableCell>
+                    <TableCell>
+                      <Controller
+                        name="attendanceManagementEnabled"
+                        control={control}
+                        render={({ field }) => (
+                          <Stack spacing={1}>
+                            <Switch
+                              checked={field.value ?? true}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              オフにすると勤怠チェックでエラーとして扱われなくなります
+                            </Typography>
+                          </Stack>
+                        )}
+                      />
+                    </TableCell>
+                  </TableRow>
+
+                  <TableRow>
                     <TableCell>勤務形態</TableCell>
                     <TableCell>
                       <Controller
@@ -350,7 +384,7 @@ export default function AdminStaffEditor() {
                             {...field}
                             value={
                               WORK_TYPE_OPTIONS.find(
-                                (option) => option.value === field.value
+                                (option) => option.value === field.value,
                               ) ?? null
                             }
                             options={WORK_TYPE_OPTIONS}
@@ -387,7 +421,7 @@ export default function AdminStaffEditor() {
                           render={({ field }) => {
                             const selectedOption =
                               shiftGroupOptions.find(
-                                (option) => option.value === field.value
+                                (option) => option.value === field.value,
                               ) ?? null;
                             return (
                               <Autocomplete
@@ -525,7 +559,7 @@ function ApproverSettingTableRows({
       .filter(
         (staff) =>
           (staff.role === StaffRole.ADMIN || staff.owner) &&
-          staff.cognitoUserId !== currentCognitoUserId
+          staff.cognitoUserId !== currentCognitoUserId,
       )
       .map((staff) => ({
         value: staff.cognitoUserId ?? "",
@@ -566,7 +600,7 @@ function ApproverSettingTableRows({
               }}
               render={({ field, fieldState }) => {
                 const valueOption = adminOptions.find(
-                  (option) => option.value === field.value
+                  (option) => option.value === field.value,
                 );
                 return (
                   <Autocomplete
