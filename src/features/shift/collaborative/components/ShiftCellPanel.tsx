@@ -22,7 +22,7 @@ import {
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
 import {
   CELL_CHANGE_SOURCE_COLORS,
@@ -109,6 +109,12 @@ const ShiftCellPanelBase = ({
   const [isAddingComment, setIsAddingComment] = useState(false);
   const [historyExpanded, setHistoryExpanded] = useState(false);
   const MAX_HISTORY_VISIBLE = 5;
+
+  useEffect(() => {
+    if (cellHistory && cellHistory.length > 0) {
+      setHistoryExpanded(true);
+    }
+  }, [cellHistory?.length]);
 
   const handleAddComment = async () => {
     if (!commentText.trim() || !onAddComments) return;

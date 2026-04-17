@@ -81,6 +81,7 @@ export const CollaborativeShiftProvider: React.FC<
     recordBatchCellChanges,
     recordRemoteChange,
     seedHistory,
+    mergeHistoryRecords,
     getCellHistory,
     getAllCellHistory,
     getStaffCellHistory,
@@ -100,7 +101,7 @@ export const CollaborativeShiftProvider: React.FC<
       const currentStaffData = shiftDataMapRef.current.get(staffId);
       const entries = request.entries ?? [];
       for (const entry of entries) {
-        const dayKey = entry.date;
+        const dayKey = entry.date.slice(-2);
         const previousCell = currentStaffData?.get(dayKey);
         const newState = shiftRequestStatusToShiftState(entry.status);
         const previousState = previousCell?.state;
@@ -119,6 +120,35 @@ export const CollaborativeShiftProvider: React.FC<
       }
     },
     [recordRemoteChange],
+  );
+
+  /**
+   * 自分の mutation 成功時に最新 histories のみ差分化して historyMap へマージ。
+   * 自己更新は Subscription で除外されるため、この経路で確定済み履歴を反映する。
+   */
+  const handlePersistCompleted = useCallback(
+    (request: ShiftRequestData) => {
+      if (!request.histories || request.histories.length === 0) return;
+
+      // 最新の2件（直前スナップショット → 今回スナップショット）のみ差分化
+      const sorted = [...request.histories].toSorted(
+        (a, b) => Date.parse(a.recordedAt) - Date.parse(b.recordedAt),
+      );
+      const recentHistories = sorted.slice(-2);
+      if (recentHistories.length === 0) return;
+
+      const getStaffName = (staffId: string) =>
+        staffNameMap?.get(staffId) ?? staffId;
+
+      const newRecords = deriveHistoryCellChanges(
+        request.staffId,
+        recentHistories,
+        getStaffName,
+      );
+
+      mergeHistoryRecords(newRecords);
+    },
+    [staffNameMap, mergeHistoryRecords],
   );
 
   const handleCommentsReceived = useCallback(
@@ -171,6 +201,7 @@ export const CollaborativeShiftProvider: React.FC<
     onSaveFailed: notifySaveFailed,
     onRemoteUpdate: handleRemoteUpdate,
     onCommentsReceived: handleCommentsReceived,
+    onPersistCompleted: handlePersistCompleted,
   });
 
   // fetchShifts 参照を同期
