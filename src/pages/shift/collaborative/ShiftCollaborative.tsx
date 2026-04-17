@@ -394,7 +394,6 @@ const ShiftCollaborativePageInner = memo<ShiftCollaborativePageInnerProps>(
             onForceReleaseLock={handleForceReleaseLock}
           />
 
-
           <KeyboardShortcutsHelp
             open={showHelp}
             onClose={() => setShowHelp(false)}
