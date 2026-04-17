@@ -148,13 +148,6 @@ export const useCollaborativePageState = (targetMonth: string) => {
     isDragging,
   } = useSelectionState(staffIds, dateKeys);
 
-  const getShiftState = useCallback(
-    (staffId: string, date: string): ShiftState | undefined => {
-      return state.shiftDataMap.get(staffId)?.get(date)?.state;
-    },
-    [state.shiftDataMap],
-  );
-
   const getEventsForDay = useCallback(
     (day: dayjs.Dayjs) =>
       eventCalendar.filter((event) => {
