@@ -42,7 +42,6 @@ interface EditLockHolder {
   editorColor: string;
   isSelf: boolean;
 }
-
 const SHIFT_STATE_LABELS: Record<ShiftState, string> = {
   work: "出勤",
   fixedOff: "固定休",
