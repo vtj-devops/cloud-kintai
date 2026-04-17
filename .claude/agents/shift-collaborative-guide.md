@@ -18,14 +18,15 @@ description: Use this agent when implementing or modifying the shift collaborati
 | `src/pages/shift/collaborative/ShiftCollaborative.tsx`                  | ページコンポーネント。セルクリック→ダイアログ開閉、各サブコンポーネントの統合 |
 | `src/features/shift/collaborative/types/collaborative.types.ts`         | 全型定義（ShiftCellData, ShiftEditLockData, DataSyncStatus 等）               |
 | `src/features/shift/collaborative/components/ShiftCell.tsx`             | セル単体の描画。ロック状態・編集状態のビジュアル制御                          |
-| `src/features/shift/collaborative/components/CellHistoryPopover.tsx`     | 変更履歴インラインプレビュー用 Popover。ShiftCellPanel の「このセルの変更履歴」ボタンから開く |
+| `src/features/shift/collaborative/components/CellHistoryPopover.tsx`     | 変更履歴インラインプレビュー用 Popover（単独利用。ShiftCellPanel の折りたたみ履歴とは別） |
 | `src/features/shift/collaborative/components/VirtualizedShiftTable.tsx` | テーブル全体の描画。ShiftCellComponent に props を中継                        |
-| `src/features/shift/collaborative/components/ChangeHistoryPanel.tsx`    | 変更履歴サイドパネル（ShiftCellPanel の「このセルの変更履歴」ボタン、または「変更履歴」ボタン経由で開く） |
+| `src/features/shift/collaborative/components/ChangeHistoryPanel.tsx`    | 変更履歴サイドドロワー（現在はメインページから切り離し済み。詳細検索・操作単位タブが必要な場合に接続） |
+| `src/features/shift/collaborative/lib/cellChangeSourceConfig.ts`        | `CellChangeSource` の表示ラベル・Chip カラーを一元管理（各コンポーネントはここからインポートする）|
 | `src/features/shift/collaborative/lib/shiftTransformers.ts`             | GraphQL ↔ ローカル型の変換・`lastChangedBy` の設定                            |
 | `src/features/shift/collaborative/hooks/useShiftEditLocks.ts`           | 編集ロック（ShiftEditLock）の取得・更新・購読                                 |
 | `src/features/shift/collaborative/hooks/useCollaborativePageState.ts`   | ページレベルの状態管理。セルクリック・選択・変更ハンドラ                      |
 | `src/features/shift/collaborative/hooks/useCollaborativeShiftData.ts`   | GraphQL CRUD・Subscription 購読・楽観的更新                                   |
-| `src/features/shift/collaborative/hooks/useCellChangeHistory.ts`        | セル単位の変更履歴の記録・取得（セッション内のみ永続）                        |
+| `src/features/shift/collaborative/hooks/useCellChangeHistory.ts`        | セル単位の変更履歴の記録・取得。DB 由来のシードとセッション内操作を統合管理    |
 
 ---
 
@@ -239,6 +240,7 @@ interface ShiftCellPanelProps {
   selectionCount: number;
   selectedCells?: Array<{ staffId: string; date: string }>;
   comments?: CellComment[];
+  cellHistory?: readonly CellChangeRecord[];  // 1セル選択時の変更履歴（getCellHistory で取得）
   onCopy: () => void;
   onPaste: () => void;
   onClear: () => void;
@@ -246,7 +248,6 @@ interface ShiftCellPanelProps {
   onLock: () => void;
   onUnlock: () => void;
   onAddComments?: (content: string, mentions: Mention[]) => Promise<void>;
-  onShowCellHistory?: (cellKey: string, event: MouseEvent<HTMLButtonElement>) => void;
   canUnlock: boolean;
   showLock: boolean;
   showUnlock: boolean;
@@ -273,7 +274,7 @@ interface ShiftCellPanelProps {
 | 確定 / 解除 | `showLock` または `showUnlock` | 確定（ロック）/ 確定解除ボタン |
 | コピー / 貼り付け | 常時 | コピー・貼り付けボタン |
 | コメント追加 | `onAddComments` がある場合 | テキスト入力 + 既存コメント一覧 |
-| このセルの変更履歴 | `selectionCount === 1` かつ `onShowCellHistory` がある場合 | `ChangeHistoryPanel` を開くボタン |
+| 変更履歴 | `selectionCount === 1` | 折りたたみセクション（最大 5 件、超過分は「他N件」） |
 | ヒントテキスト | 常時 | キーボードショートカット説明 |
 
 ## `CellHistoryPopover` の仕様
@@ -410,14 +411,17 @@ interface CellChangeRecord {
 
 ### 変更の発生源（`CellChangeSource`）
 
-| source | 発生条件 | `ChangeHistoryPanel` での表示 |
+| source | 発生条件 | 表示ラベル（色） |
 | --- | --- | --- |
 | `manual` | ユーザーがキーボードで手動変更 | 「手動」（青） |
-| `batch` | 一括編集ツールバーから変更 | 「一括」（紫） |
+| `batch` | 一括変更（ShiftCellPanel の状態一括変更） | 「一括」（紫） |
 | `undo` | Ctrl+Z（取り消し） | 「取り消し」（黄） |
 | `redo` | Ctrl+Y（やり直し） | 「やり直し」（水色） |
 | `conflict-resolution` | 競合解決ダイアログから変更 | 「競合解決」（赤） |
-| `remote` | 他ユーザーの Subscription イベント | 「リモート」（グレー） |
+| `remote` | Subscription 経由のリアルタイムリモート変更 | 「他ユーザー」（グレー） |
+| `db-history` | DB の `histories` スナップショットから導出（リロード後も表示される） | 「履歴」（グレー） |
+
+ラベル・カラーの定義は `src/features/shift/collaborative/lib/cellChangeSourceConfig.ts` で一元管理。各コンポーネント内にローカル定義を持たせない。
 
 ### 記録タイミングと API（`useCellChangeHistory`）
 
@@ -426,10 +430,11 @@ const {
   recordCellChange,        // 単一セルの変更を記録
   recordBatchCellChanges,  // 複数セルを一括記録（operationId で紐付け）
   recordRemoteChange,      // Subscription 経由のリモート変更を記録
+  seedHistory,             // DB 由来のレコードで初期化（CollaborativeShiftProvider が初回ロード時に呼び出す）
   getCellHistory,          // 特定セルの履歴を新しい順で取得
-  getAllCellHistory,        // 全セルの履歴を新しい順で取得（ChangeHistoryPanel へ渡す）
+  getAllCellHistory,        // 全セルの履歴を新しい順で取得
   getStaffCellHistory,     // 特定スタッフの全セル履歴を取得
-  clearCellHistory,        // 履歴をクリア
+  clearCellHistory,        // 履歴をクリア（月切り替え時に CollaborativeShiftProvider が呼び出す）
 } = useCellChangeHistory({ maxRecordsPerCell: 200 });
 ```
 
@@ -445,52 +450,33 @@ recordCellChange(
 );
 ```
 
-### セッション限定という制限
+### 変更履歴の永続化（DB シード）
 
-**変更履歴はブラウザのメモリ内にのみ保持される。ページをリロードすると消える。**
+変更履歴はセッション内操作と DB 由来レコードの 2 層で構成される。
 
-- バックエンドには保存されない
-- 他ユーザーのリモート変更は `source: "remote"` で記録されるが、`changedByName` の解決は呼び出し元次第（不明な場合は `"不明"` になる）
-- `getAllCellHistory()` の結果が `ChangeHistoryPanel` に渡される
+- **DB 由来（`source: "db-history"`）**: `CollaborativeShiftProvider` が初回ロード時に `ShiftRequest.histories`（スナップショット配列）を `deriveHistoryCellChanges` でセル差分に変換し、`seedHistory` で注入する。ページリロード後も復元される。
+- **セッション内操作（`source: "manual" / "batch" / "undo" / "redo" / "remote" / "conflict-resolution"`）**: セッション中の操作のみ。リロード後は DB シード分のみ残る。
+- `changedByName` の解決は呼び出し元の責務（不明な場合は `"不明"` になる）
+- 月切り替え時は `clearCellHistory()` が呼ばれ、新しい月のデータが再シードされる
 
-### `ChangeHistoryPanel` のアクセス方法と表示
+### 変更履歴の表示 UI
 
-変更履歴サイドパネルには 2 つの経路がある。
+**インライン表示（ShiftCellPanel）**:
+1 セル選択時に画面下部の `ShiftCellPanel` 内に折りたたみセクション「変更履歴（N件）」が表示される。最大 5 件表示、超過分は「他N件」。これが現在の主要経路。
 
-**経路 1（セル個別）: 選択 → ShiftCellPanel → このセルの変更履歴**
+**`ChangeHistoryPanel`（サイドドロワー）**:
+フィルター・操作単位タブ・全セル表示などの高度な機能を持つが、現在のメインページからは切り離し済み。必要な場合に接続する。
 
-1. セルを左クリック → セルが選択される
-2. 画面下部に `ShiftCellPanel` が表示される
-3. `selectionCount === 1` のとき「このセルの変更履歴」ボタンが表示される
-4. クリックすると `ChangeHistoryPanel`（サイドパネル）が対象セルにフォーカスした状態で開く
+**右クリックによる履歴表示は削除済み**。`onCellContextMenu` を `VirtualizedShiftTable` に渡していない。
 
-```typescript
-// ShiftCollaborative.tsx での接続
-onShowCellHistory={(cellKey) => handleShowCellHistory(cellKey)}
-```
-
-**経路 2（全体）: ShiftCellPanel の「変更履歴」ボタン**
-
-- セルを選択してパネルの「変更履歴」ボタンをクリック
-- 選択セルにフォーカスした状態でパネルが開く
-
-**共通の開き方（内部）**
-
-`handleShowCellHistory(cellKey)` → `setCellHistoryFocusKey` + `setCellHistoryDrawerOpen(true)`
-
-- **右クリックによる開き方は削除済み**。`onCellContextMenu` を `VirtualizedShiftTable` に渡していない
-
-セル単位タブで表示される内容：
+セル変更履歴の各レコードで表示される内容：
 
 | 項目 | データソース |
 | --- | --- |
-| スタッフ名 / 日付 | `staffNameMap.get(record.staffId)` / `record.date` |
-| 変更日時 | `dayjs(record.changedAt).format("YYYY/M/D HH:mm:ss")` |
-| 変更者名 | `record.changedByName`（記録時点で解決済み） |
-| 発生源 | `SOURCE_LABELS[record.source]`（Chip で色分け表示） |
+| 変更日時 | `dayjs(record.changedAt).format("M/D HH:mm")` |
+| 発生源 | `CELL_CHANGE_SOURCE_LABELS[record.source]`（Chip で色分け） |
 | シフト状態の変化 | `previousState → newState`（日本語ラベル） |
-| 確定状態の変化 | `previousLocked → newLocked`（ロック / 解除） |
-| 操作ID | `record.operationId`（一括操作の紐付け確認用） |
+| 変更者名 | `record.changedByName`（記録時点で解決済み） |
 
 ---
 
