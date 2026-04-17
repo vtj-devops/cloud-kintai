@@ -1,6 +1,4 @@
-import {
-  useGetEventCalendarsQuery,
-} from "@entities/calendar/api/calendarApi";
+import { useGetEventCalendarsQuery } from "@entities/calendar/api/calendarApi";
 import { useCalendars } from "@entities/calendar/model/useCalendars";
 import { StaffRole } from "@entities/staff/model/useStaffs/useStaffs";
 import { graphqlClient } from "@shared/api/amplify/graphqlClient";
@@ -21,7 +19,6 @@ import { useAuthSessionSummary } from "@/hooks/useAuthSessionSummary";
 import { useCollaborativeShift } from "../context/CollaborativeShiftContext";
 import { SuggestedAction } from "../rules/shiftRules";
 import type { ShiftState } from "../types/collaborative.types";
-import { useClipboardOps } from "./useClipboardOps";
 import { useSelectionState } from "./useSelectionState";
 import { useShiftCalendar } from "./useShiftCalendar";
 import { buildEditLockConflictMessage } from "./useShiftEditLocks";
@@ -47,16 +44,6 @@ export const useCollaborativePageState = (targetMonth: string) => {
     triggerSync,
     clearSyncError,
     updateUserActivity,
-    canUndo,
-    canRedo,
-    undo,
-    redo,
-    getLastUndo,
-    getLastRedo,
-    undoHistory,
-    redoHistory,
-    showHistory,
-    toggleHistory,
     getCellHistory,
     getAllCellHistory,
     addComment,
@@ -80,7 +67,10 @@ export const useCollaborativePageState = (targetMonth: string) => {
 
   const { data: registeredEventCalendars = [] } = useGetEventCalendarsQuery();
 
-  const { holidayCalendars: holidays, companyHolidayCalendars: companyHolidays } = useCalendars();
+  const {
+    holidayCalendars: holidays,
+    companyHolidayCalendars: companyHolidays,
+  } = useCalendars();
 
   const { days, dateKeys, eventCalendar } = useShiftCalendar(
     currentMonth,
@@ -192,12 +182,6 @@ export const useCollaborativePageState = (targetMonth: string) => {
     [getCellData],
   );
 
-  const { copy, paste, hasClipboard, clearClipboard } = useClipboardOps(
-    staffIds,
-    dateKeys,
-    getShiftState,
-  );
-
   const { violations, isAnalyzing, analyzeShifts } = useShiftSuggestions({
     shiftDataMap: state.shiftDataMap,
     staffIds,
@@ -282,12 +266,20 @@ export const useCollaborativePageState = (targetMonth: string) => {
             return;
           }
 
-          if (selectionCount > 0) {
-            const updates = selectedCells.map(({ staffId, date }) => ({
-              staffId,
-              date,
-              newState,
-            }));
+          if (selectionCount === 1) {
+            const [{ staffId, date }] = Array.from(selectedCells);
+            await changeCellState(staffId, date, newState);
+            return;
+          }
+
+          if (selectionCount > 1) {
+            const updates = Array.from(selectedCells).map(
+              ({ staffId, date }) => ({
+                staffId,
+                date,
+                newState,
+              }),
+            );
             const validUpdates = updates.filter((u) =>
               hasEditLock(u.staffId, u.date),
             );
@@ -376,12 +368,6 @@ export const useCollaborativePageState = (targetMonth: string) => {
       batchUpdateShifts,
     ],
   );
-
-  const handleCopy = useCallback(() => {
-    if (selectionCount > 0) {
-      copy(selectedCells);
-    }
-  }, [selectionCount, selectedCells, copy]);
 
   const handleLockCells = useCallback(() => {
     applyLockState(true);
@@ -585,15 +571,6 @@ export const useCollaborativePageState = (targetMonth: string) => {
     });
   }, [selectionTargets, isAdmin, forceReleaseCell]);
 
-  const handlePaste = useCallback(() => {
-    if (!focusedCell) return;
-
-    const updates = paste(focusedCell);
-    updates.forEach(({ staffId, date, newState }) => {
-      changeCellState(staffId, date, newState);
-    });
-  }, [focusedCell, paste, changeCellState]);
-
   const handleSelectAll = useCallback(() => {
     selectAll();
   }, [selectAll]);
@@ -604,9 +581,8 @@ export const useCollaborativePageState = (targetMonth: string) => {
     } else {
       clearSelection();
       clearFocus();
-      clearClipboard();
     }
-  }, [showHelp, clearSelection, clearFocus, clearClipboard]);
+  }, [showHelp, clearSelection, clearFocus]);
 
   const handleApplySuggestion = useCallback(
     (action: SuggestedAction) => {
@@ -716,9 +692,6 @@ export const useCollaborativePageState = (targetMonth: string) => {
     selectionCount,
     hasLocked,
     hasUnlocked,
-    hasClipboard,
-    handleCopy,
-    handlePaste,
     clearSelection,
     handleChangeState,
     handleLockCells,
@@ -736,16 +709,6 @@ export const useCollaborativePageState = (targetMonth: string) => {
     getCellEditor,
     isCellBeingEdited,
     isBatchUpdating,
-    canUndo,
-    canRedo,
-    undo,
-    redo,
-    getLastUndo,
-    getLastRedo,
-    undoHistory,
-    redoHistory,
-    showHistory,
-    toggleHistory,
     getCellHistory,
     getAllCellHistory,
     addComment,

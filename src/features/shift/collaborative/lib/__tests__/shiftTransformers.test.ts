@@ -46,6 +46,20 @@ describe("shiftTransformers", () => {
       updatedAt: "2026-02-01T10:00:00Z",
       updatedBy: "admin",
       version: 2,
+      histories: [
+        {
+          version: 1,
+          recordedAt: "2026-02-01T09:00:00Z",
+          recordedByStaffId: "admin",
+          entries: [
+            {
+              date: "2026-02-01",
+              status: ShiftRequestStatus.WORK,
+              isLocked: false,
+            },
+          ],
+        },
+      ],
     };
 
     const shiftDataMap: ShiftDataMap = new Map([
@@ -68,6 +82,21 @@ describe("shiftTransformers", () => {
     expect(payload.input.entries).toEqual([
       { date: "2026-02-01", status: ShiftRequestStatus.WORK, isLocked: false },
     ]);
+    expect(payload.input.histories).toHaveLength(2);
+    expect(payload.input.histories?.[1]).toMatchObject({
+      version: 2,
+      recordedByStaffId: "admin",
+      entries: [
+        {
+          date: "2026-02-01",
+          status: ShiftRequestStatus.WORK,
+          isLocked: false,
+        },
+      ],
+    });
+    expect(payload.input.histories?.[1]?.recordedAt).toEqual(
+      expect.any(String),
+    );
     expect(payload.input.version).toBe(3);
     expect(payload.condition).toEqual({ version: { eq: 2 } });
   });

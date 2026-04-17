@@ -1,8 +1,7 @@
 import CheckIcon from "@mui/icons-material/Check";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import ContentPasteIcon from "@mui/icons-material/ContentPaste";
 import DeleteIcon from "@mui/icons-material/Delete";
-import HistoryIcon from "@mui/icons-material/History";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import LockIcon from "@mui/icons-material/Lock";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import MessageIcon from "@mui/icons-material/Message";
@@ -12,38 +11,64 @@ import {
   Button,
   Chip,
   CircularProgress,
+  Collapse,
   Divider,
+  List,
+  ListItem,
+  ListItemText,
   Paper,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
-import { memo, type MouseEvent, useState } from "react";
+import { memo, useState } from "react";
 
-import { CellComment, Mention, ShiftState } from "../types/collaborative.types";
+import {
+  CELL_CHANGE_SOURCE_COLORS,
+  CELL_CHANGE_SOURCE_LABELS,
+} from "../lib/cellChangeSourceConfig";
+import {
+  CellChangeRecord,
+  CellComment,
+  Mention,
+  ShiftState,
+} from "../types/collaborative.types";
 
-interface BatchEditToolbarProps {
+interface EditLockHolder {
+  staffId: string;
+  date: string;
+  editorName: string;
+  editorColor: string;
+  isSelf: boolean;
+}
+
+const SHIFT_STATE_LABELS: Record<ShiftState, string> = {
+  work: "出勤",
+  fixedOff: "固定休",
+  requestedOff: "希望休",
+  auto: "自動調整枠",
+  empty: "未入力",
+};
+
+const formatShiftState = (state?: ShiftState) =>
+  state ? SHIFT_STATE_LABELS[state] : "未設定";
+
+interface ShiftCellPanelProps {
   selectionCount: number;
   selectedCells?: Array<{ staffId: string; date: string }>;
   comments?: CellComment[];
-  onCopy: () => void;
-  onPaste: () => void;
+  cellHistory?: readonly CellChangeRecord[];
   onClear: () => void;
   onChangeState: (state: ShiftState) => void;
   onLock: () => void;
   onUnlock: () => void;
   onAddComments?: (content: string, mentions: Mention[]) => Promise<void>;
-  onShowCellHistory?: (
-    cellKey: string,
-    event: MouseEvent<HTMLButtonElement>,
-  ) => void;
   canUnlock: boolean;
   showLock: boolean;
   showUnlock: boolean;
-  hasClipboard: boolean;
-  canPaste: boolean;
   isUpdating?: boolean;
+  cellEditLockHolders?: EditLockHolder[];
   hasEditLockForSelected: boolean;
   isOthersEditingSelected: boolean;
   onAcquireEditLock: () => void;
@@ -60,32 +85,31 @@ const stateOptions: Array<{ state: ShiftState; label: string; color: string }> =
     { state: "empty", label: "未入力", color: "#9e9e9e" },
   ];
 
-const BatchEditToolbarBase = ({
+const ShiftCellPanelBase = ({
   selectionCount,
   selectedCells = [],
   comments = [],
-  onCopy,
-  onPaste,
+  cellHistory = [],
   onClear,
   onChangeState,
   onLock,
   onUnlock,
   onAddComments,
-  onShowCellHistory,
   canUnlock,
   showLock,
   showUnlock,
-  hasClipboard,
-  canPaste,
   isUpdating = false,
+  cellEditLockHolders = [],
   hasEditLockForSelected,
   isOthersEditingSelected,
   onAcquireEditLock,
   onReleaseEditLock,
   onForceReleaseLock,
-}: BatchEditToolbarProps) => {
+}: ShiftCellPanelProps) => {
   const [commentText, setCommentText] = useState("");
   const [isAddingComment, setIsAddingComment] = useState(false);
+  const [historyExpanded, setHistoryExpanded] = useState(false);
+  const MAX_HISTORY_VISIBLE = 5;
 
   const handleAddComment = async () => {
     if (!commentText.trim() || !onAddComments) return;
@@ -167,23 +191,69 @@ const BatchEditToolbarBase = ({
                 編集終了（ロック解除）
               </Button>
             )}
-            {isOthersEditingSelected && canUnlock && (
-              <Button
-                variant="contained"
-                color="error"
-                size="small"
-                onClick={onForceReleaseLock}
-                disabled={isUpdating}
-              >
-                編集ロックを強制剥奪
-              </Button>
-            )}
+            {(hasEditLockForSelected || isOthersEditingSelected) &&
+              canUnlock && (
+                <Button
+                  variant="contained"
+                  color="error"
+                  size="small"
+                  onClick={onForceReleaseLock}
+                  disabled={isUpdating}
+                >
+                  編集ロックを強制剥奪
+                </Button>
+              )}
             {isOthersEditingSelected && !canUnlock && (
-              <Typography variant="body2" color="error" sx={{ alignSelf: "center" }}>
+              <Typography
+                variant="body2"
+                color="error"
+                sx={{ alignSelf: "center" }}
+              >
                 他のユーザーが編集中です
               </Typography>
             )}
           </Stack>
+
+          {/* 編集ロック保持者 */}
+          {cellEditLockHolders.length > 0 && (
+            <Stack spacing={0.5} sx={{ mt: 1 }}>
+              {cellEditLockHolders.map(
+                ({ staffId, date, editorName, editorColor, isSelf }) => (
+                  <Stack
+                    key={`${staffId}#${date}`}
+                    direction="row"
+                    spacing={1}
+                    alignItems="center"
+                  >
+                    <Avatar
+                      sx={{
+                        width: 20,
+                        height: 20,
+                        fontSize: "0.65rem",
+                        bgcolor: editorColor,
+                      }}
+                    >
+                      {editorName.charAt(0)}
+                    </Avatar>
+                    <Typography variant="caption" color="text.secondary">
+                      {date}日:
+                    </Typography>
+                    <Typography variant="caption" fontWeight={600}>
+                      {editorName}
+                    </Typography>
+                    {isSelf && (
+                      <Typography variant="caption" color="primary.main">
+                        （あなた）
+                      </Typography>
+                    )}
+                    <Typography variant="caption" color="text.disabled">
+                      が編集ロック中
+                    </Typography>
+                  </Stack>
+                ),
+              )}
+            </Stack>
+          )}
         </Box>
 
         <Divider />
@@ -242,31 +312,6 @@ const BatchEditToolbarBase = ({
               確定解除
             </Button>
           )}
-        </Stack>
-
-        <Divider />
-
-        {/* コピー＆ペーストボタン */}
-        <Stack direction="row" spacing={1}>
-          <Button
-            variant="outlined"
-            startIcon={<ContentCopyIcon />}
-            onClick={onCopy}
-            size="small"
-            disabled={isUpdating}
-          >
-            コピー
-          </Button>
-          <Button
-            variant="outlined"
-            startIcon={<ContentPasteIcon />}
-            onClick={onPaste}
-            disabled={!hasClipboard || !canPaste || isUpdating || !hasEditLockForSelected}
-            size="small"
-          >
-            貼り付け
-            {hasClipboard && " (Ctrl+V)"}
-          </Button>
         </Stack>
 
         <Divider />
@@ -380,28 +425,93 @@ const BatchEditToolbarBase = ({
           </>
         )}
 
-        {/* セル変更履歴ボタン */}
-        {onShowCellHistory &&
-          selectionCount === 1 &&
-          selectedCells.length === 1 && (
-            <>
+        {/* セル変更履歴（インライン） */}
+        {selectionCount === 1 && selectedCells.length === 1 && (
+          <>
+            <Box>
               <Button
-                variant="outlined"
-                startIcon={<HistoryIcon />}
-                onClick={(event) =>
-                  onShowCellHistory(
-                    `${selectedCells[0].staffId}#${selectedCells[0].date}`,
-                    event,
-                  )
-                }
                 size="small"
-                color="primary"
+                variant="text"
+                color="inherit"
+                endIcon={
+                  historyExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />
+                }
+                onClick={() => setHistoryExpanded((v) => !v)}
+                sx={{ px: 0, fontWeight: 600 }}
               >
-                このセルの変更履歴
+                変更履歴
+                {cellHistory.length > 0 ? `（${cellHistory.length}件）` : ""}
               </Button>
-              <Divider />
-            </>
-          )}
+              <Collapse in={historyExpanded}>
+                {cellHistory.length === 0 ? (
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: "block", mt: 0.5 }}
+                  >
+                    変更履歴はありません
+                  </Typography>
+                ) : (
+                  <List dense disablePadding sx={{ mt: 0.5 }}>
+                    {cellHistory.slice(0, MAX_HISTORY_VISIBLE).map((record) => (
+                      <ListItem key={record.id} disableGutters sx={{ py: 0.5 }}>
+                        <ListItemText
+                          primary={
+                            <Stack
+                              direction="row"
+                              spacing={0.5}
+                              alignItems="center"
+                              flexWrap="wrap"
+                            >
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                              >
+                                {dayjs(record.changedAt).format("M/D HH:mm")}
+                              </Typography>
+                              <Chip
+                                size="small"
+                                label={CELL_CHANGE_SOURCE_LABELS[record.source]}
+                                color={CELL_CHANGE_SOURCE_COLORS[record.source]}
+                                variant="outlined"
+                                sx={{ height: 16, fontSize: "0.6rem" }}
+                              />
+                            </Stack>
+                          }
+                          primaryTypographyProps={{ component: "div" }}
+                          secondary={
+                            <Stack spacing={0}>
+                              <Typography
+                                variant="caption"
+                                color="text.primary"
+                              >
+                                {formatShiftState(record.previousState)} →{" "}
+                                {formatShiftState(record.newState)}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                color="text.disabled"
+                              >
+                                {record.changedByName || "不明"}
+                              </Typography>
+                            </Stack>
+                          }
+                          secondaryTypographyProps={{ component: "div" }}
+                        />
+                      </ListItem>
+                    ))}
+                    {cellHistory.length > MAX_HISTORY_VISIBLE && (
+                      <Typography variant="caption" color="text.disabled">
+                        他 {cellHistory.length - MAX_HISTORY_VISIBLE} 件
+                      </Typography>
+                    )}
+                  </List>
+                )}
+              </Collapse>
+            </Box>
+            <Divider />
+          </>
+        )}
 
         {/* ヘルプテキスト */}
         <Typography variant="caption" color="text.secondary">
@@ -413,4 +523,4 @@ const BatchEditToolbarBase = ({
   );
 };
 
-export const BatchEditToolbar = memo(BatchEditToolbarBase);
+export const ShiftCellPanel = memo(ShiftCellPanelBase);

@@ -1,153 +1,23 @@
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
-import {
-  STAFF_EXTERNAL_LINKS_LIMIT,
-  StaffExternalLink,
-} from "@entities/staff/externalLink";
-import fetchStaff from "@entities/staff/model/useStaff/fetchStaff";
-import updateStaff from "@entities/staff/model/useStaff/updateStaff";
-import {
-  mappingStaffRole,
-  roleLabelMap,
-  StaffType,
-} from "@entities/staff/model/useStaffs/useStaffs";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import {
-  buildVersionOrUpdatedAtCondition,
-  getNextVersion,
-} from "@shared/api/graphql/concurrency";
-import { predefinedIcons } from "@shared/config/icons";
-import { createLogger } from "@shared/lib/logger";
-import { PageTitle, SectionTitle, SubsectionTitle } from "@shared/ui/typography";
-import { updatePassword } from "aws-amplify/auth";
+import { roleLabelMap } from "@entities/staff/model/useStaffs/useStaffs";
+import { PageTitle } from "@shared/ui/typography";
 import dayjs from "dayjs";
-import {
-  type SyntheticEvent,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
+import { type SyntheticEvent, useState } from "react";
 
-import * as MESSAGE_CODE from "@/errors";
-import { useAppNotification } from "@/hooks/useAppNotification";
-import { useAutoSave } from "@/hooks/useAutoSave";
 import { usePageLeaveGuard } from "@/hooks/usePageLeaveGuard";
 
-import { AuthContext } from "../context/AuthContext";
+import { InfoCard } from "./profile/components/InfoCard";
+import { ProfileGeneralTab } from "./profile/components/ProfileGeneralTab";
+import { ProfileLinksTab } from "./profile/components/ProfileLinksTab";
+import { ProfileNotificationsTab } from "./profile/components/ProfileNotificationsTab";
+import { ProfileSecurityTab } from "./profile/components/ProfileSecurityTab";
+import { useProfileForm } from "./profile/hooks/useProfileForm";
 
-const logger = createLogger("Profile");
+export type { StaffNotificationInputs } from "./profile/hooks/useProfileForm";
+
 const PROFILE_CONTENT_MAX_WIDTH = 920;
-const PROFILE_AUTO_SAVE_DELAY = 1000;
-const PROFILE_AUTO_SAVE_TIME_FORMAT = "M/D HH:mm:ss";
-
-export type StaffNotificationInputs = {
-  workStart: boolean;
-  workEnd: boolean;
-};
-
-type StaffLinksFormInputs = {
-  externalLinks: StaffExternalLink[];
-};
-
-type PasswordChangeInputs = {
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-};
-
-type ProfileAutoSaveSnapshot = {
-  notifications: StaffNotificationInputs;
-  externalLinks: StaffExternalLink[];
-};
 
 type ProfileTab = "general" | "notifications" | "links" | "security";
-
-const DEFAULT_ICON_VALUE = predefinedIcons[0]?.value ?? "LinkIcons";
-
-const createEmptyExternalLink = (): StaffExternalLink => ({
-  label: "",
-  url: "",
-  icon: DEFAULT_ICON_VALUE,
-  enabled: true,
-});
-
-const normalizeNotifications = (
-  notifications?:
-    | {
-        workStart?: boolean | null;
-        workEnd?: boolean | null;
-      }
-    | null,
-): StaffNotificationInputs => ({
-  workStart: notifications?.workStart ?? true,
-  workEnd: notifications?.workEnd ?? true,
-});
-
-const normalizeExternalLinks = (
-  links?: (StaffExternalLink | null)[] | null,
-): StaffExternalLink[] =>
-  (links ?? [])
-    .filter((link): link is NonNullable<typeof link> => Boolean(link))
-    .map((link) => ({
-      label: link.label,
-      url: link.url,
-      icon: DEFAULT_ICON_VALUE,
-      enabled: link.enabled,
-    }));
-
-const normalizeFormExternalLinks = (
-  links: StaffLinksFormInputs["externalLinks"] | undefined,
-): StaffExternalLink[] =>
-  (links ?? []).map((link) => ({
-    label: link?.label ?? "",
-    url: link?.url ?? "",
-    icon: link?.icon ?? DEFAULT_ICON_VALUE,
-    enabled: link?.enabled ?? true,
-  }));
-
-const sanitizeExternalLinks = (links: StaffExternalLink[]) =>
-  links
-    .slice(0, STAFF_EXTERNAL_LINKS_LIMIT)
-    .map((link) => ({
-      ...link,
-      label: link.label.trim(),
-      url: link.url.trim(),
-      icon: DEFAULT_ICON_VALUE,
-    }))
-    .filter((link) => link.label !== "" && link.url !== "");
-
-const isValidUrl = (value: string) => /^https?:\/\//i.test(value.trim());
-
-const isExternalLinkReadyToSave = (link: StaffExternalLink) => {
-  const label = link.label.trim();
-  const url = link.url.trim();
-
-  return label !== "" && label.length <= 32 && isValidUrl(url);
-};
-
-const areExternalLinksReadyToSave = (links: StaffExternalLink[]) =>
-  links.every(isExternalLinkReadyToSave);
-
-const areNotificationsEqual = (
-  prev: StaffNotificationInputs,
-  next: StaffNotificationInputs,
-) => prev.workStart === next.workStart && prev.workEnd === next.workEnd;
-
-const areExternalLinksEqual = (
-  prev: StaffExternalLink[],
-  next: StaffExternalLink[],
-) => JSON.stringify(sanitizeExternalLinks(prev)) === JSON.stringify(sanitizeExternalLinks(next));
-
-const isProfileTab = (value: string): value is ProfileTab =>
-  value === "general" ||
-  value === "notifications" ||
-  value === "links" ||
-  value === "security";
 
 const profileTabs: { value: ProfileTab; label: string }[] = [
   { value: "general", label: "一般設定" },
@@ -156,421 +26,44 @@ const profileTabs: { value: ProfileTab; label: string }[] = [
   { value: "security", label: "セキュリティ" },
 ];
 
-const inputBaseClassName =
-  "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100";
-
-function ProfileSectionHeader({
-  title,
-  description,
-}: {
-  title: string;
-  description?: string;
-}) {
-  return (
-    <div className="space-y-1">
-      <SectionTitle className="text-base font-semibold text-slate-900 sm:text-lg">{title}</SectionTitle>
-      {description ? (
-        <p className="text-sm leading-5 text-slate-500 sm:leading-6">{description}</p>
-      ) : null}
-    </div>
-  );
-}
-
-function InfoCard({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="min-w-0 rounded-[1.35rem] border border-emerald-100/80 bg-white/85 p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.35)]">
-      <p className="text-xs font-medium tracking-[0.04em] text-slate-500">
-        {label}
-      </p>
-      <p className="mt-1.5 break-words text-[0.95rem] font-semibold text-slate-900">
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function InlineAlert({
-  variant,
-  children,
-  onClose,
-}: {
-  variant: "success" | "error";
-  children: string;
-  onClose?: () => void;
-}) {
-  const styles =
-    variant === "success"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-900"
-      : "border-rose-200 bg-rose-50 text-rose-900";
-
-  return (
-    <div
-      className={[
-        "flex min-w-0 items-start justify-between gap-3 rounded-2xl border px-4 py-3 text-sm",
-        styles,
-      ].join(" ")}
-    >
-      <p className="m-0 min-w-0 break-words leading-6">{children}</p>
-      {onClose ? (
-        <button
-          type="button"
-          onClick={onClose}
-          className="shrink-0 text-xs font-semibold opacity-70 transition hover:opacity-100"
-        >
-          閉じる
-        </button>
-      ) : null}
-    </div>
-  );
-}
-
-function PasswordField({
-  label,
-  type,
-  value,
-  onChange,
-  onBlur,
-  error,
-  helperText,
-  showPassword,
-  onToggleVisibility,
-}: {
-  label: string;
-  type: string;
-  value: string;
-  onChange: (value: string) => void;
-  onBlur: () => void;
-  error?: string;
-  helperText?: string;
-  showPassword: boolean;
-  onToggleVisibility: () => void;
-}) {
-  const fieldClassName = [
-    "flex items-center rounded-2xl border bg-white transition focus-within:border-emerald-400 focus-within:ring-4 focus-within:ring-emerald-100",
-    error ? "border-rose-300 focus-within:border-rose-400 focus-within:ring-rose-100" : "border-slate-200",
-  ].join(" ");
-
-  return (
-    <label className="block space-y-2">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
-      <div className={fieldClassName}>
-        <input
-          type={type}
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          onBlur={onBlur}
-          className={[
-            "min-w-0 flex-1 rounded-l-2xl border-0 bg-transparent px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:ring-0",
-            "min-h-[52px]",
-          ].join(" ")}
-        />
-        <button
-          type="button"
-          onClick={onToggleVisibility}
-          aria-label="パスワードの表示切り替え"
-          className="inline-flex h-[52px] w-12 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-slate-400 transition hover:text-slate-700"
-        >
-          {showPassword ? (
-            <VisibilityOffIcon fontSize="small" />
-          ) : (
-            <VisibilityIcon fontSize="small" />
-          )}
-        </button>
-      </div>
-      {error || helperText ? (
-        <p className={["text-xs leading-5", error ? "text-rose-600" : "text-slate-500"].join(" ")}>
-          {error ?? helperText}
-        </p>
-      ) : null}
-    </label>
-  );
-}
-
-function AutoSaveStatus({
-  isSaving,
-  isPending,
-  lastSavedAt,
-  helperText,
-}: {
-  isSaving: boolean;
-  isPending: boolean;
-  lastSavedAt: Date | null;
-  helperText?: string;
-}) {
-  return (
-    <div className="space-y-2">
-      <div className="flex min-h-5 items-center">
-        {isSaving ? (
-          <p className="text-xs font-medium text-slate-500">保存中...</p>
-        ) : null}
-        {isPending && !isSaving ? (
-          <p className="text-xs font-medium text-slate-500">保存待ち</p>
-        ) : null}
-        {!isSaving && !isPending && lastSavedAt ? (
-          <p className="text-xs font-medium text-emerald-700">
-            最終保存: {dayjs(lastSavedAt).format(PROFILE_AUTO_SAVE_TIME_FORMAT)}
-          </p>
-        ) : null}
-      </div>
-      {helperText ? <p className="text-xs text-amber-700">{helperText}</p> : null}
-    </div>
-  );
-}
+const isProfileTab = (value: string): value is ProfileTab =>
+  value === "general" ||
+  value === "notifications" ||
+  value === "links" ||
+  value === "security";
 
 export default function Profile() {
-  const { notify } = useAppNotification();
-  const { cognitoUser, signOut } = useContext(AuthContext);
-  const [staff, setStaff] = useState<StaffType | null | undefined>(undefined);
-  const [activeTab, setActiveTab] = useState<ProfileTab>("general");
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [passwordChangeSuccess, setPasswordChangeSuccess] = useState(false);
-  const [passwordChangeError, setPasswordChangeError] = useState<string | null>(
-    null,
-  );
-  const [savedExternalLinks, setSavedExternalLinks] = useState<
-    StaffExternalLink[]
-  >([]);
-  const [isProfileLoaded, setIsProfileLoaded] = useState(false);
-
   const {
-    control: notificationControl,
-    reset: resetNotificationForm,
-    getValues: getNotificationValues,
-    formState: { isDirty: isNotificationDirty },
-  } = useForm<StaffNotificationInputs>({
-    mode: "onChange",
-    defaultValues: {
-      workStart: true,
-      workEnd: true,
-    },
-  });
-
-  const {
-    control: linksControl,
-    reset: resetLinksForm,
-    getValues: getLinkValues,
-    formState: { isDirty: isLinksDirty },
-  } = useForm<StaffLinksFormInputs>({
-    mode: "onChange",
-    defaultValues: {
-      externalLinks: [],
-    },
-  });
-
-  const {
-    control: passwordControl,
-    handleSubmit: handlePasswordSubmit,
-    formState: {
-      isValid: isPasswordValid,
-      isSubmitting: isPasswordSubmitting,
-      isDirty: isPasswordDirty,
-    },
-    reset: resetPasswordForm,
-    getValues: getPasswordValues,
-  } = useForm<PasswordChangeInputs>({
-    mode: "onChange",
-    defaultValues: {
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    },
-  });
-
-  const {
-    fields: externalLinkFields,
-    append: appendExternalLink,
-    remove: removeExternalLink,
-  } = useFieldArray({
-    control: linksControl,
-    name: "externalLinks",
-  });
-
-  const watchedNotifications = useWatch({
-    control: notificationControl,
-  });
-  const watchedExternalLinks = useWatch({
-    control: linksControl,
-    name: "externalLinks",
-  });
-
-  const currentNotifications = useMemo(
-    () => normalizeNotifications(watchedNotifications),
-    [watchedNotifications],
-  );
-  const currentExternalLinks = useMemo(
-    () => normalizeFormExternalLinks(watchedExternalLinks),
-    [watchedExternalLinks],
-  );
-  const hasPendingLinkInput = useMemo(
-    () =>
-      currentExternalLinks.length > 0 &&
-      !areExternalLinksReadyToSave(currentExternalLinks),
-    [currentExternalLinks],
-  );
-  const saveableExternalLinks = useMemo(
-    () =>
-      hasPendingLinkInput
-        ? savedExternalLinks
-        : sanitizeExternalLinks(currentExternalLinks),
-    [currentExternalLinks, hasPendingLinkInput, savedExternalLinks],
-  );
-  const autoSaveSnapshot = useMemo<ProfileAutoSaveSnapshot>(
-    () => ({
-      notifications: currentNotifications,
-      externalLinks: saveableExternalLinks,
-    }),
-    [currentNotifications, saveableExternalLinks],
-  );
-
-  const persistProfile = useCallback(
-    async (snapshot: ProfileAutoSaveSnapshot) => {
-      if (!staff) return;
-
-      const updatedStaff = await updateStaff({
-        input: {
-          id: staff.id,
-          cognitoUserId: staff.cognitoUserId,
-          familyName: staff.familyName,
-          givenName: staff.givenName,
-          mailAddress: staff.mailAddress,
-          role: staff.role,
-          enabled: staff.enabled,
-          status: staff.status,
-          owner: staff.owner,
-          usageStartDate: staff.usageStartDate,
-          notifications: snapshot.notifications,
-          externalLinks: snapshot.externalLinks,
-          version: getNextVersion(staff.version),
-        },
-        condition: buildVersionOrUpdatedAtCondition(staff.version, staff.updatedAt),
-      });
-
-      const normalizedUpdatedNotifications = normalizeNotifications(
-        updatedStaff.notifications,
-      );
-      const normalizedUpdatedExternalLinks = normalizeExternalLinks(
-        updatedStaff.externalLinks,
-      );
-
-      setStaff((prev) =>
-        prev
-          ? {
-              ...prev,
-              ...updatedStaff,
-              owner: updatedStaff.owner ?? false,
-              role: mappingStaffRole(
-                updatedStaff.role as Parameters<typeof mappingStaffRole>[0],
-              ),
-            }
-          : prev,
-      );
-      setSavedExternalLinks(normalizedUpdatedExternalLinks);
-
-      const nextNotificationValues = normalizeNotifications(getNotificationValues());
-      if (areNotificationsEqual(nextNotificationValues, snapshot.notifications)) {
-        resetNotificationForm(normalizedUpdatedNotifications);
-      }
-
-      const nextLinkValues = normalizeFormExternalLinks(
-        getLinkValues("externalLinks"),
-      );
-      if (
-        areExternalLinksReadyToSave(nextLinkValues) &&
-        areExternalLinksEqual(nextLinkValues, snapshot.externalLinks)
-      ) {
-        resetLinksForm({ externalLinks: normalizedUpdatedExternalLinks });
-      }
-    },
-    [
-      getLinkValues,
-      getNotificationValues,
-      resetLinksForm,
-      resetNotificationForm,
-      staff,
-    ],
-  );
-
-  const {
-    isSaving: isAutoSaving,
-    isPending: isAutoSavePending,
+    cognitoUser,
+    signOut,
+    staff,
+    isAutoSaving,
+    isAutoSavePending,
     lastSavedAt,
-  } = useAutoSave({
-    saveFn: persistProfile,
-    data: autoSaveSnapshot,
-    enabled: isProfileLoaded && !!staff,
-    delay: PROFILE_AUTO_SAVE_DELAY,
-    onSaveError: (error) => {
-      logger.error("Failed to auto-save profile:", error);
-      notify({
-        title: "エラー",
-        description: MESSAGE_CODE.E05003,
-        tone: "error",
-        dedupeKey: "profile-auto-save-error",
-      });
-    },
-  });
+    notificationControl,
+    linksControl,
+    passwordControl,
+    handlePasswordSubmit,
+    getPasswordValues,
+    resetPasswordForm,
+    externalLinkFields,
+    canAddMoreLinks,
+    hasPendingLinkInput,
+    handleAddLink,
+    handleRemoveLink,
+    isNotificationDirty,
+    isLinksDirty,
+    isPasswordDirty,
+    isPasswordValid,
+    isPasswordSubmitting,
+  } = useProfileForm();
 
-  const canAddMoreLinks =
-    externalLinkFields.length < STAFF_EXTERNAL_LINKS_LIMIT;
+  const [activeTab, setActiveTab] = useState<ProfileTab>("general");
+
   const { dialog } = usePageLeaveGuard({
-    isDirty:
-      isNotificationDirty ||
-      isLinksDirty ||
-      isPasswordDirty ||
-      isAutoSavePending,
+    isDirty: isNotificationDirty || isLinksDirty || isPasswordDirty || isAutoSavePending,
     isBusy: isAutoSaving || isPasswordSubmitting,
   });
-
-  const handleAddLink = () => {
-    if (!canAddMoreLinks) return;
-    appendExternalLink(createEmptyExternalLink());
-  };
-
-  const handleRemoveLink = (index: number) => {
-    removeExternalLink(index);
-  };
-
-  useEffect(() => {
-    if (!cognitoUser) return;
-
-    fetchStaff(cognitoUser.id)
-      .then((res) => {
-        if (!res) return;
-
-        setStaff({
-          ...res,
-          familyName: res.familyName,
-          givenName: res.givenName,
-          owner: res.owner ?? false,
-          role: mappingStaffRole(res.role as Parameters<typeof mappingStaffRole>[0]),
-        });
-
-        const normalizedNotificationValues = normalizeNotifications(
-          res.notifications,
-        );
-        const normalizedExternalLinkValues = normalizeExternalLinks(
-          res.externalLinks,
-        );
-
-        setSavedExternalLinks(normalizedExternalLinkValues);
-        resetNotificationForm(normalizedNotificationValues);
-        resetLinksForm({
-          externalLinks: normalizedExternalLinkValues,
-        });
-        setIsProfileLoaded(true);
-      })
-      .catch((e: Error) => {
-        logger.error("Failed to load staff data:", e);
-      });
-  }, [cognitoUser, resetLinksForm, resetNotificationForm]);
 
   if (!cognitoUser || staff === undefined) {
     return null;
@@ -579,46 +72,6 @@ export default function Profile() {
   const handleTabChange = (_: SyntheticEvent, value: string) => {
     if (isProfileTab(value)) {
       setActiveTab(value);
-      setPasswordChangeSuccess(false);
-      setPasswordChangeError(null);
-    }
-  };
-
-  const onPasswordChange = async (data: PasswordChangeInputs) => {
-    setPasswordChangeError(null);
-    setPasswordChangeSuccess(false);
-
-    try {
-      await updatePassword({
-        oldPassword: data.currentPassword,
-        newPassword: data.newPassword,
-      });
-      setPasswordChangeSuccess(true);
-      resetPasswordForm();
-      logger.info("Password changed successfully");
-    } catch (error) {
-      logger.error("Failed to change password:", error);
-      if (error instanceof Error) {
-        if (error.name === "NotAuthorizedException") {
-          setPasswordChangeError("現在のパスワードが正しくありません。");
-        } else if (error.name === "InvalidPasswordException") {
-          setPasswordChangeError(
-            "新しいパスワードは8文字以上で、大文字・小文字・数字・記号を含める必要があります。",
-          );
-        } else if (error.name === "LimitExceededException") {
-          setPasswordChangeError(
-            "試行回数が上限に達しました。しばらくしてから再度お試しください。",
-          );
-        } else {
-          setPasswordChangeError(
-            "パスワードの変更に失敗しました。もう一度お試しください。",
-          );
-        }
-      } else {
-        setPasswordChangeError(
-          "パスワードの変更に失敗しました。もう一度お試しください。",
-        );
-      }
     }
   };
 
@@ -665,9 +118,7 @@ export default function Profile() {
                 <button
                   key={tab.value}
                   type="button"
-                  onClick={() =>
-                    handleTabChange({} as SyntheticEvent, tab.value)
-                  }
+                  onClick={() => handleTabChange({} as SyntheticEvent, tab.value)}
                   className={[
                     "min-w-0 rounded-[1rem] px-2.5 py-2 text-center text-[0.92rem] font-semibold leading-tight transition whitespace-normal break-words sm:shrink-0 sm:rounded-[1.1rem] sm:px-4 sm:py-2.5 sm:text-sm sm:whitespace-nowrap",
                     isActive
@@ -687,399 +138,46 @@ export default function Profile() {
           style={{ maxWidth: PROFILE_CONTENT_MAX_WIDTH }}
         >
           {activeTab === "general" ? (
-            <div className="w-full max-w-[920px] space-y-4">
-              <ProfileSectionHeader
-                title="一般設定"
-                description="プロフィールの基本情報を確認できます。編集対象ではない項目も、ここでまとめて確認できます。"
-              />
-              <div className="grid gap-2.5 md:grid-cols-2">
-                <InfoCard label="メールアドレス" value={cognitoUser.mailAddress} />
-                <InfoCard label="権限" value={roleLabel ?? "未設定"} />
-                <InfoCard label="利用開始日" value={usageStartDateLabel} />
-              </div>
-              <div className="rounded-[1.35rem] border border-rose-100 bg-rose-50/70 p-4">
-                <p className="text-sm font-medium text-slate-900">ログアウト</p>
-                <p className="mt-1 text-sm leading-5 text-slate-500">
-                  現在の端末からサインアウトします。
-                </p>
-                <button
-                  type="button"
-                  onClick={signOut}
-                  className="mt-3 inline-flex w-full items-center justify-center rounded-[1rem] border border-rose-200 bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700 sm:w-auto"
-                >
-                  ログアウト
-                </button>
-              </div>
-            </div>
+            <ProfileGeneralTab
+              mailAddress={cognitoUser.mailAddress}
+              roleLabel={roleLabel ?? "未設定"}
+              usageStartDateLabel={usageStartDateLabel}
+              signOut={signOut}
+            />
           ) : null}
 
           {activeTab === "notifications" ? (
-            <div className="w-full max-w-[920px] space-y-5">
-              <ProfileSectionHeader
-                title="通知設定"
-                description="勤務開始と勤務終了の通知メールを切り替えられます。"
-              />
-              <AutoSaveStatus
-                isSaving={isAutoSaving}
-                isPending={isAutoSavePending}
-                lastSavedAt={lastSavedAt}
-              />
-              <div className="grid gap-3 md:grid-cols-2">
-                <Controller
-                  name="workStart"
-                  control={notificationControl}
-                  render={({ field }) => {
-                    const labelId = `${field.name}-label`;
-                    const descriptionId = `${field.name}-description`;
-
-                    return (
-                      <label className="flex min-w-0 cursor-pointer items-center justify-between gap-4 rounded-[1.6rem] border border-slate-200 bg-slate-50/70 p-5 transition hover:border-emerald-200 hover:bg-emerald-50/70">
-                        <div className="min-w-0 space-y-1">
-                          <p
-                            id={labelId}
-                            className="text-sm font-semibold text-slate-900"
-                          >
-                            勤務開始メール
-                          </p>
-                          <p
-                            id={descriptionId}
-                            className="text-sm leading-6 text-slate-500"
-                          >
-                            出勤打刻時の通知を受け取ります。
-                          </p>
-                        </div>
-                        <input
-                          type="checkbox"
-                          checked={field.value}
-                          onChange={(event) => field.onChange(event.target.checked)}
-                          aria-labelledby={labelId}
-                          aria-describedby={descriptionId}
-                          className="h-4 w-4 shrink-0 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                        />
-                      </label>
-                    );
-                  }}
-                />
-                <Controller
-                  name="workEnd"
-                  control={notificationControl}
-                  render={({ field }) => {
-                    const labelId = `${field.name}-label`;
-                    const descriptionId = `${field.name}-description`;
-
-                    return (
-                      <label className="flex min-w-0 cursor-pointer items-center justify-between gap-4 rounded-[1.6rem] border border-slate-200 bg-slate-50/70 p-5 transition hover:border-emerald-200 hover:bg-emerald-50/70">
-                        <div className="min-w-0 space-y-1">
-                          <p
-                            id={labelId}
-                            className="text-sm font-semibold text-slate-900"
-                          >
-                            勤務終了メール
-                          </p>
-                          <p
-                            id={descriptionId}
-                            className="text-sm leading-6 text-slate-500"
-                          >
-                            退勤打刻時の通知を受け取ります。
-                          </p>
-                        </div>
-                        <input
-                          type="checkbox"
-                          checked={field.value}
-                          onChange={(event) => field.onChange(event.target.checked)}
-                          aria-labelledby={labelId}
-                          aria-describedby={descriptionId}
-                          className="h-4 w-4 shrink-0 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                        />
-                      </label>
-                    );
-                  }}
-                />
-              </div>
-            </div>
+            <ProfileNotificationsTab
+              notificationControl={notificationControl}
+              isAutoSaving={isAutoSaving}
+              isAutoSavePending={isAutoSavePending}
+              lastSavedAt={lastSavedAt}
+            />
           ) : null}
 
           {activeTab === "links" ? (
-            <div className="w-full max-w-[920px] space-y-5">
-              <ProfileSectionHeader
-                title="個人リンク設定"
-                description="自分専用のショートカットを登録できます。ヘッダーのリンク一覧から開く想定です。"
-              />
-              <AutoSaveStatus
-                isSaving={isAutoSaving}
-                isPending={isAutoSavePending}
-                lastSavedAt={lastSavedAt}
-                helperText={
-                  hasPendingLinkInput
-                    ? "表示名とURLがそろうまで保存されません。"
-                    : undefined
-                }
-              />
-              <p className="text-sm leading-6 text-slate-500">
-                アイコンは汎用リンク表示で扱われます。
-              </p>
-              {externalLinkFields.length === 0 ? (
-                <div className="rounded-[1.6rem] border border-dashed border-slate-300 bg-slate-50/70 px-4 py-6 text-sm text-slate-500">
-                  個人リンクはまだ登録されていません。
-                </div>
-              ) : null}
-              <div className="space-y-3">
-                {externalLinkFields.map((field, index) => (
-                  <div
-                    key={field.id}
-                    className="min-w-0 rounded-[1.6rem] border border-slate-200 bg-slate-50/60 p-4 sm:p-5"
-                  >
-                    <div className="space-y-4">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-slate-900">
-                            リンク {index + 1}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2 self-start sm:self-auto">
-                          <Controller
-                            name={`externalLinks.${index}.enabled`}
-                            control={linksControl}
-                            render={({ field: linkField }) => (
-                              <label className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
-                                <input
-                                  type="checkbox"
-                                  checked={linkField.value}
-                                  onChange={(event) =>
-                                    linkField.onChange(event.target.checked)
-                                  }
-                                  className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                                />
-                                有効
-                              </label>
-                            )}
-                          />
-                          <button
-                            type="button"
-                            aria-label="リンクを削除"
-                            onClick={() => handleRemoveLink(index)}
-                            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
-                          >
-                            <DeleteOutlineIcon fontSize="small" />
-                          </button>
-                        </div>
-                      </div>
-                      <div className="grid max-w-[760px] gap-4">
-                        <Controller
-                          name={`externalLinks.${index}.label`}
-                          control={linksControl}
-                          rules={{
-                            required: "表示名を入力してください",
-                            maxLength: {
-                              value: 32,
-                              message: "32文字以内で入力してください",
-                            },
-                          }}
-                          render={({ field: linkField, fieldState }) => (
-                            <label className="block space-y-2">
-                              <span className="text-sm font-medium text-slate-700">
-                                表示名
-                              </span>
-                              <input
-                                {...linkField}
-                                className={[
-                                  inputBaseClassName,
-                                  fieldState.error
-                                    ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
-                                    : "",
-                                ].join(" ")}
-                              />
-                              {fieldState.error?.message ? (
-                                <p className="text-xs text-rose-600">
-                                  {fieldState.error.message}
-                                </p>
-                              ) : null}
-                            </label>
-                          )}
-                        />
-                        <Controller
-                          name={`externalLinks.${index}.url`}
-                          control={linksControl}
-                          rules={{
-                            required: "URLを入力してください",
-                            validate: (value) =>
-                              isValidUrl(value) ||
-                              "https:// から始まるURLを入力してください",
-                          }}
-                          render={({ field: linkField, fieldState }) => (
-                            <label className="block space-y-2">
-                              <span className="text-sm font-medium text-slate-700">
-                                URL
-                              </span>
-                              <input
-                                {...linkField}
-                                placeholder="https://..."
-                                className={[
-                                  inputBaseClassName,
-                                  fieldState.error
-                                    ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
-                                    : "",
-                                ].join(" ")}
-                              />
-                              {fieldState.error?.message ? (
-                                <p className="text-xs text-rose-600">
-                                  {fieldState.error.message}
-                                </p>
-                              ) : null}
-                            </label>
-                          )}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <button
-                  type="button"
-                  onClick={handleAddLink}
-                  disabled={!canAddMoreLinks}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-[1rem] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
-                >
-                  <AddCircleOutlineIcon fontSize="small" />
-                  リンクを追加
-                </button>
-                {!canAddMoreLinks ? (
-                  <p className="text-xs text-slate-500">
-                    最大{STAFF_EXTERNAL_LINKS_LIMIT}件まで追加できます。
-                  </p>
-                ) : null}
-              </div>
-            </div>
+            <ProfileLinksTab
+              linksControl={linksControl}
+              externalLinkFields={externalLinkFields}
+              handleAddLink={handleAddLink}
+              handleRemoveLink={handleRemoveLink}
+              canAddMoreLinks={canAddMoreLinks}
+              isAutoSaving={isAutoSaving}
+              isAutoSavePending={isAutoSavePending}
+              lastSavedAt={lastSavedAt}
+              hasPendingLinkInput={hasPendingLinkInput}
+            />
           ) : null}
 
           {activeTab === "security" ? (
-            <div className="w-full max-w-[920px] space-y-5">
-              <ProfileSectionHeader
-                title="セキュリティ"
-                description="パスワードを更新して、ログイン情報を管理します。"
-              />
-              <div className="rounded-[1.6rem] border border-slate-200 bg-slate-50/60 p-4 sm:p-5">
-                <div className="space-y-4">
-                  <SubsectionTitle className="text-base font-semibold text-slate-900">
-                    パスワード変更
-                  </SubsectionTitle>
-                  {passwordChangeSuccess ? (
-                    <InlineAlert
-                      variant="success"
-                      onClose={() => setPasswordChangeSuccess(false)}
-                    >
-                      パスワードを変更しました。
-                    </InlineAlert>
-                  ) : null}
-                  {passwordChangeError ? (
-                    <InlineAlert
-                      variant="error"
-                      onClose={() => setPasswordChangeError(null)}
-                    >
-                      {passwordChangeError}
-                    </InlineAlert>
-                  ) : null}
-                  <div className="grid max-w-[760px] gap-4">
-                    <Controller
-                      name="currentPassword"
-                      control={passwordControl}
-                      rules={{
-                        required: "現在のパスワードを入力してください",
-                      }}
-                      render={({ field, fieldState }) => (
-                        <PasswordField
-                          label="現在のパスワード"
-                          type={showCurrentPassword ? "text" : "password"}
-                          value={field.value}
-                          onChange={field.onChange}
-                          onBlur={field.onBlur}
-                          error={fieldState.error?.message}
-                          showPassword={showCurrentPassword}
-                          onToggleVisibility={() =>
-                            setShowCurrentPassword(!showCurrentPassword)
-                          }
-                        />
-                      )}
-                    />
-                    <Controller
-                      name="newPassword"
-                      control={passwordControl}
-                      rules={{
-                        required: "新しいパスワードを入力してください",
-                        minLength: {
-                          value: 8,
-                          message: "パスワードは8文字以上で入力してください",
-                        },
-                        validate: {
-                          hasUpperCase: (value) =>
-                            /[A-Z]/.test(value) ||
-                            "大文字を1文字以上含めてください",
-                          hasLowerCase: (value) =>
-                            /[a-z]/.test(value) ||
-                            "小文字を1文字以上含めてください",
-                          hasNumber: (value) =>
-                            /[0-9]/.test(value) ||
-                            "数字を1文字以上含めてください",
-                          hasSpecialChar: (value) =>
-                            /[^A-Za-z0-9]/.test(value) ||
-                            "記号を1文字以上含めてください",
-                        },
-                      }}
-                      render={({ field, fieldState }) => (
-                        <PasswordField
-                          label="新しいパスワード"
-                          type={showNewPassword ? "text" : "password"}
-                          value={field.value}
-                          onChange={field.onChange}
-                          onBlur={field.onBlur}
-                          error={fieldState.error?.message}
-                          helperText="8文字以上で、大文字・小文字・数字・記号を含めてください"
-                          showPassword={showNewPassword}
-                          onToggleVisibility={() =>
-                            setShowNewPassword(!showNewPassword)
-                          }
-                        />
-                      )}
-                    />
-                    <Controller
-                      name="confirmPassword"
-                      control={passwordControl}
-                      rules={{
-                        required: "パスワードを再入力してください",
-                        validate: (value) =>
-                          value === getPasswordValues("newPassword") ||
-                          "パスワードが一致しません",
-                      }}
-                      render={({ field, fieldState }) => (
-                        <PasswordField
-                          label="新しいパスワード(確認)"
-                          type={showConfirmPassword ? "text" : "password"}
-                          value={field.value}
-                          onChange={field.onChange}
-                          onBlur={field.onBlur}
-                          error={fieldState.error?.message}
-                          showPassword={showConfirmPassword}
-                          onToggleVisibility={() =>
-                            setShowConfirmPassword(!showConfirmPassword)
-                          }
-                        />
-                      )}
-                    />
-                  </div>
-                  <div>
-                    <button
-                      type="button"
-                      disabled={!isPasswordValid || isPasswordSubmitting}
-                      onClick={handlePasswordSubmit(onPasswordChange)}
-                      className="inline-flex w-full items-center justify-center rounded-[1rem] bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
-                    >
-                      {isPasswordSubmitting ? "変更中..." : "パスワードを変更"}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <ProfileSecurityTab
+              passwordControl={passwordControl}
+              handlePasswordSubmit={handlePasswordSubmit}
+              getPasswordValues={getPasswordValues}
+              resetPasswordForm={resetPasswordForm}
+              isPasswordValid={isPasswordValid}
+              isPasswordSubmitting={isPasswordSubmitting}
+            />
           ) : null}
         </section>
       </div>

@@ -112,7 +112,7 @@ export const buildEditLockConflictMessage = (lock?: ShiftEditLockData | null) =>
     return "編集ロックの取得に失敗しました。最新状態を確認してから再度お試しください。";
   }
 
-  return `${lock.holderUserName} が ${lock.staffId} の ${lock.date} 日セルを編集中です。`;
+  return `${lock.holderUserName} が ${lock.date} 日セルを編集中です。`;
 };
 
 interface UseShiftEditLocksProps {

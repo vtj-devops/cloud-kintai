@@ -33,6 +33,16 @@ export type ShiftRequestLite = {
     body: string;
     createdAt: string;
   } | null> | null;
+  histories?: Array<{
+    version: number;
+    entries?: Array<{
+      date: string;
+      status: string;
+      isLocked?: boolean | null;
+    } | null> | null;
+    recordedAt: string;
+    recordedByStaffId?: string | null;
+  } | null> | null;
   updatedAt?: string | null;
   updatedBy?: string | null;
   version?: number | null;
@@ -76,6 +86,16 @@ const listShiftRequestsLite = /* GraphQL */ `
           body
           createdAt
         }
+        histories {
+          version
+          entries {
+            date
+            status
+            isLocked
+          }
+          recordedAt
+          recordedByStaffId
+        }
         updatedAt
         updatedBy
         version
@@ -114,6 +134,16 @@ const shiftRequestsByStaffIdLite = /* GraphQL */ `
           authorName
           body
           createdAt
+        }
+        histories {
+          version
+          entries {
+            date
+            status
+            isLocked
+          }
+          recordedAt
+          recordedByStaffId
         }
         updatedAt
         updatedBy

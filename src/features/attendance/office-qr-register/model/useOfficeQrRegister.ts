@@ -25,7 +25,7 @@ export function useOfficeQrRegister() {
     const [isOfficeModeEnabled, setIsOfficeModeEnabled] = useState(false);
     const [isValidToken, setIsValidToken] = useState(false);
     const [attendance, setAttendance] = useState<Attendance | null>(null);
-    const [triggerGetAttendance] = useLazyGetAttendanceByStaffAndDateQuery();
+    const [triggerGetAttendance, { error: fetchAttendanceError }] = useLazyGetAttendanceByStaffAndDateQuery();
     const [upsertAttendanceMutation] = useUpsertAttendanceByStaffAndDateMutation();
     const [updateAttendanceMutation] = useUpdateAttendanceMutation();
     const resolveUpsertAction = useCallback((input: CreateAttendanceInput): AttendanceUpsertAction => {
@@ -117,6 +117,7 @@ export function useOfficeQrRegister() {
         })
             .catch((error) => {
             logger.debug("Failed to fetch attendance for office QR", error);
+            dispatch(pushNotification({ tone: "error", message: "勤怠データの取得に失敗しました。" }));
         });
         return () => {
             isMounted = false;
@@ -225,5 +226,6 @@ export function useOfficeQrRegister() {
         mode: qrMode,
         handleClockIn,
         handleClockOut,
+        fetchAttendanceError,
     } as const;
 }

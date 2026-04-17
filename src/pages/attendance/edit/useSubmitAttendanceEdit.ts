@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 
 import * as MESSAGE_CODE from "@/errors";
 import { useAppNotification } from "@/hooks/useAppNotification";
+import { CognitoUser } from "@/hooks/useCognitoUser";
 
 import { buildChangeRequestPayload } from "./attendanceEditUtils";
 import sendChangeRequestMail from "./sendChangeRequestMail";
@@ -20,7 +21,7 @@ import sendChangeRequestMail from "./sendChangeRequestMail";
 const logger = createLogger("useSubmitAttendanceEdit");
 
 type UseSubmitAttendanceEditParams = {
-  cognitoUser: any;
+  cognitoUser: CognitoUser | null | undefined;
   attendance: Attendance | null;
   staff: StaffType | null | undefined;
   staffs: StaffType[];

@@ -1,9 +1,7 @@
 import {
   HelpOutline as HelpOutlineIcon,
   Lightbulb as LightbulbIcon,
-  Redo as RedoIcon,
   Sync as SyncIcon,
-  Undo as UndoIcon,
 } from "@mui/icons-material";
 import PrintIcon from "@mui/icons-material/Print";
 import { Badge, Divider, Paper, Stack, Tooltip } from "@mui/material";
@@ -13,17 +11,9 @@ import React from "react";
 const MIN_SYNC_SPIN_DURATION_MS = 2000;
 
 /**
- * 取り消し/やり直しツールバーのProps
+ * ツールバーのProps
  */
 export interface UndoRedoToolbarProps {
-  canUndo: boolean;
-  canRedo: boolean;
-  onUndo: () => void;
-  onRedo: () => void;
-  lastUndoDescription?: string;
-  lastRedoDescription?: string;
-  showHistory?: boolean;
-  onToggleHistory?: () => void;
   onShowHelp?: () => void;
   onPrint?: () => void;
   onSync?: () => void;
@@ -35,16 +25,10 @@ export interface UndoRedoToolbarProps {
 }
 
 /**
- * 取り消し/やり直しツールバー
+ * シフト編集ツールバー
  * 見出しの下に配置するツールバー
  */
 export const UndoRedoToolbar: React.FC<UndoRedoToolbarProps> = ({
-  canUndo,
-  canRedo,
-  onUndo,
-  onRedo,
-  lastUndoDescription,
-  lastRedoDescription,
   onShowHelp,
   onPrint,
   onSync,
@@ -116,46 +100,6 @@ export const UndoRedoToolbar: React.FC<UndoRedoToolbarProps> = ({
       }}
     >
       <Stack direction="row" spacing={0.5} alignItems="center">
-        <Tooltip
-          title={
-            canUndo
-              ? lastUndoDescription || "操作を取り消す (Ctrl/Cmd + Z)"
-              : "取り消せる操作はありません"
-          }
-        >
-          <span>
-            <AppIconButton
-              onClick={onUndo}
-              disabled={!canUndo}
-              tone="primary"
-              size="sm"
-              aria-label="undo"
-            >
-              <UndoIcon />
-            </AppIconButton>
-          </span>
-        </Tooltip>
-
-        <Tooltip
-          title={
-            canRedo
-              ? lastRedoDescription || "操作をやり直す (Ctrl/Cmd + Shift + Z)"
-              : "やり直せる操作はありません"
-          }
-        >
-          <span>
-            <AppIconButton
-              onClick={onRedo}
-              disabled={!canRedo}
-              tone="primary"
-              size="sm"
-              aria-label="redo"
-            >
-              <RedoIcon />
-            </AppIconButton>
-          </span>
-        </Tooltip>
-
         {onPrint && (
           <>
             <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 0.5 }} />

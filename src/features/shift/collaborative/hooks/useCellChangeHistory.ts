@@ -213,6 +213,21 @@ export const useCellChangeHistory = ({
   );
 
   /**
+   * DB 取得済みのレコード配列でヒストリを初期化する。
+   * セッション中に既に記録がある場合は何もしない（初回ロード専用）。
+   */
+  const seedHistory = useCallback((records: CellChangeRecord[]) => {
+    setHistoryMap(() => {
+      const next = new Map<string, CellChangeRecord[]>();
+      for (const record of records) {
+        const existing = next.get(record.cellKey) ?? [];
+        next.set(record.cellKey, [...existing, record]);
+      }
+      return next;
+    });
+  }, []);
+
+  /**
    * 変更履歴をクリア
    */
   const clearCellHistory = useCallback(() => {
@@ -224,6 +239,7 @@ export const useCellChangeHistory = ({
     recordCellChange,
     recordBatchCellChanges,
     recordRemoteChange,
+    seedHistory,
     getCellHistory,
     getAllCellHistory,
     getStaffCellHistory,

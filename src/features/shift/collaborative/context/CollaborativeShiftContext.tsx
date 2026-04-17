@@ -1,6 +1,5 @@
 import { createContext, useContext } from "react";
 
-import { HistoryEntry } from "../hooks/useUndoRedo";
 import {
   CellChangeRecord,
   CellComment,
@@ -45,17 +44,6 @@ export interface CollaborativeShiftContextType {
   clearSyncError: () => void;
   updateUserActivity: () => void;
   retryPendingChanges: () => Promise<void>;
-  // Undo/Redo
-  canUndo: boolean;
-  canRedo: boolean;
-  undo: () => Promise<boolean>;
-  redo: () => Promise<boolean>;
-  getLastUndo: () => HistoryEntry | null;
-  getLastRedo: () => HistoryEntry | null;
-  undoHistory: HistoryEntry[];
-  redoHistory: HistoryEntry[];
-  showHistory: boolean;
-  toggleHistory: () => void;
   // セル単位変更履歴
   getCellHistory: (cellKey: string) => readonly CellChangeRecord[];
   getAllCellHistory: () => readonly CellChangeRecord[];

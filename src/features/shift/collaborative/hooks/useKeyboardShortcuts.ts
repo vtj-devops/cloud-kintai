@@ -9,8 +9,6 @@ interface KeyboardShortcutsConfig {
   onSelectAll: () => void;
   onShowHelp: () => void;
   onEscape: () => void;
-  onCopy?: () => void;
-  onPaste?: () => void;
   onUndo?: () => void;
   onRedo?: () => void;
 }
@@ -25,8 +23,6 @@ export const useKeyboardShortcuts = ({
   onSelectAll,
   onShowHelp,
   onEscape,
-  onCopy,
-  onPaste,
   onUndo,
   onRedo,
 }: KeyboardShortcutsConfig) => {
@@ -86,20 +82,6 @@ export const useKeyboardShortcuts = ({
         return;
       }
 
-      // Ctrl/Cmd + C: コピー
-      if (isModifier && key === "c" && onCopy) {
-        event.preventDefault();
-        onCopy();
-        return;
-      }
-
-      // Ctrl/Cmd + V: ペースト
-      if (isModifier && key === "v" && onPaste) {
-        event.preventDefault();
-        onPaste();
-        return;
-      }
-
       // Ctrl/Cmd + Z: 取り消し
       if (isModifier && !shiftKey && key === "z" && onUndo) {
         event.preventDefault();
@@ -134,8 +116,6 @@ export const useKeyboardShortcuts = ({
       onSelectAll,
       onShowHelp,
       onEscape,
-      onCopy,
-      onPaste,
       onUndo,
       onRedo,
     ],
@@ -159,8 +139,6 @@ export const useKeyboardShortcuts = ({
       { key: "4", description: "自動調整に変更" },
       { key: "5", description: "未入力に変更" },
       { key: "Ctrl/Cmd + A", description: "全セル選択" },
-      { key: "Ctrl/Cmd + C", description: "選択セルをコピー" },
-      { key: "Ctrl/Cmd + V", description: "コピーした内容を貼り付け" },
       { key: "Ctrl/Cmd + Z", description: "操作を取り消す" },
       { key: "Ctrl/Cmd + Shift + Z", description: "操作をやり直す" },
       { key: "?", description: "ヘルプを表示" },

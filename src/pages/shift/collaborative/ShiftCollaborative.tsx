@@ -15,19 +15,16 @@ import { AuthContext } from "@/context/AuthContext";
 import AdminShiftSettingsDialog from "@/features/admin-config-shift/AdminShiftSettingsDialog";
 import { usePageLeaveGuard } from "@/hooks/usePageLeaveGuard";
 
-import { BatchEditToolbar } from "../../../features/shift/collaborative/components/BatchEditToolbar";
-import { ChangeHistoryPanel } from "../../../features/shift/collaborative/components/ChangeHistoryPanel";
 import { CollaborativeHeader } from "../../../features/shift/collaborative/components/CollaborativeHeader";
 import { KeyboardShortcutsHelp } from "../../../features/shift/collaborative/components/KeyboardShortcutsHelp";
-import {
-  usePresenceNotifications,
-} from "../../../features/shift/collaborative/components/PresenceNotification";
+import { usePresenceNotifications } from "../../../features/shift/collaborative/components/PresenceNotification";
 import { PrintShiftDialog } from "../../../features/shift/collaborative/components/PrintShiftDialog";
 import { ProgressPanel } from "../../../features/shift/collaborative/components/ProgressPanel";
 import {
   ShiftCell,
   type ShiftCellProps,
 } from "../../../features/shift/collaborative/components/ShiftCell";
+import { ShiftCellPanel } from "../../../features/shift/collaborative/components/ShiftCellPanel";
 import { ShiftSuggestionsPanel } from "../../../features/shift/collaborative/components/ShiftSuggestionsPanel";
 import { SyncPanel } from "../../../features/shift/collaborative/components/SyncPanel";
 import { InfoBadge } from "../../../features/shift/collaborative/components/ui/Badges";
@@ -46,6 +43,7 @@ const isWeekend = (day: dayjs.Dayjs): boolean =>
 
 interface ShiftCollaborativePageInnerProps {
   staffs: ReturnType<typeof useStaffs>["staffs"];
+  staffNameMap: Map<string, string>;
   targetMonth: string;
   onPrevMonth: () => void;
   onNextMonth: () => void;
@@ -54,6 +52,7 @@ interface ShiftCollaborativePageInnerProps {
 const ShiftCollaborativePageInner = memo<ShiftCollaborativePageInnerProps>(
   ({
     staffs,
+    staffNameMap,
     targetMonth,
     onPrevMonth,
     onNextMonth,
@@ -79,9 +78,6 @@ const ShiftCollaborativePageInner = memo<ShiftCollaborativePageInnerProps>(
       selectionCount,
       hasLocked,
       hasUnlocked,
-      hasClipboard,
-      handleCopy,
-      handlePaste,
       clearSelection,
       handleChangeState,
       handleLockCells,
@@ -100,18 +96,10 @@ const ShiftCollaborativePageInner = memo<ShiftCollaborativePageInnerProps>(
       currentMonth,
       days,
       staffIds,
-      canUndo,
-      canRedo,
-      undo,
-      redo,
-      getLastUndo,
-      getLastRedo,
-      undoHistory,
-      redoHistory,
       isBatchUpdating,
       addComment,
       getCommentsByCell,
-      getAllCellHistory,
+      getCellHistory,
       handleEscape,
       handleSelectAll,
       navigate,
@@ -139,18 +127,6 @@ const ShiftCollaborativePageInner = memo<ShiftCollaborativePageInnerProps>(
 
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-    const staffNameMap = useMemo(
-      () =>
-        new Map(
-          staffs.map((staff) => [
-            staff.id,
-            `${staff.familyName || ""}${staff.givenName || ""}`.trim() ||
-              staff.id,
-          ]),
-        ),
-      [staffs],
-    );
-
     useEffect(() => {
       if (!state.lastRemoteUpdate) return;
       const staffName =
@@ -159,34 +135,49 @@ const ShiftCollaborativePageInner = memo<ShiftCollaborativePageInnerProps>(
       addNotification("data-synced", "", { staffName, date: "" });
     }, [state.lastRemoteUpdate, staffNameMap, addNotification]);
 
-    const [cellHistoryDrawerOpen, setCellHistoryDrawerOpen] =
-      useState<boolean>(false);
-    const [cellHistoryFocusKey, setCellHistoryFocusKey] = useState<string>("");
-    const [cellHistoryFocusToken, setCellHistoryFocusToken] =
-      useState<number>(0);
     const [suggestionsDrawerOpen, setSuggestionsDrawerOpen] =
       useState<boolean>(false);
 
-    const handleCellContextMenu = useCallback(
-      (staffId: string, date: string, event: React.MouseEvent) => {
-        event.preventDefault();
-        const cellKey = `${staffId}#${date}`;
-        setCellHistoryFocusKey(cellKey);
-        setCellHistoryFocusToken(Date.now());
-        setCellHistoryDrawerOpen(true);
-      },
-      [],
-    );
+    // 選択セルの編集ロック保持者一覧
+    const cellEditLockHolders = useMemo(() => {
+      const cells =
+        selectionCount > 0
+          ? Array.from(selectedCells)
+          : focusedCell
+            ? [{ staffId: focusedCell.staffId, date: focusedCell.date }]
+            : [];
+      return cells
+        .map(({ staffId, date }) => {
+          const editor = getCellEditor(staffId, date);
+          if (!editor) return null;
+          return {
+            staffId,
+            date,
+            editorName: editor.userName,
+            editorColor: editor.color,
+            isSelf: editor.userId === currentUserId,
+          };
+        })
+        .filter((v): v is NonNullable<typeof v> => v !== null);
+    }, [
+      selectionCount,
+      selectedCells,
+      focusedCell,
+      getCellEditor,
+      currentUserId,
+    ]);
 
-    const handleCloseCellHistory = useCallback(() => {
-      setCellHistoryDrawerOpen(false);
-    }, []);
-
-    const handleShowCellHistory = useCallback((cellKey: string) => {
-      setCellHistoryFocusKey(cellKey);
-      setCellHistoryFocusToken(Date.now());
-      setCellHistoryDrawerOpen(true);
-    }, []);
+    const cellHistory = useMemo(() => {
+      if (selectionCount === 1 && selectedCells.length === 1) {
+        return getCellHistory(
+          `${selectedCells[0].staffId}#${selectedCells[0].date}`,
+        );
+      }
+      if (focusedCell) {
+        return getCellHistory(`${focusedCell.staffId}#${focusedCell.date}`);
+      }
+      return [];
+    }, [selectionCount, selectedCells, focusedCell, getCellHistory]);
 
     const suggestionsBadgeCount = useMemo(
       () =>
@@ -281,15 +272,10 @@ const ShiftCollaborativePageInner = memo<ShiftCollaborativePageInnerProps>(
       onSelectAll: handleSelectAll,
       onShowHelp: () => setShowHelp(true),
       onEscape: handleEscape,
-      onCopy: handleCopy,
-      onPaste: handlePaste,
-      onUndo: undo,
-      onRedo: redo,
     });
     const { dialog } = usePageLeaveGuard({
       isDirty: state.pendingChanges.size > 0,
-      isBusy:
-        state.dataStatus === "saving" || state.dataStatus === "syncing",
+      isBusy: state.dataStatus === "saving" || state.dataStatus === "syncing",
     });
 
     return (
@@ -310,12 +296,6 @@ const ShiftCollaborativePageInner = memo<ShiftCollaborativePageInnerProps>(
           />
 
           <UndoRedoToolbar
-            canUndo={canUndo}
-            canRedo={canRedo}
-            onUndo={undo}
-            onRedo={redo}
-            lastUndoDescription={getLastUndo()?.description}
-            lastRedoDescription={getLastRedo()?.description}
             onShowHelp={() => setShowHelp(true)}
             onPrint={openPrintDialog}
             onSync={() => {
@@ -367,7 +347,6 @@ const ShiftCollaborativePageInner = memo<ShiftCollaborativePageInnerProps>(
             onCellRegisterRef={registerCell}
             onCellMouseDown={handleCellMouseDown}
             onCellMouseEnter={handleCellMouseEnter}
-            onCellContextMenu={handleCellContextMenu}
             calculateDailyCount={(day) => calculateDailyCount(day.format("DD"))}
             getEventsForDay={getEventsForDay}
             ShiftCellComponent={ShiftCellWithComments}
@@ -381,7 +360,7 @@ const ShiftCollaborativePageInner = memo<ShiftCollaborativePageInnerProps>(
             currentMonth={currentMonth.format("YYYY年M月")}
           />
 
-          <BatchEditToolbar
+          <ShiftCellPanel
             selectionCount={selectionCount}
             selectedCells={
               selectionCount > 0
@@ -397,20 +376,17 @@ const ShiftCollaborativePageInner = memo<ShiftCollaborativePageInnerProps>(
                   )
                 : []
             }
-            onCopy={handleCopy}
-            onPaste={handlePaste}
+            cellHistory={cellHistory}
             onClear={clearSelection}
             onChangeState={handleChangeState}
             onLock={handleLockCells}
             onUnlock={handleUnlockCells}
             onAddComments={handleAddCommentsToSelectedCells}
-            onShowCellHistory={(cellKey) => handleShowCellHistory(cellKey)}
             canUnlock={isAdmin}
             showLock={hasUnlocked && isAdmin}
             showUnlock={hasLocked}
-            hasClipboard={hasClipboard}
-            canPaste={focusedCell !== null}
             isUpdating={isBatchUpdating}
+            cellEditLockHolders={cellEditLockHolders}
             hasEditLockForSelected={hasEditLockForSelected}
             isOthersEditingSelected={isOthersEditingSelected}
             onAcquireEditLock={handleAcquireEditLock}
@@ -448,22 +424,6 @@ const ShiftCollaborativePageInner = memo<ShiftCollaborativePageInnerProps>(
             onClose={() => setIsSettingsOpen(false)}
           />
         </PageContent>
-
-        <ChangeHistoryPanel
-          undoHistory={undoHistory}
-          redoHistory={redoHistory}
-          cellHistory={getAllCellHistory()}
-          staffNameMap={staffNameMap}
-          open={cellHistoryDrawerOpen}
-          onClose={handleCloseCellHistory}
-          initialCellKey={cellHistoryFocusKey || undefined}
-          focusCellKey={
-            cellHistoryFocusKey
-              ? `${cellHistoryFocusKey}@${cellHistoryFocusToken}`
-              : undefined
-          }
-          showOperationTab={false}
-        />
 
         <ShiftSuggestionsPanel
           open={suggestionsDrawerOpen}
@@ -517,6 +477,18 @@ export default function ShiftCollaborativePage() {
       : "Current User";
   }, [cognitoUser, staffs]);
 
+  const staffNameMap = useMemo(
+    () =>
+      new Map(
+        staffs.map((staff) => [
+          staff.id,
+          `${staff.familyName || ""}${staff.givenName || ""}`.trim() ||
+            staff.id,
+        ]),
+      ),
+    [staffs],
+  );
+
   const staffIds = useMemo(
     () =>
       staffs
@@ -556,9 +528,11 @@ export default function ShiftCollaborativePage() {
       currentUserId={currentUserId}
       currentUserName={currentUserName}
       shiftRequestId={shiftRequestId}
+      staffNameMap={staffNameMap}
     >
       <ShiftCollaborativePageInner
         staffs={staffs}
+        staffNameMap={staffNameMap}
         targetMonth={targetMonth}
         onPrevMonth={handlePrevMonth}
         onNextMonth={handleNextMonth}

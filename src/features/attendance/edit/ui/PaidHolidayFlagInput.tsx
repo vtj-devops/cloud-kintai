@@ -74,7 +74,21 @@ export default function PaidHolidayFlagInput({
     setValue("paidHolidayFlag", e.target.checked);
     field.onChange(e);
 
-    if (!e.target.checked || !setPaidHolidayTimes || !workDate) return;
+    if (!e.target.checked) {
+      try {
+        if (getValues) {
+          const tags: string[] = (getValues("remarkTags") as string[]) || [];
+          if (tags.includes("有給休暇")) {
+            setValue("remarkTags", tags.filter((t) => t !== "有給休暇"));
+          }
+        }
+      } catch {
+        // noop
+      }
+      return;
+    }
+
+    if (!setPaidHolidayTimes || !workDate) return;
 
     const workDayjs = dayjs(workDate);
 

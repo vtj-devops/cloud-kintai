@@ -19,7 +19,7 @@ import { useShiftComments } from "../hooks/useShiftComments";
 import { useShiftEditLocks } from "../hooks/useShiftEditLocks";
 import { useShiftPresence } from "../hooks/useShiftPresence";
 import { useShiftSync } from "../hooks/useShiftSync";
-import { useUndoRedo } from "../hooks/useUndoRedo";
+import { deriveHistoryCellChanges } from "../lib/shiftTransformers";
 import {
   CellComment,
   CollaborativeShiftState,
@@ -38,6 +38,7 @@ interface CollaborativeShiftProviderProps {
   currentUserId: string;
   currentUserName: string;
   shiftRequestId: string;
+  staffNameMap?: Map<string, string>;
 }
 
 export const CollaborativeShiftProvider: React.FC<
@@ -49,9 +50,9 @@ export const CollaborativeShiftProvider: React.FC<
   currentUserId,
   currentUserName,
   shiftRequestId,
+  staffNameMap,
 }) => {
   const [selectedCells, setSelectedCells] = useState<Set<string>>(new Set());
-  const [showHistory, setShowHistory] = useState(false);
   const [lastRemoteUpdate, setLastRemoteUpdate] = useState<{
     staffId: string;
     timestamp: number;
@@ -79,9 +80,11 @@ export const CollaborativeShiftProvider: React.FC<
     recordCellChange,
     recordBatchCellChanges,
     recordRemoteChange,
+    seedHistory,
     getCellHistory,
     getAllCellHistory,
     getStaffCellHistory,
+    clearCellHistory,
   } = useCellChangeHistory();
 
   // shiftDataMap への参照（リモート差分計算用）
@@ -193,6 +196,33 @@ export const CollaborativeShiftProvider: React.FC<
     }
   }, [isLoading, getAllShiftRequests, loadCommentsFromShiftRequests]);
 
+  // 月切替時にリセット → ロード完了後に DB 履歴をシード
+  const seededMonthRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (seededMonthRef.current !== null && seededMonthRef.current !== targetMonth) {
+      clearCellHistory();
+      seededMonthRef.current = null;
+    }
+
+    if (isLoading || seededMonthRef.current === targetMonth) return;
+    const allRequests = getAllShiftRequests();
+    if (allRequests.length === 0) return;
+
+    const getStaffName = (staffId: string) =>
+      staffNameMap?.get(staffId) ?? staffId;
+
+    const allRecords = allRequests.flatMap((request) =>
+      deriveHistoryCellChanges(
+        request.staffId,
+        request.histories ?? [],
+        getStaffName,
+      ),
+    );
+
+    seedHistory(allRecords);
+    seededMonthRef.current = targetMonth;
+  }, [targetMonth, isLoading, getAllShiftRequests, staffNameMap, seedHistory, clearCellHistory]);
+
   const persistComments = useCallback(
     async (staffId: string) => {
       const shiftRequest = getShiftRequest(staffId);
@@ -218,56 +248,6 @@ export const CollaborativeShiftProvider: React.FC<
     },
     [getShiftRequest, getCommentsInputForStaff, currentUserId],
   );
-
-  // 取り消し/やり直しフック
-  const {
-    canUndo,
-    canRedo,
-    undo: undoAction,
-    redo: redoAction,
-    pushHistory,
-    getLastUndo,
-    getLastRedo,
-    undoHistory,
-    redoHistory,
-  } = useUndoRedo({
-    maxHistorySize: 50,
-    onUndo: async (entry) => {
-      // 取り消し時は逆の操作を適用
-      const undoUpdates = entry.updates.map((update) => {
-        const previousShift = shiftDataMap
-          .get(update.staffId)
-          ?.get(update.date);
-        return {
-          ...update,
-          newState: previousShift?.state,
-          isLocked: previousShift?.isLocked,
-        };
-      });
-
-      // セル単位の変更履歴を記録（undo）
-      recordBatchCellChanges(
-        undoUpdates,
-        currentUserId,
-        currentUserName,
-        "undo",
-      );
-
-      await batchUpdateShifts(undoUpdates);
-    },
-    onRedo: async (entry) => {
-      // セル単位の変更履歴を記録（redo）
-      recordBatchCellChanges(
-        entry.updates,
-        currentUserId,
-        currentUserName,
-        "redo",
-      );
-
-      // やり直し時は元の操作を再適用
-      await batchUpdateShifts(entry.updates);
-    },
-  });
 
   // プレゼンス管理フック
   const {
@@ -301,24 +281,22 @@ export const CollaborativeShiftProvider: React.FC<
    */
   const handleUpdateShift = useCallback(
     async (update: ShiftCellUpdate) => {
-      // アクティビティを記録
       updateActivity();
 
-      // 履歴に追加
-      pushHistory(
-        [update],
-        `${update.staffId} の ${update.date} のシフトを更新`,
-        { userId: currentUserId, userName: currentUserName },
-      );
-
-      // セル単位の変更履歴を記録
-      recordCellChange(update, currentUserId, currentUserName, "manual");
+      const currentCellData = shiftDataMapRef.current
+        .get(update.staffId)
+        ?.get(update.date);
+      const enrichedUpdate: ShiftCellUpdate = {
+        ...update,
+        previousState: update.previousState ?? currentCellData?.state,
+        previousLocked: update.previousLocked ?? currentCellData?.isLocked,
+      };
+      recordCellChange(enrichedUpdate, currentUserId, currentUserName, "manual");
 
       await updateShift(update);
     },
     [
       updateActivity,
-      pushHistory,
       recordCellChange,
       updateShift,
       currentUserId,
@@ -333,20 +311,22 @@ export const CollaborativeShiftProvider: React.FC<
     async (updates: ShiftCellUpdate[]) => {
       updateActivity();
 
-      // 履歴に追加
-      pushHistory(updates, `${updates.length} 件のシフトを一括更新`, {
-        userId: currentUserId,
-        userName: currentUserName,
+      const enrichedUpdates = updates.map((update) => {
+        const currentCellData = shiftDataMapRef.current
+          .get(update.staffId)
+          ?.get(update.date);
+        return {
+          ...update,
+          previousState: update.previousState ?? currentCellData?.state,
+          previousLocked: update.previousLocked ?? currentCellData?.isLocked,
+        };
       });
-
-      // セル単位の変更履歴を一括記録
-      recordBatchCellChanges(updates, currentUserId, currentUserName, "batch");
+      recordBatchCellChanges(enrichedUpdates, currentUserId, currentUserName, "batch");
 
       await batchUpdateShifts(updates);
     },
     [
       updateActivity,
-      pushHistory,
       recordBatchCellChanges,
       batchUpdateShifts,
       currentUserId,
@@ -590,17 +570,6 @@ export const CollaborativeShiftProvider: React.FC<
       updateUserActivity: handleUpdateUserActivity,
       retryPendingChanges,
       refreshLocks,
-      // Undo/Redo
-      canUndo,
-      canRedo,
-      undo: undoAction,
-      redo: redoAction,
-      getLastUndo,
-      getLastRedo,
-      undoHistory,
-      redoHistory,
-      showHistory,
-      toggleHistory: () => setShowHistory((prev) => !prev),
       // セル単位変更履歴
       getCellHistory,
       getAllCellHistory,
@@ -631,15 +600,6 @@ export const CollaborativeShiftProvider: React.FC<
       handleUpdateUserActivity,
       retryPendingChanges,
       refreshLocks,
-      canUndo,
-      canRedo,
-      undoAction,
-      redoAction,
-      getLastUndo,
-      getLastRedo,
-      undoHistory,
-      redoHistory,
-      showHistory,
       getCellHistory,
       getAllCellHistory,
       getStaffCellHistory,

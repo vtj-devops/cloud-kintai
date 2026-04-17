@@ -10,7 +10,10 @@ import {
   onUpdateShiftRequest,
 } from "@shared/api/graphql/documents/subscriptions";
 import type { GraphQLBaseQueryError } from "@shared/api/graphql/graphqlBaseQuery";
-import type { ShiftRequestDayPreferenceInput } from "@shared/api/graphql/types";
+import type {
+  ShiftRequestDayPreferenceInput,
+  ShiftRequestHistoryInput,
+} from "@shared/api/graphql/types";
 import dayjs from "dayjs";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -293,6 +296,15 @@ export const useCollaborativeShiftData = ({
             (entry): entry is ShiftRequestDayPreferenceInput => entry !== null,
           )
           .toSorted((a, b) => a.date.localeCompare(b.date));
+        const timestamp = new Date().toISOString();
+        const histories: ShiftRequestHistoryInput[] = [
+          {
+            version: 1,
+            entries,
+            recordedAt: timestamp,
+            recordedByStaffId: currentUserId,
+          },
+        ];
 
         const created = await createShiftRequest({
           input: {
@@ -300,7 +312,8 @@ export const useCollaborativeShiftData = ({
             targetMonth,
             entries,
             updatedBy: currentUserId,
-            updatedAt: new Date().toISOString(),
+            updatedAt: timestamp,
+            histories,
           },
         }).unwrap();
 
@@ -431,6 +444,15 @@ export const useCollaborativeShiftData = ({
                     entry !== null,
                 )
                 .toSorted((a, b) => a.date.localeCompare(b.date));
+              const timestamp = new Date().toISOString();
+              const histories: ShiftRequestHistoryInput[] = [
+                {
+                  version: 1,
+                  entries,
+                  recordedAt: timestamp,
+                  recordedByStaffId: currentUserId,
+                },
+              ];
 
               const created = await createShiftRequest({
                 input: {
@@ -438,7 +460,8 @@ export const useCollaborativeShiftData = ({
                   targetMonth,
                   entries,
                   updatedBy: currentUserId,
-                  updatedAt: new Date().toISOString(),
+                  updatedAt: timestamp,
+                  histories,
                 },
               }).unwrap();
 

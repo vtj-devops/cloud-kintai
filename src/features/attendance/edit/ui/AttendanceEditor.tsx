@@ -23,7 +23,7 @@ import { AppButton, AppIconButton } from "@shared/ui/button";
 import GroupContainer from "@shared/ui/group-container/GroupContainer";
 import dayjs from "dayjs";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
@@ -146,11 +146,13 @@ export default function AttendanceEditor({ readOnly }: {
         workDate: workDate ? workDate.format("YYYY-MM-DD") : null,
         isAuthenticated,
     });
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const watchedData = watch();
+    const watchedEndTime = watch("endTime");
+    const watchedStartTime = watch("startTime");
+    const watchedRests = watch("rests");
+    const watchedHourlyPaidHolidayTimes = watch("hourlyPaidHolidayTimes");
     const errorMessages = useMemo(() => collectAttendanceErrorMessages(errors), [errors]);
     useEffect(() => {
-        if (!watchedData.endTime || !appConfig) {
+        if (!watchedEndTime || !appConfig) {
             setOvertimeError(null);
             return;
         }
@@ -161,7 +163,7 @@ export default function AttendanceEditor({ readOnly }: {
             overtimeRequestEndTime,
             hasOvertimeRequest,
         };
-        const result = validateOvertimeCheck(watchedData.endTime, context);
+        const result = validateOvertimeCheck(watchedEndTime, context);
         if (!result.isValid && result.errorMessage) {
             setOvertimeError(result.errorMessage);
         }
@@ -169,39 +171,39 @@ export default function AttendanceEditor({ readOnly }: {
             setOvertimeError(null);
         }
     }, [
-        watchedData.endTime,
+        watchedEndTime,
         appConfig,
         overtimeRequestEndTime,
         hasOvertimeRequest,
         getEndTime,
     ]);
     const totalWorkTime = useMemo(() => {
-        if (!watchedData.endTime)
+        if (!watchedEndTime)
             return 0;
-        return calcTotalWorkTime(watchedData.startTime, watchedData.endTime);
-    }, [watchedData.startTime, watchedData.endTime]);
-    const totalRestTime = useMemo(() => watchedData.rests?.reduce((acc, rest) => {
+        return calcTotalWorkTime(watchedStartTime, watchedEndTime);
+    }, [watchedStartTime, watchedEndTime]);
+    const totalRestTime = useMemo(() => watchedRests?.reduce((acc, rest) => {
         if (!rest)
             return acc;
         if (!rest.endTime)
             return acc;
         const diff = calcTotalRestTime(rest.startTime, rest.endTime);
         return acc + diff;
-    }, 0) ?? 0, [watchedData.rests]);
+    }, 0) ?? 0, [watchedRests]);
     const totalProductionTime = useMemo(() => totalWorkTime - totalRestTime, [totalWorkTime, totalRestTime]);
-    const totalHourlyPaidHolidayTime = useMemo(() => watchedData.hourlyPaidHolidayTimes?.reduce((acc, time) => {
+    const totalHourlyPaidHolidayTime = useMemo(() => watchedHourlyPaidHolidayTimes?.reduce((acc, time) => {
         if (!time)
             return acc;
         if (!time.endTime)
             return acc;
         const diff = calcTotalHourlyPaidHolidayTime(time.startTime, time.endTime);
         return acc + diff;
-    }, 0) ?? 0, [watchedData.hourlyPaidHolidayTimes]);
-    const isOnBreak = useMemo(() => !!(watchedData.startTime &&
-        watchedData.rests &&
-        watchedData.rests.length > 0 &&
-        watchedData.rests[0]?.startTime &&
-        !watchedData.rests[0]?.endTime), [watchedData.startTime, watchedData.rests]);
+    }, 0) ?? 0, [watchedHourlyPaidHolidayTimes]);
+    const isOnBreak = useMemo(() => !!(watchedStartTime &&
+        watchedRests &&
+        watchedRests.length > 0 &&
+        watchedRests[0]?.startTime &&
+        !watchedRests[0]?.endTime), [watchedStartTime, watchedRests]);
     const onSubmit = useCallback(async (data: AttendanceEditInputs) => {
         if (overtimeError) {
             dispatch(pushNotification({
@@ -390,25 +392,18 @@ export default function AttendanceEditor({ readOnly }: {
         attendanceListPath,
         overtimeError,
     ]);
-    const absentFlagValue = useWatch({ control, name: "absentFlag" });
-    useEffect(() => {
-        const flag = !!absentFlagValue;
+    const handleAbsentFlagChange = useCallback((checked: boolean) => {
         const tags: string[] = (getValues("remarkTags") as string[]) || [];
         const has = tags.includes("欠勤");
-        if (flag && !has) {
+        if (checked && !has) {
             setValue("remarkTags", [...tags, "欠勤"]);
         }
-        if (!flag && has) {
+        if (!checked && has) {
             setValue("remarkTags", tags.filter((t) => t !== "欠勤"));
         }
-    }, [absentFlagValue, setValue, getValues]);
-    const specialHolidayFlagValue = useWatch({
-        control,
-        name: "specialHolidayFlag",
-    });
-    useEffect(() => {
-        const flag = !!specialHolidayFlagValue;
-        if (flag) {
+    }, [getValues, setValue]);
+    const handleSpecialHolidayFlagChange = useCallback((checked: boolean) => {
+        if (checked) {
             const tags: string[] = (getValues("remarkTags") as string[]) || [];
             if (!tags.includes("特別休暇")) {
                 setValue("remarkTags", [...tags, "特別休暇"]);
@@ -485,27 +480,7 @@ export default function AttendanceEditor({ readOnly }: {
                 setValue("remarkTags", tags.filter((t) => t !== "特別休暇"));
             }
         }
-    }, [specialHolidayFlagValue]);
-    const paidHolidayFlagValue = useWatch({ control, name: "paidHolidayFlag" });
-    useEffect(() => {
-        const flag = !!paidHolidayFlagValue;
-        try {
-            const tags: string[] = (getValues("remarkTags") as string[]) || [];
-            if (flag) {
-                if (!tags.includes("有給休暇")) {
-                    setValue("remarkTags", [...tags, "有給休暇"]);
-                }
-            }
-            else {
-                if (tags.includes("有給休暇")) {
-                    setValue("remarkTags", tags.filter((t) => t !== "有給休暇"));
-                }
-            }
-        }
-        catch (error) {
-            logger.debug("Failed to sync remark tags for paid holiday", error);
-        }
-    }, [paidHolidayFlagValue]);
+    }, [getValues, setValue, getStartTime, getEndTime, getLunchRestStartTime, getLunchRestEndTime, targetWorkDate, attendance, workDate, restReplace, hourlyPaidHolidayTimeReplace, logger]);
     const { dialog, runWithoutGuard } = usePageLeaveGuard({
         isDirty,
         isBusy: isSubmitting,
@@ -697,7 +672,7 @@ export default function AttendanceEditor({ readOnly }: {
                               欠勤
                             </div>
                             <div>
-                              <Controller name="absentFlag" control={control} render={({ field }) => (<Checkbox {...field} checked={field.value || false} disabled={changeRequests.length > 0 || !!readOnly}/>)}/>
+                              <Controller name="absentFlag" control={control} render={({ field }) => (<Checkbox {...field} checked={field.value || false} onChange={(e) => { field.onChange(e); handleAbsentFlagChange(e.target.checked); }} disabled={changeRequests.length > 0 || !!readOnly}/>)}/>
                             </div>
                           </div>
                         </div>),
@@ -712,7 +687,7 @@ export default function AttendanceEditor({ readOnly }: {
                               特別休暇
                             </div>
                             <div>
-                              <Controller name="specialHolidayFlag" control={control} render={({ field }) => (<Checkbox {...field} checked={field.value || false} disabled={changeRequests.length > 0 || !!readOnly}/>)}/>
+                              <Controller name="specialHolidayFlag" control={control} render={({ field }) => (<Checkbox {...field} checked={field.value || false} onChange={(e) => { field.onChange(e); handleSpecialHolidayFlagChange(e.target.checked); }} disabled={changeRequests.length > 0 || !!readOnly}/>)}/>
                             </div>
                           </div>
                         </div>),
