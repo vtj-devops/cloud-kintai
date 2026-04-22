@@ -1,7 +1,9 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import {
   logDailyReportCommentAdd,
   logDailyReportReactionUpdate,
 } from "@entities/operation-log/model/dailyReportOperationLog";
+import useCognitoUser from "@entities/staff/model/useCognitoUser";
 import { useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import { sendDailyReportCommentNotification } from "@features/attendance/daily-report/lib/sendDailyReportCommentNotification";
 import { graphqlClient } from "@shared/api/amplify/graphqlClient";
@@ -22,9 +24,6 @@ import { formatDateSlash, formatDateTimeReadable } from "@shared/lib/time";
 import { SectionTitle, SubsectionTitle } from "@shared/ui/typography";
 import type { GraphQLResult } from "aws-amplify/api";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-
-import { AuthContext } from "@/context/AuthContext";
-import useCognitoUser from "@/hooks/useCognitoUser";
 
 import {
   type AdminDailyReport,

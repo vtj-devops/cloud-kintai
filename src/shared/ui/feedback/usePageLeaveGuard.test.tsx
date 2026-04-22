@@ -7,7 +7,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 
-import { usePageLeaveGuard } from "../usePageLeaveGuard";
+import { usePageLeaveGuard } from "./usePageLeaveGuard";
 
 function GuardedPage({
   isDirty = false,

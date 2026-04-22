@@ -1,4 +1,6 @@
 import { useAppDispatchV2 } from "@app/hooks";
+import { AuthContext } from "@app/providers/auth/AuthContext";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import WORK_TYPE_OPTIONS from "@entities/staff/lib/workTypeOptions";
 import {
   StaffRole,
@@ -29,16 +31,14 @@ import {
   ApproverSettingMode,
 } from "@shared/api/graphql/types";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { usePageLeaveGuard } from "@shared/ui/feedback/usePageLeaveGuard";
 import { PageTitle } from "@shared/ui/typography";
 import dayjs from "dayjs";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { Control, Controller, useForm, UseFormRegister } from "react-hook-form";
 import { useParams } from "react-router-dom";
 
-import { AppConfigContext } from "@/context/AppConfigContext";
-import { AuthContext } from "@/context/AuthContext";
 import * as MESSAGE_CODE from "@/errors";
-import { usePageLeaveGuard } from "@/hooks/usePageLeaveGuard";
 
 type Inputs = {
   staffId?: string | null;

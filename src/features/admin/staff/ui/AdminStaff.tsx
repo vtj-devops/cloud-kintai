@@ -1,6 +1,7 @@
 import "@/features/admin/staff/ui/styles.scss";
 
 import { useAppDispatchV2 } from "@app/hooks";
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import { isAttendanceManagementEnabled } from "@entities/staff/lib/attendanceManagement";
 import { getWorkTypeLabel } from "@entities/staff/lib/workTypeOptions";
 import {
@@ -18,7 +19,6 @@ import { pushNotification } from "@shared/lib/store/notificationSlice";
 import dayjs from "dayjs";
 import { useContext, useMemo, useState } from "react";
 
-import { AuthContext } from "@/context/AuthContext";
 import * as MESSAGE_CODE from "@/errors";
 
 const STATUS_LABEL_MAP = new Map<string, string>([

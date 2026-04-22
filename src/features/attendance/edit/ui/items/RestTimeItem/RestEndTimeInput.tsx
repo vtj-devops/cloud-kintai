@@ -1,11 +1,10 @@
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { AttendanceDateTime } from "@entities/attendance/lib/AttendanceDateTime";
 import { AttendanceEditContext } from "@features/attendance/edit/model/AttendanceEditProvider";
 import { AttendanceEditInputs } from "@features/attendance/edit/model/common";
 import { Stack } from "@mui/material";
 import { useContext } from "react";
 import { FieldArrayWithId } from "react-hook-form";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
 
 import { CommonRestTimePicker } from "./CommonRestTimePicker";
 

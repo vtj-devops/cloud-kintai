@@ -3,7 +3,7 @@ import { StaffRole } from "@entities/staff/model/useStaffs/useStaffs";
 import { adminGet } from "@shared/api/amplify/adminQueriesClient";
 import dayjs from "dayjs";
 
-import * as MESSAGE_CODE from "../../errors";
+import * as MESSAGE_CODE from "@/errors";
 
 type CognitoUserAttribute = {
   Name?: string;

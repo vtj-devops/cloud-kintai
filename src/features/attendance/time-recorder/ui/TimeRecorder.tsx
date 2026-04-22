@@ -1,3 +1,5 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import {
   type AttendanceUpsertAction,
   useGetAttendanceByStaffAndDateQuery,
@@ -45,8 +47,6 @@ import {
 } from "react";
 import { useDispatch } from "react-redux";
 
-import { AppConfigContext } from "@/context/AppConfigContext";
-import { AuthContext } from "@/context/AuthContext";
 import * as MESSAGE_CODE from "@/errors";
 
 import { WorkStatus } from "../lib/common";

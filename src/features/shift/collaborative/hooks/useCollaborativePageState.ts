@@ -4,6 +4,7 @@ import { StaffRole } from "@entities/staff/model/useStaffs/useStaffs";
 import { graphqlClient } from "@shared/api/amplify/graphqlClient";
 import { shiftPlanYearByTargetYear } from "@shared/api/graphql/documents/queries";
 import type { ShiftPlanYearByTargetYearQuery } from "@shared/api/graphql/types";
+import { useAuthSessionSummary } from "@shared/lib/useAuthSessionSummary";
 import { type GraphQLResult } from "aws-amplify/api";
 import dayjs from "dayjs";
 import {
@@ -13,8 +14,6 @@ import {
   useMemo,
   useState,
 } from "react";
-
-import { useAuthSessionSummary } from "@/hooks/useAuthSessionSummary";
 
 import { useCollaborativeShift } from "../context/CollaborativeShiftContext";
 import { SuggestedAction } from "../rules/shiftRules";

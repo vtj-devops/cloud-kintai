@@ -1,3 +1,5 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { type AttendanceUpsertAction, useLazyGetAttendanceByStaffAndDateQuery, useUpdateAttendanceMutation, useUpsertAttendanceByStaffAndDateMutation, } from "@entities/attendance/api/attendanceApi";
 import { clockInAction, clockOutAction, } from "@entities/attendance/lib/actions/attendanceActions";
 import { resolveBusinessWorkDate, resolveCurrentBusinessWorkDate, } from "@entities/attendance/lib/businessDate";
@@ -9,9 +11,6 @@ import { pushNotification } from "@shared/lib/store/notificationSlice";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useSearchParams } from "react-router-dom";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
-import { AuthContext } from "@/context/AuthContext";
 
 import { validateOfficeQrToken } from "../lib/validateToken";
 

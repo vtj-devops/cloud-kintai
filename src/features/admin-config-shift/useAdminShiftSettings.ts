@@ -1,4 +1,5 @@
 import { useAppDispatchV2 } from "@app/hooks";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import type { ShiftDisplayMode } from "@entities/app-config/model/useAppConfig";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -9,7 +10,6 @@ import { pushNotification } from "@shared/lib/store/notificationSlice";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 
-import { AppConfigContext } from "@/context/AppConfigContext";
 import { E14001 } from "@/errors";
 import {
   buildShiftGroupPayload,

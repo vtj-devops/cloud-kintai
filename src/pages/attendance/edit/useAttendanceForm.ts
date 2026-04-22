@@ -1,12 +1,11 @@
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { attendanceEditSchema } from "@entities/attendance/validation/attendanceEditSchema";
 import { AttendanceEditInputs, defaultValues } from "@features/attendance/edit/model/common";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Attendance } from "@shared/api/graphql/types";
+import { usePageLeaveGuard } from "@shared/ui/feedback/usePageLeaveGuard";
 import { useContext } from "react";
 import { useFieldArray,useForm } from "react-hook-form";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
-import { usePageLeaveGuard } from "@/hooks/usePageLeaveGuard";
 
 import { useAttendanceEditFormSync } from "./useAttendanceEditFormSync";
 

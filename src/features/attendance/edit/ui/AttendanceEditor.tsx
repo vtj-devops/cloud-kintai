@@ -1,3 +1,4 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import useAppConfig from "@entities/app-config/model/useAppConfig";
 import {
   useCreateAttendanceMutation,
@@ -31,6 +32,7 @@ import { Logger } from "@shared/lib/logger";
 import { AttendanceEditMailSender } from "@shared/lib/mail/AttendanceEditMailSender";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
 import { AppButton, AppIconButton } from "@shared/ui/button";
+import { usePageLeaveGuard } from "@shared/ui/feedback/usePageLeaveGuard";
 import GroupContainer from "@shared/ui/group-container/GroupContainer";
 import dayjs from "dayjs";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
@@ -38,9 +40,7 @@ import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
-import { AuthContext } from "@/context/AuthContext";
 import * as MESSAGE_CODE from "@/errors";
-import { usePageLeaveGuard } from "@/hooks/usePageLeaveGuard";
 
 import { useAttendanceRecord } from "../model/useAttendanceRecord";
 import ChangeRequestDialog from "./ChangeRequestDialog/ChangeRequestDialog";

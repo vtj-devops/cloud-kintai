@@ -1,3 +1,4 @@
+import type { CognitoUser } from "@entities/staff/model/useCognitoUser";
 import type { StaffType } from "@entities/staff/model/useStaffs/useStaffs";
 import type {
   GetWorkflowQuery,
@@ -5,8 +6,6 @@ import type {
   WorkflowCommentInput,
 } from "@shared/api/graphql/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
-
-import type { CognitoUser } from "@/hooks/useCognitoUser";
 
 import type { WorkflowCommentMessage } from "../types";
 import { submitWorkflowComment } from "./submitWorkflowComment";

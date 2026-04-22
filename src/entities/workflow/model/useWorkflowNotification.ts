@@ -1,3 +1,4 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import { useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import {
   getCategoryLabel,
@@ -10,10 +11,8 @@ import {
   OnCreateWorkflowSubscription,
 } from "@shared/api/graphql/types";
 import { createLogger } from "@shared/lib/logger";
+import { useAppNotification } from "@shared/lib/useAppNotification";
 import { useCallback, useContext, useEffect, useMemo } from "react";
-
-import { AuthContext } from "@/context/AuthContext";
-import { useAppNotification } from "@/hooks/useAppNotification";
 
 const logger = createLogger("useWorkflowNotification");
 

@@ -1,9 +1,8 @@
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { getDesignTokens } from "@shared/designSystem";
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import dayjs from "dayjs";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
 
 import AttendanceSettingsContent from "./AttendanceSettingsContent";
 

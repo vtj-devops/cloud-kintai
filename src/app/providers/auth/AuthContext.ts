@@ -1,9 +1,8 @@
 import { AuthEventData, AuthStatus } from "@aws-amplify/ui";
+import { CognitoUser } from "@entities/staff/model/useCognitoUser";
 import { StaffRole } from "@entities/staff/model/useStaffs/useStaffs";
 import type { AuthUser } from "aws-amplify/auth";
 import { createContext } from "react";
-
-import { CognitoUser } from "@/hooks/useCognitoUser";
 
 export type SessionSnapshot = {
   user?: AuthUser;

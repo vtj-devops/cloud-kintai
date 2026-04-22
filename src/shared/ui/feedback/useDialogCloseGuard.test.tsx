@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
 
-import { useDialogCloseGuard } from "../useDialogCloseGuard";
+import { useDialogCloseGuard } from "./useDialogCloseGuard";
 
 function GuardedDialog({
   isDirty = false,

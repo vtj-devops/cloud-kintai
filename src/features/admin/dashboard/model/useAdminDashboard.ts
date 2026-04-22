@@ -1,3 +1,5 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import {
   getWorkStatus,
   WorkStatusCodes,
@@ -46,9 +48,6 @@ import {
 } from "chart.js";
 import dayjs from "dayjs";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
-import { AuthContext } from "@/context/AuthContext";
 
 import { resolveAggregationDateRange } from "../lib/resolveAggregationDateRange";
 

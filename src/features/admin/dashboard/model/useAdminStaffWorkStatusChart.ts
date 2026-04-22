@@ -19,6 +19,7 @@ import {
   OnUpdateAttendanceSubscription,
 } from "@shared/api/graphql/types";
 import { createLogger } from "@shared/lib/logger";
+import { useAuthSessionSummary } from "@shared/lib/useAuthSessionSummary";
 import { GraphQLResult } from "aws-amplify/api";
 import {
   BarElement,
@@ -30,8 +31,6 @@ import {
 } from "chart.js";
 import dayjs from "dayjs";
 import { useCallback, useEffect, useMemo, useState } from "react";
-
-import { useAuthSessionSummary } from "@/hooks/useAuthSessionSummary";
 
 import {
   buildAggregationPeriodInfoLabel,

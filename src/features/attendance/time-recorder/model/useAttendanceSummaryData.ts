@@ -1,3 +1,4 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import { useListAttendancesByDateRangeQuery } from "@entities/attendance/api/attendanceApi";
 import {
   getAttendanceQueryDateRange,
@@ -7,8 +8,6 @@ import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import useCloseDates from "@entities/attendance/model/useCloseDates";
 import dayjs from "dayjs";
 import { useContext, useMemo } from "react";
-
-import { AuthContext } from "@/context/AuthContext";
 
 export function useAttendanceSummaryData() {
   const { cognitoUser } = useContext(AuthContext);

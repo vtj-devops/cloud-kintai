@@ -1,8 +1,7 @@
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { getDesignTokens } from "@shared/designSystem";
 import { render, screen } from "@testing-library/react";
 import dayjs from "dayjs";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
 
 import Developer from "./Developer";
 

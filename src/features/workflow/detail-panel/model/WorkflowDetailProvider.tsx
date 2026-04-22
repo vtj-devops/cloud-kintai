@@ -4,10 +4,9 @@ import type { WorkflowDetailLoaderData } from "@entities/workflow/model/loader";
 import useWorkflows from "@entities/workflow/model/useWorkflows";
 import useWorkflowCommentThread from "@features/workflow/comment-thread/model/useWorkflowCommentThread";
 import { useWorkflowLoaderWorkflow } from "@features/workflow/hooks/useWorkflowLoaderWorkflow";
+import { useAppNotification } from "@shared/lib/useAppNotification";
 import { type ReactNode, useCallback, useMemo } from "react";
 import { useLoaderData, useNavigate, useParams } from "react-router-dom";
-
-import { useAppNotification } from "@/hooks/useAppNotification";
 
 import { useWorkflowDetailMeta } from "./useWorkflowDetailMeta";
 import { useWorkflowWithdraw } from "./useWorkflowWithdraw";

@@ -3,9 +3,8 @@ import {
   dismissNotification,
   pushNotification,
 } from "@shared/lib/store/notificationSlice";
+import { useOnlineStatus } from "@shared/lib/useOnlineStatus";
 import { useEffect, useRef } from "react";
-
-import { useOnlineStatus } from "./useOnlineStatus";
 
 const NETWORK_OFFLINE_MESSAGE =
   "オフラインです。ネットワーク接続を確認してください。";

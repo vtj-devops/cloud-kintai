@@ -8,11 +8,10 @@ import { CreateEventCalendarInput, EventCalendar, } from "@shared/api/graphql/ty
 import { EventCalendarMessage } from "@shared/lib/message/EventCalendarMessage";
 import { MessageStatus } from "@shared/lib/message/Message";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { useDialogCloseGuard } from "@shared/ui/feedback/useDialogCloseGuard";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-
-import { useDialogCloseGuard } from "@/hooks/useDialogCloseGuard";
 /**
  * AddEventCalendar コンポーネントのフォーム入力型
  *

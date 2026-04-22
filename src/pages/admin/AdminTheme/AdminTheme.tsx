@@ -1,3 +1,4 @@
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import AdminSettingsLayout from "@features/admin/layout/ui/AdminSettingsLayout";
 import SettingsIcon from "@features/admin/layout/ui/SettingsIcon";
 import { SettingsButton, SettingsTextField } from "@features/admin/layout/ui/SettingsPrimitives";
@@ -6,13 +7,12 @@ import {
   UpdateAppConfigInput,
 } from "@shared/api/graphql/types";
 import { resolveThemeColor } from "@shared/config/theme";
+import { useAppNotification } from "@shared/lib/useAppNotification";
+import { usePageLeaveGuard } from "@shared/ui/feedback/usePageLeaveGuard";
 import { SubsectionTitle } from "@shared/ui/typography";
 import { useContext, useEffect, useMemo, useState } from "react";
 
-import { AppConfigContext } from "@/context/AppConfigContext";
 import { E15001, S15001 } from "@/errors";
-import { useAppNotification } from "@/hooks/useAppNotification";
-import { usePageLeaveGuard } from "@/hooks/usePageLeaveGuard";
 
 const basePalette = [
   "#1976d2",

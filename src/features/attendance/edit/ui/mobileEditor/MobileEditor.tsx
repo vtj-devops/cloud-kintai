@@ -1,3 +1,4 @@
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { collectAttendanceErrorMessages } from "@entities/attendance/validation/collectErrorMessages";
 import { getWorkTypeLabel } from "@entities/staff/lib/workTypeOptions";
 import { AttendanceEditContext } from "@features/attendance/edit/model/AttendanceEditProvider";
@@ -7,8 +8,6 @@ import QuickInputButtonsMobile from "@features/attendance/edit/ui/QuickInputButt
 import GroupContainerMobile from "@shared/ui/group-container/GroupContainerMobile";
 import { useContext, useMemo } from "react";
 import { useFormState } from "react-hook-form";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
 
 import ChangeRequestingAlert from "../desktopEditor/ChangeRequestingMessage";
 import NoDataAlert from "../desktopEditor/NoDataAlert";

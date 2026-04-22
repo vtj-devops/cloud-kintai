@@ -6,13 +6,13 @@ import AttendanceEditProvider from "@features/attendance/edit/model/AttendanceEd
 import { AttendanceEditInputs } from "@features/attendance/edit/model/common";
 import DesktopEditor from "@features/attendance/edit/ui/desktopEditor/DesktopEditor";
 import { MobileEditor } from "@features/attendance/edit/ui/mobileEditor/MobileEditor";
+import { useAppNotification } from "@shared/lib/useAppNotification";
 import { PageContent } from "@shared/ui/layout";
 import dayjs from "dayjs";
 import { useMemo } from "react";
 import { UseFormHandleSubmit } from "react-hook-form";
 
 import * as MESSAGE_CODE from "@/errors";
-import { useAppNotification } from "@/hooks/useAppNotification";
 
 import { AttendanceEditErrorAlert } from "./AttendanceEditErrorAlert";
 import { useAttendanceEditData } from "./useAttendanceEditData";

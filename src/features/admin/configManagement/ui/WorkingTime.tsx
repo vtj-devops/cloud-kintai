@@ -1,4 +1,5 @@
 import { useAppDispatchV2 } from "@app/hooks";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import AdminSettingsLayout from "@features/admin/layout/ui/AdminSettingsLayout";
 import AdminSettingsSection from "@features/admin/layout/ui/AdminSettingsSection";
 import { SettingsButton } from "@features/admin/layout/ui/SettingsPrimitives";
@@ -7,7 +8,6 @@ import { pushNotification } from "@shared/lib/store/notificationSlice";
 import { Dayjs } from "dayjs";
 import { useContext, useEffect, useState } from "react";
 
-import { AppConfigContext } from "@/context/AppConfigContext";
 import { E14001, E14002, S14001, S14002 } from "@/errors";
 
 import WorkingTimeSection from "./WorkingTimeSection";

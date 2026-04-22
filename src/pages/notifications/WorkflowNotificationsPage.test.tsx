@@ -1,3 +1,5 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { render, screen } from "@testing-library/react";
 import type {
   ButtonHTMLAttributes,
@@ -5,9 +7,6 @@ import type {
   ReactNode,
 } from "react";
 import { MemoryRouter } from "react-router-dom";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
-import { AuthContext } from "@/context/AuthContext";
 
 import WorkflowNotificationsPage from "./WorkflowNotificationsPage";
 

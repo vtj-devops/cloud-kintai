@@ -1,6 +1,5 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import { render, screen } from "@testing-library/react";
-
-import { AuthContext } from "@/context/AuthContext";
 
 import RegisterAttendanceSummaryCard from "../RegisterAttendanceSummaryCard";
 

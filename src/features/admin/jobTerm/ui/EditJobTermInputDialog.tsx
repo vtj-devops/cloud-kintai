@@ -5,13 +5,13 @@ import { CloseDate, UpdateCloseDateInput } from "@shared/api/graphql/types";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
 import { AppButton } from "@shared/ui/button";
 import AppDialog from "@shared/ui/feedback/AppDialog";
+import { useDialogCloseGuard } from "@shared/ui/feedback/useDialogCloseGuard";
 import DateField from "@shared/ui/form/DateField";
 import dayjs from "dayjs";
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import * as MESSAGE_CODE from "@/errors";
-import { useDialogCloseGuard } from "@/hooks/useDialogCloseGuard";
 
 export default function EditJobTermInputDialog({ targetData, open, onClose, candidateCloseDates, updateCloseDate, }: {
     targetData: CloseDate | null;

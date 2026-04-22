@@ -1,10 +1,9 @@
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import { roleLabelMap } from "@entities/staff/model/useStaffs/useStaffs";
+import { usePageLeaveGuard } from "@shared/ui/feedback/usePageLeaveGuard";
 import { PageTitle } from "@shared/ui/typography";
 import dayjs from "dayjs";
 import { type SyntheticEvent, useState } from "react";
-
-import { usePageLeaveGuard } from "@/hooks/usePageLeaveGuard";
 
 import { InfoCard } from "./profile/components/InfoCard";
 import { ProfileGeneralTab } from "./profile/components/ProfileGeneralTab";

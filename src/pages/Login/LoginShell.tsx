@@ -1,9 +1,8 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
+import { ThemeContextProvider } from "@app/providers/theme/ThemeContext";
 import { useAuthenticator } from "@aws-amplify/ui-react";
+import useCognitoUser from "@entities/staff/model/useCognitoUser";
 import { ComponentProps, useMemo } from "react";
-
-import { AuthContext } from "@/context/AuthContext";
-import { ThemeContextProvider } from "@/context/ThemeContext";
-import useCognitoUser from "@/hooks/useCognitoUser";
 
 import Login from "./Login";
 

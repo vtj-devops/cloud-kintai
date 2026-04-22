@@ -16,7 +16,7 @@ jest.mock("@entities/staff/model/useStaffs/fetchStaffs", () => ({
   default: jest.fn(() => new Promise(() => {})),
 }));
 
-jest.mock("@/hooks/useAdminOperationLogs/useAdminOperationLogs", () => ({
+jest.mock("@entities/operation-log/model/useAdminOperationLogs", () => ({
   __esModule: true,
   default: (...args: unknown[]) => adminOperationLogsHookMock(...args),
 }));

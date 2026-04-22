@@ -1,3 +1,4 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import { useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import { useSplitView } from "@features/splitView";
 import { graphqlClient } from "@shared/api/amplify/graphqlClient";
@@ -10,8 +11,6 @@ import dayjs, { type Dayjs } from "dayjs";
 import { Download } from "lucide-react";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-import { AuthContext } from "@/context/AuthContext";
 
 import DailyReportCarouselDialog from "./DailyReportCarouselDialog";
 import DailyReportDetailPanel from "./DailyReportDetailPanel";

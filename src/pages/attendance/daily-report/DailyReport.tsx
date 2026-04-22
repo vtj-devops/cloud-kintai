@@ -1,6 +1,8 @@
 import "./styles.scss";
 
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import { logDailyReportMutation } from "@entities/operation-log/model/dailyReportOperationLog";
+import useCognitoUser from "@entities/staff/model/useCognitoUser";
 import fetchStaff from "@entities/staff/model/useStaff/fetchStaff";
 import { useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import {
@@ -29,6 +31,7 @@ import {
   DailyReportStatus,
   ModelSortDirection,
 } from "@shared/api/graphql/types";
+import { useAppNotification } from "@shared/lib/useAppNotification";
 import {
   DashboardInnerSurface,
   PageContent,
@@ -46,10 +49,6 @@ import {
   useState,
 } from "react";
 import { useSearchParams } from "react-router-dom";
-
-import { AuthContext } from "@/context/AuthContext";
-import { useAppNotification } from "@/hooks/useAppNotification";
-import useCognitoUser from "@/hooks/useCognitoUser";
 
 import {
   AlertBox,

@@ -1,10 +1,9 @@
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import type { DateRange } from "@entities/attendance/lib/aggregationDateRange";
 import { calcAttendanceChartSummary } from "@features/attendance/time-recorder/lib/attendanceSummaryCalculators";
 import type { Attendance } from "@shared/api/graphql/types";
 import { type ChartData, type ChartOptions } from "chart.js";
 import { useContext, useMemo } from "react";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
 
 export function useAttendanceChartData(
   filteredAttendances: Attendance[],

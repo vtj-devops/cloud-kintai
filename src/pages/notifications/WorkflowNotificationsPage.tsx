@@ -1,3 +1,5 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { StaffRole } from "@entities/staff/model/useStaffs/useStaffs";
 import { useWorkflowNotificationInbox } from "@features/workflow/notification/model/useWorkflowNotificationInbox";
 import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead";
@@ -30,9 +32,6 @@ import {
   useState,
 } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
-import { AuthContext } from "@/context/AuthContext";
 
 const formatEventAt = (eventAt: string) =>
   dayjs(eventAt).format("YYYY/MM/DD HH:mm");

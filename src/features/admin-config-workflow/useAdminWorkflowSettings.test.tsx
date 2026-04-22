@@ -1,10 +1,9 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import type { WorkflowCategoryOrderItem } from "@entities/workflow/lib/workflowLabels";
 import { WorkflowCategory } from "@shared/api/graphql/types";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ContextType, ReactNode } from "react";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
-import { AuthContext } from "@/context/AuthContext";
 
 import { useAdminWorkflowSettings } from "./useAdminWorkflowSettings";
 

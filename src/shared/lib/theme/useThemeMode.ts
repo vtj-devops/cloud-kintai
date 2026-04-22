@@ -3,9 +3,8 @@
  * @description テーマモードを管理するカスタムフック
  */
 
+import { useThemeContext } from "@app/providers/theme/ThemeContext";
 import { useEffect, useState } from "react";
-
-import { useThemeContext } from "@/context/ThemeContext";
 
 /**
  * テーマモード（light/auto）を管理するフック

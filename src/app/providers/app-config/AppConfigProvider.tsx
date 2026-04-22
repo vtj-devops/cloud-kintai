@@ -1,8 +1,7 @@
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import useAppConfig from "@entities/app-config/model/useAppConfig";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
 
 type AppConfigProviderProps = {
   children: ReactNode;

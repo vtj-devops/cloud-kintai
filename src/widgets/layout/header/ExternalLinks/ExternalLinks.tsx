@@ -1,12 +1,11 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { usePersonalExternalLinks } from "@entities/staff/model/useStaff/usePersonalExternalLinks";
 import { StaffRole } from "@entities/staff/model/useStaffs/useStaffs";
 import ExternalLinksView, {
   ExternalLinkItem,
 } from "@shared/ui/header/ExternalLinks";
 import { useContext, useMemo } from "react";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
-import { AuthContext } from "@/context/AuthContext";
 
 export function ExternalLinks() {
   const { cognitoUser, authStatus, isCognitoUserRole } =

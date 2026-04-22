@@ -1,7 +1,6 @@
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { AttendanceEditContext } from "@features/attendance/edit/model/AttendanceEditProvider";
 import { useContext, useMemo } from "react";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
 
 import TimeInputBase from "./TimeInputBase";
 

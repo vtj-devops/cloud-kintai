@@ -1,12 +1,11 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { useWorkflowNotificationInbox } from "@features/workflow/notification/model/useWorkflowNotificationInbox";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import { Badge, Tooltip } from "@mui/material";
 import { AppIconButton } from "@shared/ui/button";
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
-import { AuthContext } from "@/context/AuthContext";
 
 export default function WorkflowNotificationButton() {
   const { authStatus } = useContext(AuthContext);

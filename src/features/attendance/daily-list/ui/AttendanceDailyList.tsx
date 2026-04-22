@@ -1,5 +1,7 @@
 import "./styles.scss";
 
+import { AuthContext } from "@app/providers/auth/AuthContext";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { useDeleteAttendanceMutation, useLazyGetAttendanceByIdQuery, } from "@entities/attendance/api/attendanceApi";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import useAttendanceDaily, { AttendanceDaily, DuplicateAttendanceDaily, } from "@entities/attendance/model/useAttendanceDaily";
@@ -15,8 +17,6 @@ import React, { useCallback, useContext, useEffect, useMemo, useState } from "re
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 
-import { AppConfigContext } from "@/context/AppConfigContext";
-import { AuthContext } from "@/context/AuthContext";
 import * as MESSAGE_CODE from "@/errors";
 
 import { formatMinutesToHHmm, } from "../lib/overtimeUtils";

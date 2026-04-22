@@ -1,4 +1,6 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import { useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
+import { usePageLeaveGuard } from "@shared/ui/feedback/usePageLeaveGuard";
 import { PageContent } from "@shared/ui/layout";
 import Page from "@shared/ui/page/Page";
 import dayjs from "dayjs";
@@ -11,9 +13,7 @@ import {
   useState,
 } from "react";
 
-import { AuthContext } from "@/context/AuthContext";
 import AdminShiftSettingsDialog from "@/features/admin-config-shift/AdminShiftSettingsDialog";
-import { usePageLeaveGuard } from "@/hooks/usePageLeaveGuard";
 
 import { CollaborativeHeader } from "../../../features/shift/collaborative/components/CollaborativeHeader";
 import { KeyboardShortcutsHelp } from "../../../features/shift/collaborative/components/KeyboardShortcutsHelp";

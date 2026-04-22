@@ -8,11 +8,10 @@ import { CreateHolidayCalendarInput, HolidayCalendar, } from "@shared/api/graphq
 import { HolidayCalendarMessage } from "@shared/lib/message/HolidayCalendarMessage";
 import { MessageStatus } from "@shared/lib/message/Message";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { useDialogCloseGuard } from "@shared/ui/feedback/useDialogCloseGuard";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-
-import { useDialogCloseGuard } from "@/hooks/useDialogCloseGuard";
 /**
  * AddHolidayCalendar コンポーネントのフォーム入力型
  *

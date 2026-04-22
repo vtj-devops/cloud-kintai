@@ -1,10 +1,9 @@
 import { useSession } from "@app/providers/session/useSession";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { StaffRole } from "@entities/staff/model/useStaffs/useStaffs";
 import RegisterContent from "@pages/register/RegisterContent";
 import { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
 
 export default function Register() {
   const { hasRole } = useSession();

@@ -1,10 +1,9 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import {
   StaffRole,
   useStaffs,
 } from "@entities/staff/model/useStaffs/useStaffs";
 import { render, screen } from "@testing-library/react";
-
-import { AuthContext } from "@/context/AuthContext";
 
 import ShiftCollaborativeRoutePage, {
   shouldRedirectFromCollaborativeRoute,

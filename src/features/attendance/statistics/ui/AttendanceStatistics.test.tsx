@@ -1,9 +1,8 @@
+import { AuthContext, type AuthContextProps } from "@app/providers/auth/AuthContext";
 import { useGetAttendanceStatisticsSnapshotQuery } from "@entities/attendance-statistics/api/attendanceStatisticsApi";
 import { rebuildAttendanceStatistics } from "@entities/attendance-statistics/model/attendanceStatisticsService";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-
-import { AuthContext, type AuthContextProps } from "@/context/AuthContext";
 
 import AttendanceStatistics from "./AttendanceStatistics";
 

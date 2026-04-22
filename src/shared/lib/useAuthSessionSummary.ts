@@ -1,6 +1,5 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import { useContext, useMemo } from "react";
-
-import { AuthContext } from "@/context/AuthContext";
 
 export function useAuthSessionSummary() {
   const {

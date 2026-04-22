@@ -1,4 +1,5 @@
 import { useAppDispatchV2 } from "@app/hooks";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import type { ShiftDisplayMode } from "@entities/app-config/model/useAppConfig";
 import AdminSettingsLayout from "@features/admin/layout/ui/AdminSettingsLayout";
 import SettingsIcon from "@features/admin/layout/ui/SettingsIcon";
@@ -6,14 +7,13 @@ import { SettingsAlert, SettingsButton, } from "@features/admin/layout/ui/Settin
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CreateAppConfigInput, UpdateAppConfigInput, } from "@shared/api/graphql/types";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { usePageLeaveGuard } from "@shared/ui/feedback/usePageLeaveGuard";
 import { SubsectionTitle } from "@shared/ui/typography";
 // Title removed per admin UI simplification
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 
-import { AppConfigContext } from "@/context/AppConfigContext";
 import { E14001, S14001, S14002 } from "@/errors";
-import { usePageLeaveGuard } from "@/hooks/usePageLeaveGuard";
 
 import { buildShiftGroupPayload, createShiftGroup, SHIFT_GROUP_UI_TEXTS, ShiftGroupRow, } from "./";
 import { toShiftGroupFormValue } from "./shiftGroupFactory";

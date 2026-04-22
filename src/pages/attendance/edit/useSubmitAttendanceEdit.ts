@@ -3,17 +3,17 @@ import {
   useUpdateAttendanceMutation,
 } from "@entities/attendance/api/attendanceApi";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
+import { CognitoUser } from "@entities/staff/model/useCognitoUser";
 import { StaffType } from "@entities/staff/model/useStaffs/useStaffs";
 import { AttendanceEditInputs } from "@features/attendance/edit/model/common";
 import { Attendance } from "@shared/api/graphql/types";
 import { createLogger } from "@shared/lib/logger";
+import { useAppNotification } from "@shared/lib/useAppNotification";
 import dayjs from "dayjs";
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 import * as MESSAGE_CODE from "@/errors";
-import { useAppNotification } from "@/hooks/useAppNotification";
-import { CognitoUser } from "@/hooks/useCognitoUser";
 
 import { buildChangeRequestPayload } from "./attendanceEditUtils";
 import sendChangeRequestMail from "./sendChangeRequestMail";

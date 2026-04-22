@@ -1,3 +1,4 @@
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import {
   AttendanceEditContext,
   useAttendanceEditUi,
@@ -7,8 +8,6 @@ import TimeInputField from "@features/attendance/edit/ui/shared/TimeInputField";
 import dayjs from "dayjs";
 import { useContext, useRef, useState } from "react";
 import { Controller, FieldArrayWithId } from "react-hook-form";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
 
 type Props = {
   rest: FieldArrayWithId<AttendanceEditInputs, "rests", "id">;

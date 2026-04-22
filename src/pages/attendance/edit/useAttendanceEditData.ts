@@ -1,14 +1,14 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import { useGetAttendanceByStaffAndDateQuery } from "@entities/attendance/api/attendanceApi";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import { StaffType, useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import { Attendance } from "@shared/api/graphql/types";
+import { useAppNotification } from "@shared/lib/useAppNotification";
 import dayjs from "dayjs";
 import { useContext, useEffect, useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 
-import { AuthContext } from "@/context/AuthContext";
 import * as MESSAGE_CODE from "@/errors";
-import { useAppNotification } from "@/hooks/useAppNotification";
 
 const MONTH_QUERY_KEY = "month";
 

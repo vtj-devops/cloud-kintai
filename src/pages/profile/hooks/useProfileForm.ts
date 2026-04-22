@@ -1,7 +1,9 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import {
   STAFF_EXTERNAL_LINKS_LIMIT,
   type StaffExternalLink,
 } from "@entities/staff/externalLink";
+import type { CognitoUser } from "@entities/staff/model/useCognitoUser";
 import fetchStaff from "@entities/staff/model/useStaff/fetchStaff";
 import updateStaff from "@entities/staff/model/useStaff/updateStaff";
 import {
@@ -14,6 +16,8 @@ import {
 } from "@shared/api/graphql/concurrency";
 import { predefinedIcons } from "@shared/config/icons";
 import { createLogger } from "@shared/lib/logger";
+import { useAppNotification } from "@shared/lib/useAppNotification";
+import { useAutoSave } from "@shared/lib/useAutoSave";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   type Control,
@@ -27,11 +31,6 @@ import {
 } from "react-hook-form";
 
 import * as MESSAGE_CODE from "@/errors";
-import { useAppNotification } from "@/hooks/useAppNotification";
-import { useAutoSave } from "@/hooks/useAutoSave";
-import type { CognitoUser } from "@/hooks/useCognitoUser";
-
-import { AuthContext } from "../../../context/AuthContext";
 
 const logger = createLogger("Profile");
 

@@ -5,7 +5,7 @@ import {
 import dayjs from "dayjs";
 import { useCallback, useState } from "react";
 
-import fetchOperationLogs from "./fetchOperationLogs";
+import fetchOperationLogs from "./fetchOperationLogsAdmin";
 
 const toError = (err: unknown) => {
   if (err instanceof Error) {

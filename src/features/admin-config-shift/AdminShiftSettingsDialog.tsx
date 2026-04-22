@@ -1,6 +1,5 @@
 import AppDialog from "@shared/ui/feedback/AppDialog";
-
-import { useDialogCloseGuard } from "@/hooks/useDialogCloseGuard";
+import { useDialogCloseGuard } from "@shared/ui/feedback/useDialogCloseGuard";
 
 import AdminShiftSettingsContent from "./AdminShiftSettingsContent";
 import { useAdminShiftSettings } from "./useAdminShiftSettings";

@@ -1,9 +1,8 @@
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { AttendanceEditContext } from "@features/attendance/edit/model/AttendanceEditProvider";
 import { AttendanceEditInputs } from "@features/attendance/edit/model/common";
 import { useContext, useEffect, useState } from "react";
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
 
 export default function StaffCommentInput({
   register,

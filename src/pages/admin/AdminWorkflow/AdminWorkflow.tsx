@@ -1,3 +1,4 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import useAppConfig from "@entities/app-config/model/useAppConfig";
 import { useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import {
@@ -21,8 +22,6 @@ import {
   useState,
 } from "react";
 import { useNavigate } from "react-router-dom";
-
-import { AuthContext } from "@/context/AuthContext";
 
 import WorkflowCarouselDialog from "./components/WorkflowCarouselDialog";
 import WorkflowDetailPanel from "./components/WorkflowDetailPanel";

@@ -33,7 +33,7 @@ jest.mock("@entities/workflow/model/useWorkflows", () => ({
   }),
 }));
 
-jest.mock("@/hooks/useAppNotification", () => ({
+jest.mock("@shared/lib/useAppNotification", () => ({
   useAppNotification: () => ({
     notify: jest.fn(),
   }),

@@ -1,3 +1,4 @@
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import useAppConfig from "@entities/app-config/model/useAppConfig";
 import { resolveConfigTimeOnDate } from "@entities/attendance/lib/resolveConfigTimeOnDate";
 import { collectAttendanceErrorMessages } from "@entities/attendance/validation/collectErrorMessages";
@@ -18,8 +19,6 @@ import { AppButton, AppIconButton } from "@shared/ui/button";
 import GroupContainer from "@shared/ui/group-container/GroupContainer";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { Controller, useFormState } from "react-hook-form";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
 
 import ChangeRequestingAlert from "./ChangeRequestingMessage";
 import NoDataAlert from "./NoDataAlert";
