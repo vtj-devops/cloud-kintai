@@ -78,10 +78,14 @@ export default function RegisterAttendanceSummaryCard({
           return false;
         }
         const workDate = dayjs(attendance.workDate);
+        const isToday = workDate.isSame(today, "day");
+        if (isToday && !attendance.endTime) {
+          return false;
+        }
         return (
           !workDate.isBefore(effectiveDateRange.start, "day") &&
           !workDate.isAfter(effectiveDateRange.end, "day") &&
-          workDate.isBefore(today, "day")
+          !workDate.isAfter(today, "day")
         );
       }),
     [attendances, effectiveDateRange, today],
