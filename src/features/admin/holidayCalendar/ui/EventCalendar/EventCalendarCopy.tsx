@@ -1,12 +1,13 @@
 import { useAppDispatchV2 } from "@app/hooks";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Stack, TextField, } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Stack, TextField, } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { CreateEventCalendarInput, EventCalendar, } from "@shared/api/graphql/types";
 import { EventCalendarMessage } from "@shared/lib/message/EventCalendarMessage";
 import { MessageStatus } from "@shared/lib/message/Message";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { AppIconButton } from "@shared/ui/button";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -70,9 +71,9 @@ export default function EventCalendarCopy({ eventCalendar, createEventCalendar, 
         })));
     };
     return (<>
-      <IconButton onClick={() => setOpen(true)}>
+      <AppIconButton onClick={() => setOpen(true)} aria-label="コピー">
         <ContentCopyIcon fontSize="small"/>
-      </IconButton>
+      </AppIconButton>
       {dialog}
       <Dialog open={open} onClose={requestClose}>
         <DialogTitle>イベントをコピー</DialogTitle>

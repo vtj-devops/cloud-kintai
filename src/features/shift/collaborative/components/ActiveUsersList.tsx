@@ -7,7 +7,6 @@ import {
   Badge,
   Box,
   Chip,
-  IconButton,
   List,
   ListItem,
   ListItemAvatar,
@@ -18,6 +17,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import { AppIconButton } from "@shared/ui/button";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import React, { memo, useMemo, useState } from "react";
@@ -110,9 +110,9 @@ const ActiveUsersListBase: React.FC<ActiveUsersListProps> = ({
     return (
       <>
         <Tooltip title="アクティブユーザー">
-          <IconButton onClick={handleClick} size="small">
+          <AppIconButton onClick={handleClick} size="sm" aria-label="アクティブユーザー">
             <GroupIcon />
-          </IconButton>
+          </AppIconButton>
         </Tooltip>
         <Popover
           open={open}

@@ -7,13 +7,13 @@ import {
   Card,
   CardHeader,
   Chip,
-  IconButton,
   List,
   Paper,
   TextField,
   Tooltip,
   Typography,
 } from "@mui/material";
+import { AppIconButton } from "@shared/ui/button";
 import React, { useMemo } from "react";
 
 import { CellComment, CommentsMap } from "../types/collaborative.types";
@@ -236,28 +236,31 @@ export const CommentsList: React.FC<CommentsListProps> = ({
                     <Box sx={{ display: "flex", gap: 0.5, ml: 1 }}>
                       {onEditComment && (
                         <Tooltip title="編集">
-                          <IconButton
-                            size="small"
+                          <AppIconButton
+                            size="sm"
+                            aria-label="編集"
                             onClick={(e) => {
                               e.stopPropagation();
                               onEditComment(comment);
                             }}
                           >
                             <EditIcon fontSize="small" />
-                          </IconButton>
+                          </AppIconButton>
                         </Tooltip>
                       )}
                       {onDeleteComment && (
                         <Tooltip title="削除">
-                          <IconButton
-                            size="small"
+                          <AppIconButton
+                            size="sm"
+                            aria-label="削除"
+                            tone="danger"
                             onClick={(e) => {
                               e.stopPropagation();
                               onDeleteComment(comment.id);
                             }}
                           >
                             <DeleteOutlineIcon fontSize="small" />
-                          </IconButton>
+                          </AppIconButton>
                         </Tooltip>
                       )}
                     </Box>

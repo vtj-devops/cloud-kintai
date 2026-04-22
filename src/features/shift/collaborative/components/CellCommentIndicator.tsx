@@ -1,5 +1,6 @@
 import MessageOutlinedIcon from "@mui/icons-material/MessageOutlined";
-import { Badge, Box, IconButton, Tooltip } from "@mui/material";
+import { Badge, Box, Tooltip } from "@mui/material";
+import { AppIconButton } from "@shared/ui/button";
 import React from "react";
 
 interface CellCommentIndicatorProps {
@@ -31,17 +32,11 @@ export const CellCommentIndicator: React.FC<CellCommentIndicatorProps> = ({
           opacity: hasComments ? 1 : 0.4,
         }}
       >
-        <IconButton
-          size="small"
+        <AppIconButton
+          size="sm"
+          aria-label="コメント"
           onClick={onClick}
           disabled={disabled}
-          sx={{
-            p: 0.5,
-            "&:hover": {
-              bgcolor: "action.hover",
-              opacity: 1,
-            },
-          }}
         >
           <Badge
             badgeContent={commentCount}
@@ -54,7 +49,7 @@ export const CellCommentIndicator: React.FC<CellCommentIndicatorProps> = ({
               sx={{ color: "primary.main" }}
             />
           </Badge>
-        </IconButton>
+        </AppIconButton>
       </Box>
     </Tooltip>
   );

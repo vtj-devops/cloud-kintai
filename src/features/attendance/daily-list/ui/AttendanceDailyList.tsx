@@ -6,9 +6,10 @@ import useAttendanceDaily, { AttendanceDaily, DuplicateAttendanceDaily, } from "
 import { useCalendars } from "@entities/calendar/model/useCalendars";
 import { useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import SearchIcon from "@mui/icons-material/Search";
-import { Alert, AlertTitle, Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography, } from "@mui/material";
+import { Alert, AlertTitle, Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography, } from "@mui/material";
 import { Attendance } from "@shared/api/graphql/types";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { AppIconButton } from "@shared/ui/button";
 import dayjs from "dayjs";
 import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -96,12 +97,6 @@ const listHeaderBoxSx = {
     gap: 1,
 } as const;
 const searchBoxSx = { display: "flex", alignItems: "center", gap: 1 } as const;
-const searchIconButtonSx = {
-    border: "1px solid rgba(148,163,184,0.35)",
-    backgroundColor: "#ffffff",
-    color: "#475569",
-    "&:hover": { backgroundColor: "#f8fafc" },
-} as const;
 const searchTextFieldSx = {
     maxWidth: 360,
     "& .MuiOutlinedInput-root": {
@@ -698,9 +693,9 @@ export default function AttendanceDailyList() {
       <Box sx={listHeaderBoxSx}>
         <MoveDateItem workDate={dayjs(targetWorkDate || today)}/>
         <Box sx={searchBoxSx}>
-          <IconButton aria-label="スタッフ名検索を表示" onClick={handleSearchToggle} size="small" sx={searchIconButtonSx}>
+          <AppIconButton aria-label="スタッフ名検索を表示" onClick={handleSearchToggle} size="sm">
             <SearchIcon fontSize="small"/>
-          </IconButton>
+          </AppIconButton>
           {isSearchVisible && (<TextField label="スタッフ名で検索" variant="outlined" size="small" value={searchName} onChange={handleSearchNameChange} sx={searchTextFieldSx}/>)}
         </Box>
       </Box>

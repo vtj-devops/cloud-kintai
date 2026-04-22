@@ -1,7 +1,7 @@
 import { useAppDispatchV2 } from "@app/hooks";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import EditIcon from "@mui/icons-material/Edit";
-import { IconButton, Stack, TextField } from "@mui/material";
+import { Stack, TextField } from "@mui/material";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -13,6 +13,7 @@ import { CompanyHolidayCalendar, } from "@shared/api/graphql/types";
 import { CompanyHolidayCalendarMessage } from "@shared/lib/message/CompanyHolidayCalendarMessage";
 import { MessageStatus } from "@shared/lib/message/Message";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { AppIconButton } from "@shared/ui/button";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -81,11 +82,11 @@ export default function CompanyHolidayCalendarEdit({ holidayCalendar, updateComp
         })));
     };
     return (<>
-      <IconButton onClick={() => {
+      <AppIconButton onClick={() => {
             setEditRow(holidayCalendar);
-        }}>
+        }} aria-label="編集">
         <EditIcon fontSize="small"/>
-      </IconButton>
+      </AppIconButton>
       {dialog}
       <Dialog open={Boolean(editRow)} onClose={requestClose}>
         <DialogTitle>会社休日を編集</DialogTitle>

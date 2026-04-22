@@ -7,7 +7,6 @@ import {
   Box,
   Chip,
   Divider,
-  IconButton,
   Stack,
   styled,
   Tooltip,
@@ -22,6 +21,7 @@ import {
   Staff,
 } from "@shared/api/graphql/types";
 import { PANEL_HEIGHTS } from "@shared/config/uiDimensions";
+import { AppIconButton } from "@shared/ui/button";
 import dayjs, { Dayjs } from "dayjs";
 import { useMemo } from "react";
 
@@ -204,26 +204,20 @@ export default function DesktopCalendarView({
           justifyContent="space-between"
         >
           <Stack direction="row" spacing={1} alignItems="center">
-            <IconButton
+            <AppIconButton
               aria-label="previous-month"
               onClick={() => updateMonth((prev) => prev.add(-1, "month"))}
-              sx={{
-                border: "1px solid rgba(148,163,184,0.18)",
-                bgcolor: "rgba(255,255,255,0.88)",
-              }}
+              size="sm"
             >
               <ChevronLeftIcon />
-            </IconButton>
-            <IconButton
+            </AppIconButton>
+            <AppIconButton
               aria-label="next-month"
               onClick={() => updateMonth((prev) => prev.add(1, "month"))}
-              sx={{
-                border: "1px solid rgba(148,163,184,0.18)",
-                bgcolor: "rgba(255,255,255,0.88)",
-              }}
+              size="sm"
             >
               <ChevronRightIcon />
-            </IconButton>
+            </AppIconButton>
             <Divider orientation="vertical" flexItem />
             <Typography variant="h6" sx={{ fontWeight: 700 }}>
               {resolvedCurrentMonth.format("YYYY年M月")}
@@ -231,17 +225,13 @@ export default function DesktopCalendarView({
           </Stack>
           <Box>
             <Tooltip title="今月に戻る">
-              <IconButton
+              <AppIconButton
                 onClick={() => updateMonth(() => dayjs().startOf("month"))}
-                sx={{
-                  px: 1.5,
-                  borderRadius: "9999px",
-                  border: "1px solid rgba(148,163,184,0.18)",
-                  bgcolor: "rgba(255,255,255,0.88)",
-                }}
+                aria-label="今月に戻る"
+                size="sm"
               >
                 <Typography variant="body2">今月</Typography>
-              </IconButton>
+              </AppIconButton>
             </Tooltip>
           </Box>
         </Stack>
@@ -406,21 +396,16 @@ export default function DesktopCalendarView({
                     >
                       {onOpenInRightPanel && attendance && (
                         <Tooltip title="右側で開く">
-                          <IconButton
-                            size="small"
+                          <AppIconButton
+                            size="sm"
+                            aria-label="右側で開く"
                             onClick={(e) => {
                               e.stopPropagation();
                               onOpenInRightPanel(attendance, date);
                             }}
-                            sx={{
-                              padding: "2px",
-                              "&:hover": {
-                                backgroundColor: "rgba(0, 0, 0, 0.04)",
-                              },
-                            }}
                           >
                             <OpenInNewOutlinedIcon sx={{ fontSize: "16px" }} />
-                          </IconButton>
+                          </AppIconButton>
                         </Tooltip>
                       )}
                       {status !== AttendanceStatus.None && (

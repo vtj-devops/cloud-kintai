@@ -4,9 +4,10 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ErrorIcon from "@mui/icons-material/Error";
 import HourglassTopIcon from "@mui/icons-material/HourglassTop";
-import { Badge, Box, IconButton, Stack, TableCell, Tooltip, } from "@mui/material";
+import { Badge, Box, Stack, TableCell, Tooltip, } from "@mui/material";
 import { Attendance, CompanyHolidayCalendar, HolidayCalendar, Staff, } from "@shared/api/graphql/types";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { AppIconButton } from "@shared/ui/button";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -93,14 +94,14 @@ export function ActionsTableCell({ row, attendances, attendanceLoading, attendan
     return (<TableCell sx={{ width: 50, minWidth: 50 }}>
       <Stack direction="row" spacing={1} alignItems="center">
         <AttendanceTotalStatus attendances={attendances} companyHolidayCalendars={companyHolidayCalendars} holidayCalendars={holidayCalendars} staff={staff} targetWorkDate={targetWorkDate}/>
-        <IconButton size="small" data-testid="attendance-open-button" onClick={() => {
+        <AppIconButton size="sm" aria-label="勤怠を確認" data-testid="attendance-open-button" onClick={() => {
             const { sub: staffId } = row;
             navigate(`/admin/staff/${staffId}/attendance`);
         }}>
           <Badge badgeContent={getBadgeContent(attendances)} color="primary">
             <CalendarMonthIcon fontSize="small"/>
           </Badge>
-        </IconButton>
+        </AppIconButton>
       </Stack>
     </TableCell>);
 }

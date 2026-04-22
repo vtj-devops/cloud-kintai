@@ -16,7 +16,6 @@ import {
   Alert,
   AlertTitle,
   Box,
-  IconButton,
   Stack,
   Table,
   TableBody,
@@ -26,6 +25,7 @@ import {
   Typography,
 } from "@mui/material";
 import { Attendance } from "@shared/api/graphql/types";
+import { AppIconButton } from "@shared/ui/button";
 import dayjs from "dayjs";
 
 import { useAttendanceListContext } from "./AttendanceListContext";
@@ -212,9 +212,9 @@ export default function DesktopList() {
                               holidayCalendars={holidayCalendars}
                               companyHolidayCalendars={companyHolidayCalendars}
                             />
-                            <IconButton onClick={() => handleEdit(attendance)}>
+                            <AppIconButton onClick={() => handleEdit(attendance)} aria-label="編集" size="sm">
                               <EditIcon fontSize="small" />
-                            </IconButton>
+                            </AppIconButton>
                           </Stack>
                         </TableCell>
 

@@ -5,10 +5,10 @@ import {
   Box,
   Button,
   CircularProgress,
-  IconButton,
   Paper,
   Typography,
 } from "@mui/material";
+import { AppIconButton } from "@shared/ui/button";
 import dayjs from "dayjs";
 
 type ShiftRequestToolbarProps = {
@@ -61,17 +61,17 @@ export function ShiftRequestToolbar({
             flexWrap: "wrap",
           }}
         >
-          <IconButton size="small" onClick={onPrevMonth} aria-label="前の月">
+          <AppIconButton size="sm" onClick={onPrevMonth} aria-label="前の月">
             <ArrowBackIcon />
-          </IconButton>
+          </AppIconButton>
           <Typography
             sx={{ fontSize: "1.05rem", fontWeight: 700, color: "#0f172a" }}
           >
             {monthLabel}
           </Typography>
-          <IconButton size="small" onClick={onNextMonth} aria-label="次の月">
+          <AppIconButton size="sm" onClick={onNextMonth} aria-label="次の月">
             <ArrowForwardIcon />
-          </IconButton>
+          </AppIconButton>
 
           <Box
             sx={{
