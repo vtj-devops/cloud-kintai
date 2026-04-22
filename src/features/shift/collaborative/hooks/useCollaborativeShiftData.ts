@@ -49,6 +49,7 @@ interface UseCollaborativeShiftDataProps {
     staffId: string,
     comments: ShiftRequestCommentData[],
   ) => void;
+  onPersistCompleted?: (request: ShiftRequestData) => void;
 }
 
 export const useCollaborativeShiftData = ({
@@ -61,6 +62,7 @@ export const useCollaborativeShiftData = ({
   onSaveFailed,
   onRemoteUpdate,
   onCommentsReceived,
+  onPersistCompleted,
 }: UseCollaborativeShiftDataProps) => {
   const [shiftDataMap, setShiftDataMap] = useState<ShiftDataMap>(new Map());
   const [error, setError] = useState<string | null>(null);
@@ -76,6 +78,7 @@ export const useCollaborativeShiftData = ({
   const onSaveFailedRef = useRef(onSaveFailed);
   const onRemoteUpdateRef = useRef(onRemoteUpdate);
   const onCommentsReceivedRef = useRef(onCommentsReceived);
+  const onPersistCompletedRef = useRef(onPersistCompleted);
 
   useEffect(() => {
     onAutoSyncReceivedRef.current = onAutoSyncReceived;
@@ -84,6 +87,7 @@ export const useCollaborativeShiftData = ({
     onSaveFailedRef.current = onSaveFailed;
     onRemoteUpdateRef.current = onRemoteUpdate;
     onCommentsReceivedRef.current = onCommentsReceived;
+    onPersistCompletedRef.current = onPersistCompleted;
   }, [
     onAutoSyncReceived,
     onSaveStarted,
@@ -91,6 +95,7 @@ export const useCollaborativeShiftData = ({
     onSaveFailed,
     onRemoteUpdate,
     onCommentsReceived,
+    onPersistCompleted,
   ]);
 
   const [updateShiftCell] = useUpdateShiftCellMutation();
@@ -317,7 +322,9 @@ export const useCollaborativeShiftData = ({
           },
         }).unwrap();
 
-        updateShiftRequestState(normalizeShiftRequest(created));
+        const normalizedCreated = normalizeShiftRequest(created);
+        updateShiftRequestState(normalizedCreated);
+        onPersistCompletedRef.current?.(normalizedCreated);
         return created;
       }
 
@@ -329,7 +336,9 @@ export const useCollaborativeShiftData = ({
       });
 
       const updated = await updateShiftCell(payload).unwrap();
-      updateShiftRequestState(normalizeShiftRequest(updated));
+      const normalizedUpdated = normalizeShiftRequest(updated);
+      updateShiftRequestState(normalizedUpdated);
+      onPersistCompletedRef.current?.(normalizedUpdated);
 
       return updated;
     },
@@ -465,7 +474,9 @@ export const useCollaborativeShiftData = ({
                 },
               }).unwrap();
 
-              updateShiftRequestState(normalizeShiftRequest(created));
+              const normalizedCreated = normalizeShiftRequest(created);
+              updateShiftRequestState(normalizedCreated);
+              onPersistCompletedRef.current?.(normalizedCreated);
 
               const staffUpdates = updatesByStaff.get(staffId) ?? [];
               staffUpdates.forEach((update) => {
@@ -507,6 +518,7 @@ export const useCollaborativeShiftData = ({
         result.updatedRequests.forEach((request) => {
           const normalized = normalizeShiftRequest(request);
           updateShiftRequestState(normalized);
+          onPersistCompletedRef.current?.(normalized);
         });
 
         updates.forEach((update) => {

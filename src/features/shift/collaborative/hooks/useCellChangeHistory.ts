@@ -214,14 +214,41 @@ export const useCellChangeHistory = ({
 
   /**
    * DB 取得済みのレコード配列でヒストリを初期化する。
-   * セッション中に既に記録がある場合は何もしない（初回ロード専用）。
+   * 既存のセッション内レコードは保持したままマージする（replace せずに merge）。
    */
   const seedHistory = useCallback((records: CellChangeRecord[]) => {
-    setHistoryMap(() => {
-      const next = new Map<string, CellChangeRecord[]>();
+    setHistoryMap((prev) => {
+      const next = new Map(prev);
       for (const record of records) {
         const existing = next.get(record.cellKey) ?? [];
         next.set(record.cellKey, [...existing, record]);
+      }
+      return next;
+    });
+  }, []);
+
+  /**
+   * mutation 成功時などに DB 確定済みの履歴レコードを historyMap にマージする。
+   * 同一セル・同一タイムスタンプ（±60秒）の db-history レコードは重複追加しない。
+   */
+  const mergeHistoryRecords = useCallback((records: CellChangeRecord[]) => {
+    setHistoryMap((prev) => {
+      const next = new Map(prev);
+      for (const record of records) {
+        const existing = next.get(record.cellKey) ?? [];
+        const isDuplicate = existing.some(
+          (r) =>
+            r.source === "db-history" &&
+            Math.abs(r.changedAt - record.changedAt) < 60_000,
+        );
+        if (isDuplicate) continue;
+        const updated = [...existing, record];
+        next.set(
+          record.cellKey,
+          updated.length > maxRef.current
+            ? updated.slice(updated.length - maxRef.current)
+            : updated,
+        );
       }
       return next;
     });
@@ -240,6 +267,7 @@ export const useCellChangeHistory = ({
     recordBatchCellChanges,
     recordRemoteChange,
     seedHistory,
+    mergeHistoryRecords,
     getCellHistory,
     getAllCellHistory,
     getStaffCellHistory,
