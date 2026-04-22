@@ -5,11 +5,11 @@ import {
   getEffectiveDateRange,
 } from "@entities/attendance/lib/aggregationDateRange";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
-import {
-  calcTotalRestTime,
-  calcTotalWorkTime,
-} from "@entities/attendance/lib/time";
 import useCloseDates from "@entities/attendance/model/useCloseDates";
+import {
+  calcAttendanceChartSummary,
+  calcAttendanceSummary,
+} from "@features/attendance/time-recorder/lib/attendanceSummaryCalculators";
 import InfoIconTooltip from "@shared/ui/tooltip/InfoIconTooltip";
 import { SectionTitle } from "@shared/ui/typography";
 import { type ChartData, type ChartOptions } from "chart.js";
@@ -91,105 +91,20 @@ export default function RegisterAttendanceSummaryCard({
     [attendances, effectiveDateRange, today],
   );
 
-  const summary = useMemo(() => {
-    const totalWorkTime = filteredAttendances.reduce((acc, attendance) => {
-      if (!attendance.startTime || !attendance.endTime) {
-        return acc;
-      }
-      return acc + calcTotalWorkTime(attendance.startTime, attendance.endTime);
-    }, 0);
+  const summary = useMemo(
+    () => calcAttendanceSummary(filteredAttendances),
+    [filteredAttendances],
+  );
 
-    const totalRestTime = filteredAttendances.reduce((acc, attendance) => {
-      if (!attendance.rests) {
-        return acc;
-      }
-
-      const restTime = attendance.rests
-        .filter((item): item is NonNullable<typeof item> => !!item)
-        .reduce((restAcc, rest) => {
-          if (!rest.startTime || !rest.endTime) {
-            return restAcc;
-          }
-          return restAcc + calcTotalRestTime(rest.startTime, rest.endTime);
-        }, 0);
-
-      return acc + restTime;
-    }, 0);
-
-    return {
-      totalHours: totalWorkTime - totalRestTime,
-      workDays: filteredAttendances.length,
-    };
-  }, [filteredAttendances]);
-
-  const chartSummary = useMemo(() => {
-    const standardWorkHours = Math.max(getStandardWorkHours(), 0);
-    const workStatusHoursByDate = filteredAttendances.reduce<
-      Record<string, { netWorkHours: number; restHours: number }>
-    >((acc, attendance) => {
-      if (
-        !attendance.workDate ||
-        !attendance.startTime ||
-        !attendance.endTime
-      ) {
-        return acc;
-      }
-      const totalWorkHours = calcTotalWorkTime(
-        attendance.startTime,
-        attendance.endTime,
-      );
-      const totalRestHours = (attendance.rests ?? [])
-        .filter((item): item is NonNullable<typeof item> => !!item)
-        .reduce((restAcc, rest) => {
-          if (!rest.startTime || !rest.endTime) {
-            return restAcc;
-          }
-          return restAcc + calcTotalRestTime(rest.startTime, rest.endTime);
-        }, 0);
-      const netWorkHours = Math.max(totalWorkHours - totalRestHours, 0);
-      const workDateKey = dayjs(attendance.workDate).format(
-        AttendanceDate.DataFormat,
-      );
-      const existing = acc[workDateKey] ?? { netWorkHours: 0, restHours: 0 };
-      acc[workDateKey] = {
-        netWorkHours: existing.netWorkHours + netWorkHours,
-        restHours: existing.restHours + totalRestHours,
-      };
-      return acc;
-    }, {});
-
-    const periodDays = [];
-    let cursor = effectiveDateRange.start.startOf("day");
-    const periodEnd = effectiveDateRange.end.startOf("day");
-    while (!cursor.isAfter(periodEnd, "day")) {
-      periodDays.push(cursor);
-      cursor = cursor.add(1, "day");
-    }
-
-    return periodDays.map((workDate) => {
-      const workDateKey = workDate.format(AttendanceDate.DataFormat);
-      const workStatusHours = workStatusHoursByDate[workDateKey] ?? {
-        netWorkHours: 0,
-        restHours: 0,
-      };
-      const netWorkHours = Number(workStatusHours.netWorkHours.toFixed(2));
-      const restHours = Number(workStatusHours.restHours.toFixed(2));
-      const overtimeHours = Number(
-        Math.max(netWorkHours - standardWorkHours, 0).toFixed(2),
-      );
-      const regularWorkHours = Number(
-        Math.max(netWorkHours - overtimeHours, 0).toFixed(2),
-      );
-
-      return {
-        label: workDate.format("M/D"),
-        workHours: regularWorkHours,
-        restHours,
-        overtimeHours,
-        workDateValue: workDate.valueOf(),
-      };
-    });
-  }, [effectiveDateRange, filteredAttendances, getStandardWorkHours]);
+  const chartSummary = useMemo(
+    () =>
+      calcAttendanceChartSummary(
+        filteredAttendances,
+        effectiveDateRange,
+        getStandardWorkHours(),
+      ),
+    [effectiveDateRange, filteredAttendances, getStandardWorkHours],
+  );
 
   const stackedBarData = useMemo<ChartData<"bar">>(
     () => ({
