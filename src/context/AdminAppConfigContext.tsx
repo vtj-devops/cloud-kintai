@@ -1,23 +1,6 @@
-import { UpdateAppConfigInput } from "@shared/api/graphql/types";
-import { createContext } from "react";
-
-type AdminAppConfigContextProps = {
-  fetchAllConfigs: () => Promise<void>;
-  deleteConfig: (configId: string) => Promise<void>;
-  updateConfig: (
-    configId: string,
-    updatedConfig: UpdateAppConfigInput
-  ) => Promise<void>;
-};
-
-export const AdminAppConfigContext = createContext<AdminAppConfigContextProps>({
-  fetchAllConfigs: async () => {
-    console.log("The process is not implemented.");
-  },
-  deleteConfig: async () => {
-    console.log("The process is not implemented.");
-  },
-  updateConfig: async () => {
-    console.log("The process is not implemented.");
-  },
-});
+/**
+ * @deprecated このファイルは後方互換のための re-export バレルです。
+ * 新規コードでは `@entities/app-config/model/AdminAppConfigContext` を直接インポートしてください。
+ */
+export type { AdminAppConfigContextProps } from "@entities/app-config/model/AdminAppConfigContext";
+export { AdminAppConfigContext } from "@entities/app-config/model/AdminAppConfigContext";
