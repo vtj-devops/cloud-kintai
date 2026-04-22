@@ -399,8 +399,47 @@ const useAppConfig = () => {
     [isLoading, isFetching],
   );
 
+  const derived = useMemo(
+    () => ({
+      startTime: getStartTime(),
+      endTime: getEndTime(),
+      standardWorkHours: getStandardWorkHours(),
+      configId: getConfigId(),
+      links: getLinks(),
+      reasons: getReasons(),
+      officeMode: getOfficeMode(),
+      attendanceStatisticsEnabled: getAttendanceStatisticsEnabled(),
+      workflowNotificationEnabled: getWorkflowNotificationEnabled(),
+      timeRecorderAnnouncement: getTimeRecorderAnnouncement(),
+      shiftCollaborativeEnabled: getShiftCollaborativeEnabled(),
+      shiftDefaultMode: getShiftDefaultMode(),
+      quickInputStartTimes: getQuickInputStartTimes(),
+      quickInputStartTimesEnabled: getQuickInputStartTimes(true),
+      quickInputEndTimes: getQuickInputEndTimes(),
+      quickInputEndTimesEnabled: getQuickInputEndTimes(true),
+      shiftGroups: getShiftGroups(),
+      lunchRestStartTime: getLunchRestStartTime(),
+      lunchRestEndTime: getLunchRestEndTime(),
+      hourlyPaidHolidayEnabled: getHourlyPaidHolidayEnabled(),
+      amHolidayStartTime: getAmHolidayStartTime(),
+      amHolidayEndTime: getAmHolidayEndTime(),
+      pmHolidayStartTime: getPmHolidayStartTime(),
+      pmHolidayEndTime: getPmHolidayEndTime(),
+      amPmHolidayEnabled: getAmPmHolidayEnabled(),
+      specialHolidayEnabled: getSpecialHolidayEnabled(),
+      absentEnabled: getAbsentEnabled(),
+      overTimeCheckEnabled: getOverTimeCheckEnabled(),
+      workflowCategoryOrder: getWorkflowCategoryOrderFromConfig(),
+      themeColor: getThemeColor(),
+      themeTokens: getThemeTokens(),
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [config, loading],
+  );
+
   return {
     config,
+    derived,
     loading,
     isConfigLoading,
     fetchConfig,
