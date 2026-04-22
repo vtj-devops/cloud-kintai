@@ -26,7 +26,6 @@ const SHIFT_GROUP_ERROR_FIELDS = [
   { key: "fixed", label: "固定人数" },
 ] as const;
 
-const SHIFT_GROUP_AUTO_SAVE_DELAY = 800;
 const SHIFT_DISPLAY_AUTO_SAVE_DELAY = 600;
 
 const getValidationDetails = (errors: {
@@ -185,7 +184,6 @@ export function useAdminShiftSettings() {
     [configId, fetchConfig, saveConfig],
   );
 
-  const shiftGroupSaveRef = useRef<() => void>(() => undefined);
   const shiftDisplaySaveRef = useRef<() => Promise<void>>(() => Promise.resolve());
 
   const shiftGroupSaveHandler = handleSubmit(async (values) => {
@@ -202,8 +200,6 @@ export function useAdminShiftSettings() {
       setSavingShiftGroup(false);
     }
   });
-  shiftGroupSaveRef.current = shiftGroupSaveHandler;
-
   const shiftDisplaySaveHandler = async () => {
     if (savingShiftDisplay) return;
     setSavingShiftDisplay(true);
@@ -227,15 +223,6 @@ export function useAdminShiftSettings() {
     }
   };
   shiftDisplaySaveRef.current = shiftDisplaySaveHandler;
-
-  useEffect(() => {
-    if (hasValidationError || !isShiftGroupDirty) return;
-    const id = window.setTimeout(() => {
-      void shiftGroupSaveRef.current();
-    }, SHIFT_GROUP_AUTO_SAVE_DELAY);
-    return () => window.clearTimeout(id);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentShiftGroupSnapshot, hasValidationError, isShiftGroupDirty]);
 
   useEffect(() => {
     if (!isShiftDisplayDirty) return;
@@ -262,5 +249,6 @@ export function useAdminShiftSettings() {
     isBusy,
     handleAddGroup,
     handleRemoveGroup: remove,
+    handleSaveShiftGroup: shiftGroupSaveHandler,
   };
 }
