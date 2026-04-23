@@ -9,5 +9,6 @@ export {
   extractDateFromISO,
   formatDateToString,
   formatISOToTime,
+  formatMinutesToHHmm,
   parseTimeToISO,
 } from "./timeConverter";

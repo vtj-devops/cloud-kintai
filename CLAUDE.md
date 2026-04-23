@@ -67,6 +67,14 @@ AWS Amplify (AppSync / GraphQL + Cognito)。`src/shared/api/graphql/` 以下と 
 
 MUI v6 + Tailwind CSS + SCSS の併用。デザイントークンは `src/shared/designSystem/` で管理し、CSS 変数として注入する（`designTokenVar()` で参照）。`src/shared/ui/layout/PageSection.tsx` がページ内カードレイアウトの基本単位。
 
+### スタイル実装方針
+
+- **MUI sx prop を primary**: スタイリングは MUI の `sx` prop を使用
+- **Tailwind CSS**: utility クラスとして補助的に使用（レイアウト調整など）
+- **SCSS は廃止方向**: 既存の SCSS ファイルは段階的に MUI sx / Tailwind へ移行。新規 SCSS ファイルは作成しない
+- **新規 MUI コンポーネント禁止**: `import { Button } from '@mui/material'` のように新規に MUI コンポーネントを直接インポートする実装は行わない。代わりに `src/shared/ui/` の共通コンポーネントを使用する
+- **デザイントークン**: 色・スペーシングは `designTokenVar()` を介して CSS 変数で参照する（`src/shared/designSystem/`）
+
 ## 主要機能エリア
 
 ### 管理者画面 (`/admin`)
