@@ -21,15 +21,13 @@ import {
   WorkflowStatus,
 } from "@shared/api/graphql/types";
 
-type MockAppConfigOverrides = Omit<Partial<AppConfigContextProps>, "derived"> & {
-  derived?: Partial<AppConfigDerived>;
-};
-
 export function createMockAppConfig(
-  overrides?: MockAppConfigOverrides,
+  overrides?: Partial<AppConfigContextProps>,
 ): AppConfigContextProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const derived: AppConfigDerived = { ...FALLBACK_DERIVED, ...overrides?.derived } as any;
+  const derived: AppConfigDerived = {
+    ...FALLBACK_DERIVED,
+    ...overrides?.derived,
+  };
 
   return {
     config: null,

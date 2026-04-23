@@ -204,7 +204,7 @@ describe("mapApprovalStatus coverage (via normalizeApprovalSteps)", () => {
         id: "step-x",
         stepOrder: 1,
         approverStaffId: "ADMINS",
-        decisionStatus,
+        decisionStatus: decisionStatus as ApprovalStatus,
         decisionTimestamp: null,
         approverComment: null,
       },

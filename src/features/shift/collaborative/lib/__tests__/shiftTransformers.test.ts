@@ -127,8 +127,8 @@ describe("normalizeShiftRequest", () => {
     const result = normalizeShiftRequest(raw as Parameters<typeof normalizeShiftRequest>[0]);
 
     expect(result.entries).toHaveLength(2);
-    expect(result.entries[0]).toEqual({ date: "2026-02-01", status: ShiftRequestStatus.WORK, isLocked: true });
-    expect(result.entries[1].isLocked).toBe(false);
+    expect(result.entries![0]).toEqual({ date: "2026-02-01", status: ShiftRequestStatus.WORK, isLocked: true });
+    expect(result.entries![1].isLocked).toBe(false);
     expect(result.comments).toBeUndefined();
     expect(result.histories).toBeUndefined();
   });

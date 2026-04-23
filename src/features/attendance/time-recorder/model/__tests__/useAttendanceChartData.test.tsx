@@ -1,4 +1,4 @@
-import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
+import { AppConfigContext, FALLBACK_DERIVED } from "@entities/app-config/model/AppConfigContext";
 import type { DateRange } from "@entities/attendance/lib/aggregationDateRange";
 import { createMockAppConfig, createMockAttendance } from "@shared/test-utils";
 import { renderHook } from "@testing-library/react";
@@ -15,7 +15,7 @@ const FIXED_RANGE: DateRange = {
 
 function createWrapper(standardWorkHours = 8) {
   const appConfig = createMockAppConfig({
-    derived: { standardWorkHours },
+    derived: { ...FALLBACK_DERIVED, standardWorkHours },
   });
   return function Wrapper({ children }: PropsWithChildren) {
     return (
