@@ -57,6 +57,19 @@ jest.mock("@features/workflow/config/workflow-types.yaml", () => ({
       },
     },
     {
+      id: "SCHEDULE",
+      label: "スケジュール申請",
+      fields: [
+        {
+          key: "startTime",
+          type: "time",
+          label: "開始時刻",
+          required: true,
+        },
+      ],
+      payload: { type: "overTimeDetails", mapping: { startTime: "fields.startTime" } },
+    },
+    {
       id: "CUSTOM",
       label: "その他",
       fields: [
@@ -249,5 +262,54 @@ describe("buildDynamicUpdateWorkflowInput", () => {
     expect(comments).toHaveLength(2);
     expect(comments[0]?.id).toBe("c-0");
     expect(comments[1]?.id).toBe("c-2");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 追加: 未カバーのバリデーションケース
+// ---------------------------------------------------------------------------
+
+describe("validateDynamicWorkflowForm (additional coverage)", () => {
+  it("time フィールドが未入力の場合にエラーを返す", () => {
+    const result = validateDynamicWorkflowForm(
+      state("スケジュール申請", { startTime: null }),
+    );
+    expect(result.isValid).toBe(false);
+    expect(result.fieldErrors.startTime).toBeTruthy();
+  });
+
+  it("time フィールドが入力済みの場合に通過する", () => {
+    const result = validateDynamicWorkflowForm(
+      state("スケジュール申請", { startTime: "2024-03-15T09:00:00+09:00" }),
+    );
+    expect(result.isValid).toBe(true);
+  });
+
+  it("time_range の start のみ欠落でエラー", () => {
+    const result = validateDynamicWorkflowForm(
+      state("残業申請", {
+        date: "2024-01-10",
+        timeRange: { start: null, end: "2024-01-10T20:00:00+09:00" },
+      }),
+    );
+    expect(result.isValid).toBe(false);
+    expect(result.fieldErrors.timeRange).toBeTruthy();
+  });
+
+  it("カテゴリラベルが存在しない場合は isValid false を返す", () => {
+    const result = validateDynamicWorkflowForm(state("__unknown__"));
+    expect(result.isValid).toBe(false);
+  });
+});
+
+describe("buildDynamicCreateWorkflowInput (custom payload)", () => {
+  it("custom payload で customWorkflowTitle と content を設定する", () => {
+    const input = buildDynamicCreateWorkflowInput({
+      staffId: "staff-1",
+      draftMode: false,
+      state: state("その他", { title: "テストタイトル", content: "詳細内容" }),
+    });
+    expect(input.customWorkflowTitle).toBe("テストタイトル");
+    expect((input as Record<string, unknown>).customWorkflowContent).toBe("詳細内容");
   });
 });
