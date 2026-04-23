@@ -129,3 +129,78 @@ describe("isWorkflowFilterActive", () => {
     );
   });
 });
+
+describe("mapWorkflowsToListItems — sort edge cases", () => {
+  const staffId = "staff-sort";
+
+  it("sorts workflows with no application date by createdAt descending", () => {
+    const workflows = [
+      buildWorkflow({
+        id: "wf-early",
+        staffId,
+        createdAt: "2024-01-01T00:00:00Z",
+        overTimeDetails: null,
+      }),
+      buildWorkflow({
+        id: "wf-late",
+        staffId,
+        createdAt: "2024-06-01T00:00:00Z",
+        overTimeDetails: null,
+      }),
+    ];
+    const result = mapWorkflowsToListItems(workflows, staffId);
+    expect(result[0].rawId).toBe("wf-late");
+    expect(result[1].rawId).toBe("wf-early");
+  });
+
+  it("puts workflows with application date before those without", () => {
+    const workflows = [
+      buildWorkflow({
+        id: "wf-no-date",
+        staffId,
+        overTimeDetails: { date: null },
+        createdAt: null,
+      }),
+      buildWorkflow({
+        id: "wf-with-date",
+        staffId,
+        overTimeDetails: { date: "2024-03-15" },
+        createdAt: "2024-01-01T00:00:00Z",
+      }),
+    ];
+    const result = mapWorkflowsToListItems(workflows, staffId);
+    expect(result[0].rawId).toBe("wf-with-date");
+  });
+});
+
+describe("applyWorkflowFilters — date range edge cases", () => {
+  const staffId = "staff-filter";
+  const items = [
+    {
+      name: "wf-1",
+      category: "残業申請",
+      status: "提出済",
+      rawCategory: "OVERTIME",
+      rawStatus: "SUBMITTED",
+      rawId: "wf-1",
+      rawStaffId: staffId,
+      createdAt: "2024-06-15",
+      applicationDate: "2024-04-15",
+    },
+  ];
+
+  it("excludes item when applicationDate is before applicationFrom", () => {
+    const result = applyWorkflowFilters(items, { applicationFrom: "2024-05-01" });
+    expect(result).toHaveLength(0);
+  });
+
+  it("excludes item when applicationDate is after applicationTo", () => {
+    const result = applyWorkflowFilters(items, { applicationTo: "2024-03-31" });
+    expect(result).toHaveLength(0);
+  });
+
+  it("excludes item when createdAt is after createdTo", () => {
+    const result = applyWorkflowFilters(items, { createdTo: "2024-05-01" });
+    expect(result).toHaveLength(0);
+  });
+});

@@ -1,23 +1,26 @@
 import { AppContext,CalendarContext } from "../CalendarContext";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ctx = (CalendarContext as any)._currentValue;
+
 describe("CalendarContext", () => {
   describe("デフォルト値", () => {
     it("holidayCalendars のデフォルトは空配列", () => {
-      expect(CalendarContext._currentValue.holidayCalendars).toEqual([]);
+      expect(ctx.holidayCalendars).toEqual([]);
     });
 
     it("companyHolidayCalendars のデフォルトは空配列", () => {
-      expect(CalendarContext._currentValue.companyHolidayCalendars).toEqual([]);
+      expect(ctx.companyHolidayCalendars).toEqual([]);
     });
 
     it("eventCalendars のデフォルトは空配列", () => {
-      expect(CalendarContext._currentValue.eventCalendars).toEqual([]);
+      expect(ctx.eventCalendars).toEqual([]);
     });
   });
 
   describe("デフォルト関数の動作", () => {
     it("createHolidayCalendar はデフォルトで void を返す", async () => {
-      const result = await CalendarContext._currentValue.createHolidayCalendar({
+      const result = await ctx.createHolidayCalendar({
         id: "test",
         holidayDate: "2024-01-01",
         calendarName: "元日",
@@ -28,13 +31,13 @@ describe("CalendarContext", () => {
 
     it("bulkCreateHolidayCalendar はデフォルトで空配列を返す", async () => {
       const result =
-        await CalendarContext._currentValue.bulkCreateHolidayCalendar([]);
+        await ctx.bulkCreateHolidayCalendar([]);
       expect(result).toEqual([]);
     });
 
     it("bulkCreateCompanyHolidayCalendar はデフォルトで空配列を返す", async () => {
       const result =
-        await CalendarContext._currentValue.bulkCreateCompanyHolidayCalendar(
+        await ctx.bulkCreateCompanyHolidayCalendar(
           [],
         );
       expect(result).toEqual([]);
@@ -42,19 +45,19 @@ describe("CalendarContext", () => {
 
     it("bulkCreateEventCalendar はデフォルトで空配列を返す", async () => {
       const result =
-        await CalendarContext._currentValue.bulkCreateEventCalendar([]);
+        await ctx.bulkCreateEventCalendar([]);
       expect(result).toEqual([]);
     });
 
     it("deleteHolidayCalendar はデフォルトで void を返す", async () => {
-      const result = await CalendarContext._currentValue.deleteHolidayCalendar({
+      const result = await ctx.deleteHolidayCalendar({
         id: "test",
       });
       expect(result).toBeUndefined();
     });
 
     it("deleteEventCalendar はデフォルトで void を返す", async () => {
-      const result = await CalendarContext._currentValue.deleteEventCalendar({
+      const result = await ctx.deleteEventCalendar({
         id: "test",
       });
       expect(result).toBeUndefined();

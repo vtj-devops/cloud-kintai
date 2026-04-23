@@ -26,6 +26,7 @@ describe("resolveMonthlyTerms", () => {
       {
         __typename: "CloseDate",
         id: "cd-1",
+        closeDate: "2024-01-15",
         startDate: "2024-01-01",
         endDate: "2024-01-15",
         createdAt: "",
@@ -43,6 +44,7 @@ describe("resolveMonthlyTerms", () => {
       {
         __typename: "CloseDate",
         id: "cd-1",
+        closeDate: "2024-02-28",
         startDate: "2024-02-01",
         endDate: "2024-02-28",
         createdAt: "",
@@ -56,9 +58,9 @@ describe("resolveMonthlyTerms", () => {
 
   it("assigns colors cyclically from palette", () => {
     const closeDates: CloseDate[] = [
-      { __typename: "CloseDate", id: "1", startDate: "2024-01-01", endDate: "2024-01-10", createdAt: "", updatedAt: "" },
-      { __typename: "CloseDate", id: "2", startDate: "2024-01-11", endDate: "2024-01-20", createdAt: "", updatedAt: "" },
-      { __typename: "CloseDate", id: "3", startDate: "2024-01-21", endDate: "2024-01-31", createdAt: "", updatedAt: "" },
+      { __typename: "CloseDate", id: "1", closeDate: "2024-01-10", startDate: "2024-01-01", endDate: "2024-01-10", createdAt: "", updatedAt: "" },
+      { __typename: "CloseDate", id: "2", closeDate: "2024-01-20", startDate: "2024-01-11", endDate: "2024-01-20", createdAt: "", updatedAt: "" },
+      { __typename: "CloseDate", id: "3", closeDate: "2024-01-31", startDate: "2024-01-21", endDate: "2024-01-31", createdAt: "", updatedAt: "" },
     ];
     const terms = resolveMonthlyTerms(currentMonth, closeDates, palette);
     expect(terms[0].color).toBe(palette[0]);
@@ -68,8 +70,8 @@ describe("resolveMonthlyTerms", () => {
 
   it("sorts terms by start date", () => {
     const closeDates: CloseDate[] = [
-      { __typename: "CloseDate", id: "2", startDate: "2024-01-21", endDate: "2024-01-31", createdAt: "", updatedAt: "" },
-      { __typename: "CloseDate", id: "1", startDate: "2024-01-01", endDate: "2024-01-10", createdAt: "", updatedAt: "" },
+      { __typename: "CloseDate", id: "2", closeDate: "2024-01-31", startDate: "2024-01-21", endDate: "2024-01-31", createdAt: "", updatedAt: "" },
+      { __typename: "CloseDate", id: "1", closeDate: "2024-01-10", startDate: "2024-01-01", endDate: "2024-01-10", createdAt: "", updatedAt: "" },
     ];
     const terms = resolveMonthlyTerms(currentMonth, closeDates, palette);
     expect(terms[0].start.isBefore(terms[1].start)).toBe(true);

@@ -14,12 +14,11 @@ import {
 const makeItem = (
   overrides: Partial<WorkflowListItem> = {}
 ): WorkflowListItem => ({
-  id: "item-1",
   name: "有給申請",
+  category: "休暇申請",
   status: "提出済み",
   rawStatus: WorkflowStatus.SUBMITTED,
   rawId: "wf-1",
-  applicant: "山田太郎",
   createdAt: "2024-01-01",
   ...overrides,
 });

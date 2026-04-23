@@ -1,3 +1,5 @@
+import { StaffRole } from "@entities/staff/model/useStaffs/useStaffs";
+
 import {
   buildAggregationPeriodInfoLabel,
   buildStaffIdentityMaps,
@@ -46,7 +48,7 @@ const makeStaff = (overrides: Record<string, unknown> = {}) => ({
   givenName: "太郎",
   mailAddress: "yamada@example.com",
   owner: false,
-  role: "STAFF" as const,
+  role: StaffRole.STAFF,
   enabled: true,
   status: "active",
   createdAt: "2024-01-01T00:00:00.000Z",

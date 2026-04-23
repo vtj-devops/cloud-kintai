@@ -36,7 +36,7 @@ describe("buildSummaryFromAssignments", () => {
   it("ignores auto and empty states in all counts", () => {
     const result = buildSummaryFromAssignments({
       "01": "auto",
-      "02": "empty",
+      "02": "empty" as "auto",
     });
     expect(result.workDays).toBe(0);
     expect(result.fixedOffDays).toBe(0);
@@ -49,7 +49,7 @@ describe("buildSummaryFromAssignments", () => {
       "02": "fixedOff",
       "03": "requestedOff",
       "04": "auto",
-      "05": "empty",
+      "05": "empty" as "auto",
       "06": "work",
     });
     expect(result.workDays).toBe(2);

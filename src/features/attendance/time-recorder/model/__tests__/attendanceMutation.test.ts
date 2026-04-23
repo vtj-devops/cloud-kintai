@@ -39,9 +39,7 @@ function buildOptions(
     dispatch: jest.fn(),
     successMessage: "打刻しました",
     errorMessage: "打刻に失敗しました",
-    logger: { warn: jest.fn(), error: jest.fn(), info: jest.fn() } as ReturnType<
-      typeof jest.fn
-    > as unknown as AttendanceMutationOptions["logger"],
+    logger: { warn: jest.fn(), error: jest.fn(), info: jest.fn(), debug: jest.fn() } as unknown as AttendanceMutationOptions["logger"],
     ...overrides,
   };
 }
@@ -55,7 +53,7 @@ describe("executeAttendanceMutation", () => {
   });
 
   it("cognitoUser が null のとき mutation を呼ばずに warn ログを出して終了する", () => {
-    const logger = { warn: jest.fn(), error: jest.fn(), info: jest.fn() };
+    const logger = { warn: jest.fn(), error: jest.fn(), info: jest.fn(), debug: jest.fn() } as unknown as AttendanceMutationOptions["logger"];
     const mutation = jest.fn();
     const dispatch = jest.fn();
 
@@ -109,7 +107,7 @@ describe("executeAttendanceMutation", () => {
 
   it("mutation が失敗したとき dispatch を error トーンで呼び出す", async () => {
     const dispatch = jest.fn();
-    const logger = { warn: jest.fn(), error: jest.fn(), info: jest.fn() };
+    const logger = { warn: jest.fn(), error: jest.fn(), info: jest.fn(), debug: jest.fn() } as unknown as AttendanceMutationOptions["logger"];
     const mutation = jest
       .fn()
       .mockRejectedValue(new Error("Network error"));
@@ -128,7 +126,7 @@ describe("executeAttendanceMutation", () => {
   });
 
   it("actionLabel が logger の warn メッセージに含まれる", () => {
-    const logger = { warn: jest.fn(), error: jest.fn(), info: jest.fn() };
+    const logger = { warn: jest.fn(), error: jest.fn(), info: jest.fn(), debug: jest.fn() } as unknown as AttendanceMutationOptions["logger"];
 
     executeAttendanceMutation(
       buildOptions({
@@ -144,7 +142,7 @@ describe("executeAttendanceMutation", () => {
   });
 
   it("actionLabel を省略した場合デフォルト値 'attendance mutation' が warn に使われる", () => {
-    const logger = { warn: jest.fn(), error: jest.fn(), info: jest.fn() };
+    const logger = { warn: jest.fn(), error: jest.fn(), info: jest.fn(), debug: jest.fn() } as unknown as AttendanceMutationOptions["logger"];
 
     executeAttendanceMutation(
       buildOptions({ cognitoUser: null, logger, actionLabel: undefined }),

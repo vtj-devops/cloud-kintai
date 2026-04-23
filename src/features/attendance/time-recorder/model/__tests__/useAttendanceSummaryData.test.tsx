@@ -4,7 +4,6 @@ import { createMockAttendance, createMockUser } from "@shared/test-utils";
 import { renderHook } from "@testing-library/react";
 import dayjs from "dayjs";
 import type { PropsWithChildren } from "react";
-import React from "react";
 
 import { useAttendanceSummaryData } from "../useAttendanceSummaryData";
 
