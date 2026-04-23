@@ -31,7 +31,7 @@ export function RemarksInputField({
             {...field}
             value={field.value ?? ""}
             data-testid="remarks-input"
-            className="attendance-remarks-item__input"
+            className="w-full border-none bg-transparent p-0 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none disabled:cursor-not-allowed disabled:text-slate-500"
             placeholder={INPUT_PLACEHOLDER}
             disabled={readOnly}
           />
@@ -43,7 +43,7 @@ export function RemarksInputField({
   return (
     <input
       data-testid="remarks-input"
-      className="attendance-remarks-item__input"
+      className="w-full border-none bg-transparent p-0 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none disabled:cursor-not-allowed disabled:text-slate-500"
       value={getRemarksValue(getValues)}
       onChange={(e) => updateRemarks(setValue, readOnly, e.target.value)}
       placeholder={INPUT_PLACEHOLDER}

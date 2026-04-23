@@ -1,5 +1,3 @@
-import "./MobilePaidHolidaySection.scss";
-
 import { AttendanceEditInputs } from "@features/attendance/edit/model/common";
 import {
   AttendanceControl,
@@ -86,7 +84,7 @@ function HourlyPaidHolidayList({
 }: HourlyPaidHolidayListProps) {
   if (!enabled) {
     return (
-      <p className="mobile-paid-holiday-section__description">
+      <p className="m-0 text-sm leading-relaxed text-slate-500">
         時間単位休暇は無効です。
       </p>
     );
@@ -95,7 +93,7 @@ function HourlyPaidHolidayList({
   return (
     <>
       {fields.length === 0 && (
-        <p className="mobile-paid-holiday-section__description">
+        <p className="m-0 text-sm leading-relaxed text-slate-500">
           時間帯を追加してください。
         </p>
       )}
@@ -109,7 +107,7 @@ function HourlyPaidHolidayList({
       <button
         type="button"
         disabled={!append}
-        className="mobile-paid-holiday-section__add-button"
+        className="inline-flex w-full items-center justify-center gap-2 rounded-[10px] border border-emerald-500/25 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 transition-[background-color,border-color,color,opacity] duration-150 ease-in-out hover:border-emerald-500/40 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
         onClick={() => {
           if (append) {
             append({
@@ -119,7 +117,7 @@ function HourlyPaidHolidayList({
           }
         }}
       >
-        <span className="mobile-paid-holiday-section__add-icon">+</span>
+        <span className="text-base leading-none">+</span>
         時間休暇を追加
       </button>
     </>
@@ -158,7 +156,7 @@ export function MobilePaidHolidaySection({
         {specialHolidayEnabled ? (
           <HolidayTableRow label="特別休暇" withBottomBorder>
             <div className="flex flex-col items-start gap-2">
-              <p className="mobile-paid-holiday-section__description">
+              <p className="m-0 text-sm leading-relaxed text-slate-500">
                 有給休暇ではない特別な休暇(忌引きなど)です。利用時は管理者へご相談ください。
               </p>
               <Controller
