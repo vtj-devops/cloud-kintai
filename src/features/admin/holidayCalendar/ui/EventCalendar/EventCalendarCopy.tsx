@@ -1,13 +1,14 @@
 import { useAppDispatchV2 } from "@app/hooks";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Stack, TextField, } from "@mui/material";
+import { Stack, TextField, } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { CreateEventCalendarInput, EventCalendar, } from "@shared/api/graphql/types";
 import { EventCalendarMessage } from "@shared/lib/message/EventCalendarMessage";
 import { MessageStatus } from "@shared/lib/message/Message";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
-import { AppIconButton } from "@shared/ui/button";
+import { AppButton, AppIconButton } from "@shared/ui/button";
+import AppDialog from "@shared/ui/feedback/AppDialog";
 import { useDialogCloseGuard } from "@shared/ui/feedback/useDialogCloseGuard";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
@@ -74,38 +75,29 @@ export default function EventCalendarCopy({ eventCalendar, createEventCalendar, 
         <ContentCopyIcon fontSize="small"/>
       </AppIconButton>
       {dialog}
-      <Dialog open={open} onClose={requestClose}>
-        <DialogTitle>イベントをコピー</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2}>
-            <DialogContentText>
-              コピー元のイベント情報が入力されています。必要に応じて変更してください。
-            </DialogContentText>
-            <Controller name="eventDate" control={control} rules={{ required: "日付は必須項目です。" }} render={({ field, fieldState }) => {
-            const { ref, value, onChange, name, onBlur, ...rest } = field;
-            return (<DatePicker {...rest} label="日付" format={AttendanceDate.DisplayFormat} value={value ? dayjs(value) : null} onChange={(date) => onChange(date ? date.format(AttendanceDate.DataFormat) : "")} slotProps={{
-                    textField: {
-                        required: true,
-                        inputRef: ref,
-                        name,
-                        onBlur,
-                        error: Boolean(fieldState.error),
-                        helperText: fieldState.error?.message,
-                    },
-                }}/>);
-        }}/>
-            <TextField label="イベント名" required {...register("name", {
-        required: true,
-    })}/>
-            <TextField label="詳細 (任意)" multiline rows={3} {...register("description")}/>
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={requestClose}>キャンセル</Button>
-          <Button disabled={!isValid || !isDirty || isSubmitting} onClick={handleSubmit(onSubmit)}>
-            コピーして作成
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <AppDialog open={open} onClose={requestClose} title="イベントをコピー" description="コピー元のイベント情報が入力されています。必要に応じて変更してください。" actions={<>
+          <AppButton variant="outline" tone="neutral" onClick={requestClose}>キャンセル</AppButton>
+          <AppButton disabled={!isValid || !isDirty || isSubmitting} onClick={handleSubmit(onSubmit)}>コピーして作成</AppButton>
+        </>}>
+        <Stack spacing={2}>
+          <Controller name="eventDate" control={control} rules={{ required: "日付は必須項目です。" }} render={({ field, fieldState }) => {
+          const { ref, value, onChange, name, onBlur, ...rest } = field;
+          return (<DatePicker {...rest} label="日付" format={AttendanceDate.DisplayFormat} value={value ? dayjs(value) : null} onChange={(date) => onChange(date ? date.format(AttendanceDate.DataFormat) : "")} slotProps={{
+                  textField: {
+                      required: true,
+                      inputRef: ref,
+                      name,
+                      onBlur,
+                      error: Boolean(fieldState.error),
+                      helperText: fieldState.error?.message,
+                  },
+              }}/>);
+      }}/>
+          <TextField label="イベント名" required {...register("name", {
+      required: true,
+  })}/>
+          <TextField label="詳細 (任意)" multiline rows={3} {...register("description")}/>
+        </Stack>
+      </AppDialog>
     </>);
 }
