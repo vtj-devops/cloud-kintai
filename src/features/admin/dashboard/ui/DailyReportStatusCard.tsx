@@ -17,7 +17,7 @@ function DailyReportStatusCardComponent({
   return (
     <DashboardCard
       data-testid="admin-dashboard-daily-report-status-card"
-      sx={{ minHeight: { lg: "140px" } }}
+      className="lg:min-h-[140px]"
     >
       <Typography
         component="h2"

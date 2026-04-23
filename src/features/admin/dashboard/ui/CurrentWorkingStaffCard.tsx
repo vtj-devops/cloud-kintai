@@ -12,7 +12,7 @@ function CurrentWorkingStaffCardComponent({ countLabel, infoLabel }: Props) {
   return (
     <DashboardCard
       data-testid="admin-dashboard-current-working-staff-card"
-      sx={{ minHeight: { lg: "140px" } }}
+      className="lg:min-h-[140px]"
     >
       <div className="flex items-start justify-between gap-3">
         <Typography

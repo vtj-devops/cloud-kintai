@@ -39,8 +39,7 @@ function StaffWorkStatusChartCardComponent({
   return (
     <DashboardCard
       data-testid="admin-dashboard-staff-work-status-chart-card"
-      className="h-full lg:col-span-4"
-      sx={{ py: { xs: 1.5, md: 1.75 } }}
+      className="h-full lg:col-span-4 md:py-3.5"
     >
       <div className="flex items-start justify-between gap-3">
         <Typography

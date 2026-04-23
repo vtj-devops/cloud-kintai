@@ -32,6 +32,7 @@ import { Logger } from "@shared/lib/logger";
 import { AttendanceEditMailSender } from "@shared/lib/mail/AttendanceEditMailSender";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
 import { AppButton, AppIconButton } from "@shared/ui/button";
+import { InlineAlert } from "@shared/ui/feedback/InlineAlert";
 import { usePageLeaveGuard } from "@shared/ui/feedback/usePageLeaveGuard";
 import GroupContainer from "@shared/ui/group-container/GroupContainer";
 import dayjs from "dayjs";
@@ -63,26 +64,6 @@ import PaidHolidayFlagInputCommon from "./PaidHolidayFlagInput";
 import QuickInputButtons from "./QuickInputButtons";
 import { SystemCommentList } from "./SystemCommentList";
 
-function InlineAlert({
-  tone,
-  title,
-  children,
-}: {
-  tone: "error" | "info";
-  title?: string;
-  children: React.ReactNode;
-}) {
-  const toneClassName =
-    tone === "error"
-      ? "border-rose-500/15 bg-rose-50/90 text-rose-900"
-      : "border-sky-500/15 bg-sky-50/90 text-sky-900";
-  return (
-    <div className={`rounded-[18px] border px-4 py-3 ${toneClassName}`}>
-      {title ? <div className="text-sm font-semibold">{title}</div> : null}
-      <div className={title ? "mt-2 text-sm" : "text-sm"}>{children}</div>
-    </div>
-  );
-}
 function buildHourlyPaidHolidayTimes(
   data: HourlyPaidHolidayTimeInputs[] | undefined,
 ): HourlyPaidHolidayTimeInput[] {
