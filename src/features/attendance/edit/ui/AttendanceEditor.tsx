@@ -715,7 +715,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
       }}
     >
       {dialog}
-      <div className="flex flex-col gap-2 pb-5">
+      <div className="flex flex-col gap-2 pb-5" data-testid="admin-attendance-editor-root">
         {isSubmitting && (
           <div className="mt-1">
             <div className="h-1.5 w-full overflow-hidden rounded-full bg-emerald-100">
@@ -726,6 +726,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
         )}
         <div className="flex flex-wrap items-center justify-between gap-1.5">
           <AppButton
+            data-testid="attendance-admin-back-button"
             onClick={() => {
               navigate(attendanceListPath);
             }}
@@ -739,7 +740,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
             勤怠一覧に戻る
           </AppButton>
           {workDate && (
-            <div className="inline-flex w-fit items-center rounded-full bg-slate-900/5 px-3 py-1.5 text-xs font-semibold tracking-[0.08em] text-slate-600">
+            <div data-testid="attendance-workdate-label" className="inline-flex w-fit items-center rounded-full bg-slate-900/5 px-3 py-1.5 text-xs font-semibold tracking-[0.08em] text-slate-600">
               {workDate.format(AttendanceDate.DisplayFormat)}
             </div>
           )}

@@ -24,6 +24,7 @@ export function AttendanceEditBackNavigation() {
     <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
       <Link
         href={attendanceListHref}
+        data-testid="attendance-back-to-list"
         className="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-white/90 px-4 py-2 text-sm font-medium text-slate-700 transition-all duration-[160ms] ease-in-out hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_rgb(52_211_153)]"
       >
         <span aria-hidden="true" className="text-base leading-none">

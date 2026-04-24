@@ -22,6 +22,7 @@ export function AttendanceEditPageHeader({
 
   return (
     <div
+      data-testid="attendance-header"
       className={[
         "border border-emerald-500/15 text-slate-900",
         isDesktop
