@@ -1,8 +1,9 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import type { UseFormGetValues } from "react-hook-form";
 
+import type { AttendanceEditInputs } from "../common";
 import { useAttendanceRecord } from "../useAttendanceRecord";
-import { createMockAttendanceRecordParams } from "./testUtils";
+import { createMockAttendanceRecordParams, createMockLogger } from "./testUtils";
 
 // ---- モック定義 ----
 
@@ -148,12 +149,7 @@ describe("useAttendanceRecord", () => {
     it("fetchStaff 失敗時に staff = null になり dispatch が呼ばれる", async () => {
       fetchStaffMock.mockRejectedValue(new Error("Network error"));
 
-      const mockLogger = {
-        error: jest.fn(),
-        debug: jest.fn(),
-        info: jest.fn(),
-        warn: jest.fn(),
-      };
+      const mockLogger = createMockLogger();
       const params = createMockAttendanceRecordParams({
       targetStaffId: "staff-001",
       logger: mockLogger,
@@ -416,12 +412,7 @@ describe("useAttendanceRecord", () => {
         unwrap: () => Promise.reject(new Error("refetch error")),
       });
 
-      const mockLogger = {
-        error: jest.fn(),
-        debug: jest.fn(),
-        info: jest.fn(),
-        warn: jest.fn(),
-      };
+      const mockLogger = createMockLogger();
       const params = createMockAttendanceRecordParams({
       targetStaffId: "staff-001",
       targetWorkDate: "2024-01-15",

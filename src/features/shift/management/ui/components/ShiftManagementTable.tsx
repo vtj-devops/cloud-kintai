@@ -169,7 +169,7 @@ export const ShiftManagementTable: React.FC<Props> = ({
             )}
             labelCellClassName="border-r-2 border-gray-100 font-bold"
           />
-          {groupedShiftStaffs.map((group: any) => (
+          {groupedShiftStaffs.map((group) => (
             <React.Fragment key={group.groupId || "no-group"}>
               {group.groupName && (
                 <tr>
@@ -181,7 +181,7 @@ export const ShiftManagementTable: React.FC<Props> = ({
                   </td>
                 </tr>
               )}
-              {group.staffs.map((staff: any) => (
+              {group.staffs.map((staff) => (
                 <ShiftManagementTableRow
                   key={staff.id}
                   staff={staff}

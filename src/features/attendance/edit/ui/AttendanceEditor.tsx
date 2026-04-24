@@ -214,8 +214,11 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
     workDate: workDate ? workDate.format("YYYY-MM-DD") : null,
     isAuthenticated,
   });
+  // eslint-disable-next-line react-hooks/incompatible-library -- react-hook-form's watch() is not a React hook
   const watchedEndTime = watch("endTime");
+  // eslint-disable-next-line react-hooks/incompatible-library -- react-hook-form's watch() is not a React hook
   const watchedStartTime = watch("startTime");
+  // eslint-disable-next-line react-hooks/incompatible-library -- react-hook-form's watch() is not a React hook
   const watchedRests = watch("rests");
   // eslint-disable-next-line react-hooks/incompatible-library -- react-hook-form's watch() is not a React hook
   const watchedHourlyPaidHolidayTimes = watch("hourlyPaidHolidayTimes");
