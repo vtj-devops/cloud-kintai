@@ -1,5 +1,5 @@
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
-import { AttendanceStatus } from "@entities/attendance/lib/AttendanceState";
+import AttendanceStatusChip from "@entities/attendance/ui/AttendanceStatusChip";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
@@ -73,26 +73,6 @@ const DayCell = styled(Box, {
   },
 }));
 
-const statusLabelMap: Record<AttendanceStatus, string> = {
-  [AttendanceStatus.Ok]: "OK",
-  [AttendanceStatus.Error]: "要確認",
-  [AttendanceStatus.Requesting]: "申請中",
-  [AttendanceStatus.Late]: "遅刻",
-  [AttendanceStatus.Working]: "勤務中",
-  [AttendanceStatus.None]: "",
-};
-
-const statusChipColor: Record<
-  AttendanceStatus,
-  "default" | "success" | "error" | "warning" | "info"
-> = {
-  [AttendanceStatus.Ok]: "success",
-  [AttendanceStatus.Error]: "error",
-  [AttendanceStatus.Requesting]: "warning",
-  [AttendanceStatus.Late]: "error",
-  [AttendanceStatus.Working]: "info",
-  [AttendanceStatus.None]: "default",
-};
 
 type Props = {
   attendances?: Attendance[];
@@ -408,13 +388,7 @@ export default function DesktopCalendarView({
                           </AppIconButton>
                         </Tooltip>
                       )}
-                      {status !== AttendanceStatus.None && (
-                        <Chip
-                          size="small"
-                          label={statusLabelMap[status]}
-                          color={statusChipColor[status]}
-                        />
-                      )}
+                      <AttendanceStatusChip status={status} />
                     </Box>
                   </Stack>
                   {timeRangeLabel && (

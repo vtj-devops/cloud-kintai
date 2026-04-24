@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 
 import WorkflowApprovalTimeline from "../WorkflowApprovalTimeline";
 
-jest.mock("@shared/ui/chips/StatusChip", () => ({
+jest.mock("@entities/workflow/ui/WorkflowStatusChip", () => ({
   __esModule: true,
   default: ({ status }: { status: string }) => (
     <span data-testid="status-chip">{status}</span>

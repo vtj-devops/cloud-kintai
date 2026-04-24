@@ -7,11 +7,11 @@ import {
   STATUS_LABELS,
 } from "@entities/workflow/lib/workflowLabels";
 import useWorkflows from "@entities/workflow/model/useWorkflows";
+import WorkflowStatusChip from "@entities/workflow/ui/WorkflowStatusChip";
 import SettingsIcon from "@features/admin/layout/ui/SettingsIcon";
 import AdminWorkflowSettingsDialog from "@features/admin-config-workflow/AdminWorkflowSettingsDialog";
 import { useSplitView } from "@features/splitView";
 import { WorkflowCategory, WorkflowStatus } from "@shared/api/graphql/types";
-import StatusChip from "@shared/ui/chips/StatusChip";
 import { SubsectionTitle } from "@shared/ui/typography";
 import {
   ComponentType,
@@ -367,7 +367,7 @@ export default function AdminWorkflow() {
                     <p className="mb-2 text-sm text-slate-800">{staffName}</p>
 
                     <div className="flex items-center justify-between gap-2">
-                      <StatusChip status={workflow.status} />
+                      <WorkflowStatusChip status={workflow.status} />
                       <span className="text-xs text-slate-500">
                         {workflow.createdAt ? workflow.createdAt.split("T")[0] : ""}
                       </span>
@@ -419,7 +419,7 @@ export default function AdminWorkflow() {
                         <td className="px-2 py-2 text-slate-900">{categoryLabel}</td>
                         <td className="px-2 py-2 text-slate-900">{staffName}</td>
                         <td className="px-2 py-2">
-                          <StatusChip status={workflow.status} />
+                          <WorkflowStatusChip status={workflow.status} />
                         </td>
                         <td className="px-2 py-2 text-slate-600">
                           {workflow.createdAt ? workflow.createdAt.split("T")[0] : ""}

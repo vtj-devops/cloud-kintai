@@ -1,17 +1,6 @@
-import { REVERSE_STATUS, STATUS_LABELS } from "@entities/workflow/lib/workflowLabels";
-import { WorkflowStatus } from "@shared/api/graphql/types";
 import { designTokenVar } from "@shared/designSystem";
 
 type FeedbackKey = "success" | "warning" | "danger" | "info";
-
-const STATUS_FEEDBACK_MAP: Record<WorkflowStatus, FeedbackKey> = {
-  [WorkflowStatus.DRAFT]: "info",
-  [WorkflowStatus.SUBMITTED]: "info",
-  [WorkflowStatus.PENDING]: "warning",
-  [WorkflowStatus.APPROVED]: "success",
-  [WorkflowStatus.REJECTED]: "danger",
-  [WorkflowStatus.CANCELLED]: "danger",
-};
 
 type PaletteVars = {
   base: string;
@@ -95,36 +84,21 @@ const STATUS_CHIP_DURATION = designTokenVar(
   "120ms"
 );
 
-const isWorkflowStatus = (value: string): value is WorkflowStatus =>
-  Boolean(STATUS_LABELS[value as WorkflowStatus]);
+type StatusChipProps<T extends string = string> = {
+  status?: T | null;
+  labelMap: Partial<Record<T, string>>;
+  colorMap: Partial<Record<T, FeedbackKey>>;
+  size?: "small" | "medium";
+};
 
-interface StatusChipProps {
-  status?: string | null;
-}
-
-export default function StatusChip({ status }: StatusChipProps) {
-  const resolvedStatus = (() => {
-    if (!status) return undefined;
-    if (typeof status === "string" && isWorkflowStatus(status)) {
-      return status;
-    }
-    const reverseKey = REVERSE_STATUS[status];
-    if (reverseKey && isWorkflowStatus(reverseKey)) {
-      return reverseKey;
-    }
-    return undefined;
-  })();
-
-  const label = resolvedStatus
-    ? STATUS_LABELS[resolvedStatus]
-    : status
-    ? status
-    : "-";
-
-  const feedbackPalette = resolvedStatus
-    ? FEEDBACK_COLORS[STATUS_FEEDBACK_MAP[resolvedStatus]]
-    : undefined;
-  const palette = feedbackPalette ?? FALLBACK_COLORS;
+export default function StatusChip<T extends string = string>({
+  status,
+  labelMap,
+  colorMap,
+}: StatusChipProps<T>) {
+  const label = status != null ? (labelMap[status] ?? status) : "-";
+  const feedbackKey = status != null ? colorMap[status] : undefined;
+  const palette = feedbackKey != null ? FEEDBACK_COLORS[feedbackKey] : FALLBACK_COLORS;
 
   return (
     <span

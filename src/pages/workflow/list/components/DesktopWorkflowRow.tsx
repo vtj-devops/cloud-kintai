@@ -1,5 +1,5 @@
+import WorkflowStatusChip from "@entities/workflow/ui/WorkflowStatusChip";
 import type { WorkflowListItem } from "@features/workflow/list/workflowListModel";
-import StatusChip from "@shared/ui/chips/StatusChip";
 
 import {
   isCancelledWorkflow,
@@ -25,7 +25,7 @@ export default function DesktopWorkflowRow({
       <div className="workflow-desktop-row__category">{item.category || EMPTY_VALUE}</div>
       <div>{formatWorkflowDateValue(item.applicationDate)}</div>
       <div>
-        <StatusChip status={resolveWorkflowStatusKey(item)} />
+        <WorkflowStatusChip status={resolveWorkflowStatusKey(item)} />
       </div>
       <div>{formatWorkflowDateValue(item.createdAt)}</div>
     </button>
