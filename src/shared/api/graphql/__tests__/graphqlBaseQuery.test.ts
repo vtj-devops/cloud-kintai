@@ -1,5 +1,9 @@
+import type { BaseQueryApi } from "@reduxjs/toolkit/query";
 import { graphqlClient } from "@shared/api/amplify/graphqlClient";
 import { graphqlBaseQuery } from "@shared/api/graphql/graphqlBaseQuery";
+
+const mockApi = {} as BaseQueryApi;
+const mockExtraOptions = {};
 
 jest.mock("@shared/api/amplify/graphqlClient", () => ({
   graphqlClient: {
@@ -18,7 +22,7 @@ describe("graphqlBaseQuery", () => {
     it("returns data on successful query", async () => {
       mockGraphql.mockResolvedValue({ data: { user: { id: "1" } } });
       const fn = graphqlBaseQuery();
-      const result = await fn({ document: "query { user { id } }" });
+      const result = await fn({ document: "query { user { id } }" }, mockApi, mockExtraOptions);
 
       expect(result).toEqual({ data: { user: { id: "1" } } });
     });
@@ -26,7 +30,7 @@ describe("graphqlBaseQuery", () => {
     it("returns null data when result.data is undefined", async () => {
       mockGraphql.mockResolvedValue({ data: undefined });
       const fn = graphqlBaseQuery();
-      const result = await fn({ document: "query { noop }" });
+      const result = await fn({ document: "query { noop }" }, mockApi, mockExtraOptions);
 
       expect(result).toEqual({ data: null });
     });
@@ -34,7 +38,7 @@ describe("graphqlBaseQuery", () => {
     it("passes variables to graphqlClient", async () => {
       mockGraphql.mockResolvedValue({ data: {} });
       const fn = graphqlBaseQuery();
-      await fn({ document: "query ($id: ID!) { item(id: $id) }", variables: { id: "123" } });
+      await fn({ document: "query ($id: ID!) { item(id: $id) }", variables: { id: "123" } }, mockApi, mockExtraOptions);
 
       expect(mockGraphql).toHaveBeenCalledWith(
         expect.objectContaining({ variables: { id: "123" } }),
@@ -44,7 +48,7 @@ describe("graphqlBaseQuery", () => {
     it("uses defaultAuthMode when authMode not specified", async () => {
       mockGraphql.mockResolvedValue({ data: {} });
       const fn = graphqlBaseQuery({ defaultAuthMode: "iam" });
-      await fn({ document: "query { noop }" });
+      await fn({ document: "query { noop }" }, mockApi, mockExtraOptions);
 
       expect(mockGraphql).toHaveBeenCalledWith(
         expect.objectContaining({ authMode: "iam" }),
@@ -54,7 +58,7 @@ describe("graphqlBaseQuery", () => {
     it("overrides authMode per request", async () => {
       mockGraphql.mockResolvedValue({ data: {} });
       const fn = graphqlBaseQuery({ defaultAuthMode: "userPool" });
-      await fn({ document: "query { noop }", authMode: "apiKey" });
+      await fn({ document: "query { noop }", authMode: "apiKey" }, mockApi, mockExtraOptions);
 
       expect(mockGraphql).toHaveBeenCalledWith(
         expect.objectContaining({ authMode: "apiKey" }),
@@ -64,7 +68,7 @@ describe("graphqlBaseQuery", () => {
     it("defaults to userPool authMode when no defaultAuthMode provided", async () => {
       mockGraphql.mockResolvedValue({ data: {} });
       const fn = graphqlBaseQuery();
-      await fn({ document: "query { noop }" });
+      await fn({ document: "query { noop }" }, mockApi, mockExtraOptions);
 
       expect(mockGraphql).toHaveBeenCalledWith(
         expect.objectContaining({ authMode: "userPool" }),
@@ -79,7 +83,7 @@ describe("graphqlBaseQuery", () => {
         errors: [{ message: "Field not found" }],
       });
       const fn = graphqlBaseQuery();
-      const result = await fn({ document: "query { bad }" });
+      const result = await fn({ document: "query { bad }" }, mockApi, mockExtraOptions);
 
       expect(result).toEqual({
         error: {
@@ -97,7 +101,7 @@ describe("graphqlBaseQuery", () => {
         errors: [{ message: "Not found", path: ["user", "id"] }],
       });
       const fn = graphqlBaseQuery();
-      const result = await fn({ document: "query { user { id } }" }) as {
+      const result = await fn({ document: "query { user { id } }" }, mockApi, mockExtraOptions) as {
         error: { details: unknown[] };
       };
 
@@ -110,7 +114,7 @@ describe("graphqlBaseQuery", () => {
         errors: [{ message: "Unauthorized", errorType: "Unauthorized" }],
       });
       const fn = graphqlBaseQuery();
-      const result = await fn({ document: "query { secret }" }) as {
+      const result = await fn({ document: "query { secret }" }, mockApi, mockExtraOptions) as {
         error: { details: unknown[] };
       };
 
@@ -120,7 +124,7 @@ describe("graphqlBaseQuery", () => {
     it("does not return error when errors array is empty", async () => {
       mockGraphql.mockResolvedValue({ data: { user: { id: "1" } }, errors: [] });
       const fn = graphqlBaseQuery();
-      const result = await fn({ document: "query { user { id } }" });
+      const result = await fn({ document: "query { user { id } }" }, mockApi, mockExtraOptions);
 
       expect(result).toEqual({ data: { user: { id: "1" } } });
     });
@@ -130,7 +134,7 @@ describe("graphqlBaseQuery", () => {
     it("returns error with message when Error is thrown", async () => {
       mockGraphql.mockRejectedValue(new Error("Network error"));
       const fn = graphqlBaseQuery();
-      const result = await fn({ document: "query { noop }" });
+      const result = await fn({ document: "query { noop }" }, mockApi, mockExtraOptions);
 
       expect(result).toEqual({
         error: expect.objectContaining({
@@ -143,7 +147,7 @@ describe("graphqlBaseQuery", () => {
     it("includes error name in details", async () => {
       mockGraphql.mockRejectedValue(new TypeError("Type mismatch"));
       const fn = graphqlBaseQuery();
-      const result = await fn({ document: "query { noop }" }) as {
+      const result = await fn({ document: "query { noop }" }, mockApi, mockExtraOptions) as {
         error: { details: Record<string, unknown> };
       };
 
@@ -154,7 +158,7 @@ describe("graphqlBaseQuery", () => {
       const err = Object.assign(new Error("Forbidden"), { statusCode: 403 });
       mockGraphql.mockRejectedValue(err);
       const fn = graphqlBaseQuery();
-      const result = await fn({ document: "query { noop }" }) as {
+      const result = await fn({ document: "query { noop }" }, mockApi, mockExtraOptions) as {
         error: { details: Record<string, unknown> };
       };
 
@@ -164,7 +168,7 @@ describe("graphqlBaseQuery", () => {
     it("returns error for non-Error thrown values", async () => {
       mockGraphql.mockRejectedValue({ code: "CUSTOM_ERROR", value: 42 });
       const fn = graphqlBaseQuery();
-      const result = await fn({ document: "query { noop }" }) as {
+      const result = await fn({ document: "query { noop }" }, mockApi, mockExtraOptions) as {
         error: { message: string; details: unknown };
       };
 
@@ -175,7 +179,7 @@ describe("graphqlBaseQuery", () => {
     it("returns fallback message for thrown string", async () => {
       mockGraphql.mockRejectedValue("string error");
       const fn = graphqlBaseQuery();
-      const result = await fn({ document: "query { noop }" }) as {
+      const result = await fn({ document: "query { noop }" }, mockApi, mockExtraOptions) as {
         error: { message: string };
       };
 
@@ -195,7 +199,7 @@ describe("graphqlBaseQuery", () => {
         ],
       });
       const fn = graphqlBaseQuery();
-      const result = await fn({ document: "query { noop }" }) as {
+      const result = await fn({ document: "query { noop }" }, mockApi, mockExtraOptions) as {
         error: { details: Array<Record<string, unknown>> };
       };
 
