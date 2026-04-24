@@ -1,11 +1,11 @@
 import { AttendanceEditContext } from "@features/attendance/edit/model/AttendanceEditProvider";
+import EndTimeInput from "@features/attendance/edit/ui/items/WorkTimeItem/EndTimeInput";
+import StartTimeInput from "@features/attendance/edit/ui/items/WorkTimeItem/StartTimeInput";
 import { Label } from "@features/attendance/edit/ui/mobile/Label";
 import { useContext } from "react";
 
 import { GoDirectlyFlagInput } from "../GoDirectlyFlagInput";
 import { ReturnDirectlyFlagInput } from "../ReturnDirectlyFlagInput";
-import EndTimeInput from "./EndTimeInput";
-import StartTimeInputMobile from "./StartTimeInputMobile";
 
 export function WorkTimeInput() {
   const { workDate, control, setValue } = useContext(AttendanceEditContext);
@@ -23,7 +23,7 @@ export function WorkTimeInput() {
             開始時刻
           </div>
           <div className="space-y-2 px-3 py-2">
-            <StartTimeInputMobile dataTestId="mobile-start-time-input" />
+            <StartTimeInput dataTestId="mobile-start-time-input" />
             <GoDirectlyFlagInput />
           </div>
         </div>

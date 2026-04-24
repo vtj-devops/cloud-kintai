@@ -68,6 +68,7 @@ export function DailyReportFormFields({
               value={form.title}
               onChange={handleInputChange(onChange, "title")}
               className={INPUT_CLASS_NAME}
+              data-testid="daily-report-title-input"
             />
           </Field>
         </div>
@@ -107,6 +108,7 @@ export function DailyReportFormFields({
               rows={6}
               placeholder={CONTENT_PLACEHOLDER}
               className={`${INPUT_CLASS_NAME} min-h-[10rem] resize-y`}
+              data-testid="daily-report-content-input"
             />
           </label>
         </div>

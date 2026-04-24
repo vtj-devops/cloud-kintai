@@ -365,6 +365,7 @@ export default function AdminDailyReport() {
             type="button"
             onClick={handleOpenCarousel}
             disabled={filteredReports.length === 0}
+            data-testid="admin-daily-report-carousel-button"
             className="inline-flex h-9 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-xs font-semibold tracking-wide text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             まとめて確認

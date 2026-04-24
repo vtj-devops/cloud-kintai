@@ -5,43 +5,21 @@ import {
 } from "@features/attendance/edit/model/AttendanceEditProvider";
 import { AttendanceEditInputs } from "@features/attendance/edit/model/common";
 import TimeInputField from "@features/attendance/edit/ui/shared/TimeInputField";
-import dayjs from "dayjs";
 import { useContext, useRef, useState } from "react";
 import { Controller, FieldArrayWithId } from "react-hook-form";
+
+import {
+  isCompleteTime,
+  normalizeTimeDraft,
+  toIsoDateTime,
+  toTimeValue,
+} from "./restTimeInputUtils";
 
 type Props = {
   rest: FieldArrayWithId<AttendanceEditInputs, "rests", "id">;
   index: number;
   testIdPrefix?: string;
 };
-
-function toTimeValue(value: string | null | undefined) {
-  if (!value) return "";
-  const parsed = dayjs(value);
-  return parsed.isValid() ? parsed.format("HH:mm") : "";
-}
-
-function toIsoDateTime(value: string, workDate: dayjs.Dayjs): string | null {
-  if (!value) return null;
-  const [hour, minute] = value.split(":").map(Number);
-  if (Number.isNaN(hour) || Number.isNaN(minute)) return null;
-  return dayjs(workDate)
-    .hour(hour)
-    .minute(minute)
-    .second(0)
-    .millisecond(0)
-    .toISOString();
-}
-
-function normalizeTimeDraft(value: string) {
-  const digits = value.replace(/\D/g, "").slice(0, 4);
-  if (digits.length <= 2) return digits;
-  return `${digits.slice(0, 2)}:${digits.slice(2)}`;
-}
-
-function isCompleteTime(value: string) {
-  return /^([01]\d|2[0-3]):([0-5]\d)$/.test(value);
-}
 
 export default function RestStartTimeInput({
   rest,

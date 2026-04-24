@@ -1,9 +1,8 @@
 import { AttendanceEditContext } from "@features/attendance/edit/model/AttendanceEditProvider";
+import EndTimeInput from "@features/attendance/edit/ui/items/WorkTimeItem/EndTimeInput";
+import StartTimeInput from "@features/attendance/edit/ui/items/WorkTimeItem/StartTimeInput";
 import dayjs from "dayjs";
 import { useContext, useEffect, useState } from "react";
-
-import EndTimeInput from "./EndTimeInput";
-import StartTimeInput from "./StartTimeInput";
 
 export function calcTotalWorkTime(
   startTime: string | null | undefined,

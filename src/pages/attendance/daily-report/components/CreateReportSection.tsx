@@ -73,6 +73,7 @@ export function CreateReportSection({
               tone="primary"
               disabled={!canSubmit || isSubmitting}
               onClick={onSubmit}
+              data-testid="daily-report-submit-button"
             >
               提出する
             </ActionButton>
