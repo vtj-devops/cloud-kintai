@@ -39,7 +39,7 @@ describe("getDateRangeDisplayValue", () => {
 describe("useWorkflowListFiltersState", () => {
   const makeFilters = (overrides = {}) => ({
     name: "",
-    category: null,
+    category: undefined,
     status: [],
     applicationFrom: "",
     applicationTo: "",
@@ -107,10 +107,10 @@ describe("useWorkflowListFiltersState", () => {
     expect(setFilter).toHaveBeenCalledWith("status", []);
   });
 
-  it("category が null の場合は空文字として扱う", () => {
+  it("category が undefined の場合は空文字として扱う", () => {
     const setFilter = jest.fn();
     const { result } = renderHook(() =>
-      useWorkflowListFiltersState({ filters: makeFilters({ category: null }), setFilter }),
+      useWorkflowListFiltersState({ filters: makeFilters({ category: undefined }), setFilter }),
     );
     expect(result.current.categoryFilter).toBe("");
   });

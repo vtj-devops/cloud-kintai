@@ -2,6 +2,7 @@ import type {
   DailyReport as DailyReportModel,
   DailyReportStatus,
 } from "@shared/api/graphql/types";
+import { DailyReportReactionType } from "@shared/api/graphql/types";
 
 import {
   buildDefaultTitle,
@@ -11,6 +12,7 @@ import {
   mapDailyReport,
   sortReports,
 } from "../dailyReportHelpers";
+import type { DailyReportItem } from "../dailyReportTypes";
 
 // formatRelativeDateTime のモック (外部依存を排除)
 jest.mock("@shared/lib/time", () => ({
@@ -109,16 +111,16 @@ describe("mapDailyReport", () => {
     const record = {
       ...baseRecord,
       reactions: [
-        { type: "LIKE", id: "r1", createdAt: "", dailyReportId: "" },
-        { type: "LIKE", id: "r2", createdAt: "", dailyReportId: "" },
-        { type: "HEART", id: "r3", createdAt: "", dailyReportId: "" },
+        { __typename: "DailyReportReaction" as const, staffId: "s1", type: DailyReportReactionType.CHEER, createdAt: "" },
+        { __typename: "DailyReportReaction" as const, staffId: "s2", type: DailyReportReactionType.CHEER, createdAt: "" },
+        { __typename: "DailyReportReaction" as const, staffId: "s3", type: DailyReportReactionType.THANKS, createdAt: "" },
       ],
     };
     const result = mapDailyReport(record, "");
-    const like = result.reactions.find((r) => r.type === "LIKE");
-    const heart = result.reactions.find((r) => r.type === "HEART");
-    expect(like?.count).toBe(2);
-    expect(heart?.count).toBe(1);
+    const cheer = result.reactions.find((r) => r.type === DailyReportReactionType.CHEER);
+    const thanks = result.reactions.find((r) => r.type === DailyReportReactionType.THANKS);
+    expect(cheer?.count).toBe(2);
+    expect(thanks?.count).toBe(1);
   });
 
   it("comments を新しい順でマッピングする", () => {
@@ -126,20 +128,20 @@ describe("mapDailyReport", () => {
       ...baseRecord,
       comments: [
         {
+          __typename: "DailyReportComment" as const,
           id: "c1",
+          staffId: "s1",
           body: "コメント1",
           authorName: "管理者A",
           createdAt: "2024-06-15T09:00:00Z",
-          dailyReportId: "r1",
-          updatedAt: "",
         },
         {
+          __typename: "DailyReportComment" as const,
           id: "c2",
+          staffId: "s2",
           body: "コメント2",
           authorName: "管理者B",
           createdAt: "2024-06-15T10:00:00Z",
-          dailyReportId: "r1",
-          updatedAt: "",
         },
       ],
     };
@@ -153,12 +155,12 @@ describe("mapDailyReport", () => {
       ...baseRecord,
       comments: [
         {
+          __typename: "DailyReportComment" as const,
           id: "c1",
+          staffId: "s1",
           body: "本文",
           authorName: "",
           createdAt: "2024-06-15T09:00:00Z",
-          dailyReportId: "r1",
-          updatedAt: "",
         },
       ],
     };
@@ -187,7 +189,7 @@ describe("sortReports", () => {
       { date: "2024-06-13", updatedAt: null },
       { date: "2024-06-15", updatedAt: null },
       { date: "2024-06-14", updatedAt: null },
-    ] as never[];
+    ] as unknown as DailyReportItem[];
     const sorted = sortReports(items);
     expect(sorted[0].date).toBe("2024-06-15");
     expect(sorted[1].date).toBe("2024-06-14");
@@ -198,7 +200,7 @@ describe("sortReports", () => {
     const items = [
       { date: "2024-06-15", updatedAt: "2024-06-15T09:00:00Z" },
       { date: "2024-06-15", updatedAt: "2024-06-15T18:00:00Z" },
-    ] as never[];
+    ] as unknown as DailyReportItem[];
     const sorted = sortReports(items);
     expect(sorted[0].updatedAt).toBe("2024-06-15T18:00:00Z");
     expect(sorted[1].updatedAt).toBe("2024-06-15T09:00:00Z");
@@ -208,7 +210,7 @@ describe("sortReports", () => {
     const items = [
       { date: "2024-06-13", updatedAt: null },
       { date: "2024-06-15", updatedAt: null },
-    ] as never[];
+    ] as unknown as DailyReportItem[];
     const originalFirst = items[0].date;
     sortReports(items);
     expect(items[0].date).toBe(originalFirst);
