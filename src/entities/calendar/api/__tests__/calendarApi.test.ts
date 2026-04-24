@@ -20,7 +20,7 @@ const makeHolidayCalendar = (overrides = {}) => ({
   __typename: "HolidayCalendar" as const,
   id: "hc-1",
   holidayDate: "2024-01-01",
-  holidayName: "元日",
+  name: "元日",
   createdAt: "2024-01-01T00:00:00Z",
   updatedAt: "2024-01-01T00:00:00Z",
   ...overrides,
@@ -30,7 +30,7 @@ const makeCompanyHolidayCalendar = (overrides = {}) => ({
   __typename: "CompanyHolidayCalendar" as const,
   id: "chc-1",
   holidayDate: "2024-01-02",
-  holidayName: "会社休日",
+  name: "会社休日",
   createdAt: "2024-01-01T00:00:00Z",
   updatedAt: "2024-01-01T00:00:00Z",
   ...overrides,
@@ -40,7 +40,7 @@ const makeEventCalendar = (overrides = {}) => ({
   __typename: "EventCalendar" as const,
   id: "ec-1",
   eventDate: "2024-03-15",
-  eventName: "社内イベント",
+  name: "社内イベント",
   createdAt: "2024-01-01T00:00:00Z",
   updatedAt: "2024-01-01T00:00:00Z",
   ...overrides,
@@ -213,7 +213,7 @@ describe("calendarApi endpoints", () => {
       const result = await store.dispatch(
         calendarApi.endpoints.createHolidayCalendar.initiate({
           holidayDate: "2024-01-01",
-          holidayName: "元日",
+          name: "元日",
         }),
       );
 
@@ -229,7 +229,7 @@ describe("calendarApi endpoints", () => {
       const result = await store.dispatch(
         calendarApi.endpoints.createHolidayCalendar.initiate({
           holidayDate: "2024-01-01",
-          holidayName: "元日",
+          name: "元日",
         }),
       );
 
@@ -245,7 +245,7 @@ describe("calendarApi endpoints", () => {
       const result = await store.dispatch(
         calendarApi.endpoints.createHolidayCalendar.initiate({
           holidayDate: "2024-01-01",
-          holidayName: "元日",
+          name: "元日",
         }),
       );
 
@@ -267,8 +267,8 @@ describe("calendarApi endpoints", () => {
       const store = createTestStore();
       const result = await store.dispatch(
         calendarApi.endpoints.bulkCreateHolidayCalendars.initiate([
-          { holidayDate: "2024-01-01", holidayName: "元日" },
-          { holidayDate: "2024-01-02", holidayName: "休日2" },
+          { holidayDate: "2024-01-01", name: "元日" },
+          { holidayDate: "2024-01-02", name: "休日2" },
         ]),
       );
 
@@ -283,8 +283,8 @@ describe("calendarApi endpoints", () => {
       const store = createTestStore();
       const result = await store.dispatch(
         calendarApi.endpoints.bulkCreateHolidayCalendars.initiate([
-          { holidayDate: "2024-01-01", holidayName: "元日" },
-          { holidayDate: "2024-01-02", holidayName: "休日2" },
+          { holidayDate: "2024-01-01", name: "元日" },
+          { holidayDate: "2024-01-02", name: "休日2" },
         ]),
       );
 
@@ -297,7 +297,7 @@ describe("calendarApi endpoints", () => {
       const store = createTestStore();
       const result = await store.dispatch(
         calendarApi.endpoints.bulkCreateHolidayCalendars.initiate([
-          { holidayDate: "2024-01-01", holidayName: "元日" },
+          { holidayDate: "2024-01-01", name: "元日" },
         ]),
       );
 
@@ -320,7 +320,7 @@ describe("calendarApi endpoints", () => {
 
   describe("updateHolidayCalendar", () => {
     it("正常に祝日カレンダーを更新する", async () => {
-      const updated = makeHolidayCalendar({ holidayName: "変更後" });
+      const updated = makeHolidayCalendar({ name: "変更後" });
       mockGraphql.mockResolvedValueOnce({
         data: { updateHolidayCalendar: updated },
       });
@@ -328,7 +328,7 @@ describe("calendarApi endpoints", () => {
       const store = createTestStore();
       const result = await store.dispatch(
         calendarApi.endpoints.updateHolidayCalendar.initiate({
-          input: { id: "hc-1", holidayDate: "2024-01-01", holidayName: "変更後" },
+          input: { id: "hc-1", holidayDate: "2024-01-01", name: "変更後" },
         }),
       );
 
@@ -343,7 +343,7 @@ describe("calendarApi endpoints", () => {
       const store = createTestStore();
       const result = await store.dispatch(
         calendarApi.endpoints.updateHolidayCalendar.initiate({
-          input: { id: "hc-1", holidayDate: "2024-01-01", holidayName: "変更後" },
+          input: { id: "hc-1", holidayDate: "2024-01-01", name: "変更後" },
         }),
       );
 
@@ -399,7 +399,7 @@ describe("calendarApi endpoints", () => {
       const result = await store.dispatch(
         calendarApi.endpoints.createCompanyHolidayCalendar.initiate({
           holidayDate: "2024-01-02",
-          holidayName: "会社休日",
+          name: "会社休日",
         }),
       );
 
@@ -415,7 +415,7 @@ describe("calendarApi endpoints", () => {
       const result = await store.dispatch(
         calendarApi.endpoints.createCompanyHolidayCalendar.initiate({
           holidayDate: "2024-01-02",
-          holidayName: "会社休日",
+          name: "会社休日",
         }),
       );
 
@@ -439,8 +439,8 @@ describe("calendarApi endpoints", () => {
       const store = createTestStore();
       const result = await store.dispatch(
         calendarApi.endpoints.bulkCreateCompanyHolidayCalendars.initiate([
-          { holidayDate: "2024-01-02", holidayName: "休日1" },
-          { holidayDate: "2024-01-03", holidayName: "休日2" },
+          { holidayDate: "2024-01-02", name: "休日1" },
+          { holidayDate: "2024-01-03", name: "休日2" },
         ]),
       );
 
@@ -455,7 +455,7 @@ describe("calendarApi endpoints", () => {
       const store = createTestStore();
       const result = await store.dispatch(
         calendarApi.endpoints.bulkCreateCompanyHolidayCalendars.initiate([
-          { holidayDate: "2024-01-02", holidayName: "休日1" },
+          { holidayDate: "2024-01-02", name: "休日1" },
         ]),
       );
 
@@ -469,7 +469,7 @@ describe("calendarApi endpoints", () => {
 
   describe("updateCompanyHolidayCalendar", () => {
     it("正常に会社休日カレンダーを更新する", async () => {
-      const updated = makeCompanyHolidayCalendar({ holidayName: "更新後" });
+      const updated = makeCompanyHolidayCalendar({ name: "更新後" });
       mockGraphql.mockResolvedValueOnce({
         data: { updateCompanyHolidayCalendar: updated },
       });
@@ -480,7 +480,7 @@ describe("calendarApi endpoints", () => {
           input: {
             id: "chc-1",
             holidayDate: "2024-01-02",
-            holidayName: "更新後",
+            name: "更新後",
           },
         }),
       );
@@ -499,7 +499,7 @@ describe("calendarApi endpoints", () => {
           input: {
             id: "chc-1",
             holidayDate: "2024-01-02",
-            holidayName: "更新後",
+            name: "更新後",
           },
         }),
       );
@@ -619,7 +619,7 @@ describe("calendarApi endpoints", () => {
       const result = await store.dispatch(
         calendarApi.endpoints.createEventCalendar.initiate({
           eventDate: "2024-03-15",
-          eventName: "社内イベント",
+          name: "社内イベント",
         }),
       );
 
@@ -635,7 +635,7 @@ describe("calendarApi endpoints", () => {
       const result = await store.dispatch(
         calendarApi.endpoints.createEventCalendar.initiate({
           eventDate: "2024-03-15",
-          eventName: "社内イベント",
+          name: "社内イベント",
         }),
       );
 
@@ -659,8 +659,8 @@ describe("calendarApi endpoints", () => {
       const store = createTestStore();
       const result = await store.dispatch(
         calendarApi.endpoints.bulkCreateEventCalendars.initiate([
-          { eventDate: "2024-03-15", eventName: "イベント1" },
-          { eventDate: "2024-03-16", eventName: "イベント2" },
+          { eventDate: "2024-03-15", name: "イベント1" },
+          { eventDate: "2024-03-16", name: "イベント2" },
         ]),
       );
 
@@ -675,7 +675,7 @@ describe("calendarApi endpoints", () => {
       const store = createTestStore();
       const result = await store.dispatch(
         calendarApi.endpoints.bulkCreateEventCalendars.initiate([
-          { eventDate: "2024-03-15", eventName: "イベント1" },
+          { eventDate: "2024-03-15", name: "イベント1" },
         ]),
       );
 
@@ -689,7 +689,7 @@ describe("calendarApi endpoints", () => {
 
   describe("updateEventCalendar", () => {
     it("正常にイベントカレンダーを更新する", async () => {
-      const updated = makeEventCalendar({ eventName: "変更後イベント" });
+      const updated = makeEventCalendar({ name: "変更後イベント" });
       mockGraphql.mockResolvedValueOnce({
         data: { updateEventCalendar: updated },
       });
@@ -697,7 +697,7 @@ describe("calendarApi endpoints", () => {
       const store = createTestStore();
       const result = await store.dispatch(
         calendarApi.endpoints.updateEventCalendar.initiate({
-          input: { id: "ec-1", eventDate: "2024-03-15", eventName: "変更後イベント" },
+          input: { id: "ec-1", eventDate: "2024-03-15", name: "変更後イベント" },
         }),
       );
 
@@ -712,7 +712,7 @@ describe("calendarApi endpoints", () => {
       const store = createTestStore();
       const result = await store.dispatch(
         calendarApi.endpoints.updateEventCalendar.initiate({
-          input: { id: "ec-1", eventDate: "2024-03-15", eventName: "変更後" },
+          input: { id: "ec-1", eventDate: "2024-03-15", name: "変更後" },
         }),
       );
 
