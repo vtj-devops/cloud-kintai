@@ -12,7 +12,7 @@ export type AppIconButtonProps = Omit<
   size?: IconButtonSize;
   active?: boolean;
   loading?: boolean;
-  tooltip?: string;
+  tooltip?: ReactNode;
   className?: string;
   children: ReactNode;
   "aria-label": string;

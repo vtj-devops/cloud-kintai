@@ -4,7 +4,7 @@ import {
   Sync as SyncIcon,
 } from "@mui/icons-material";
 import PrintIcon from "@mui/icons-material/Print";
-import { Badge, Divider, Paper, Stack, Tooltip } from "@mui/material";
+import { Badge, Divider, Paper, Stack } from "@mui/material";
 import { AppIconButton } from "@shared/ui/button";
 import React from "react";
 
@@ -114,40 +114,35 @@ export const UndoRedoToolbar: React.FC<UndoRedoToolbarProps> = ({
             </AppIconButton>
 
             {onSync && (
-              <Tooltip
-                title={
-                  syncTooltip || (isSyncBusy ? "同期中です" : "最新状態を取得")
-                }
-              >
-                <span>
-                  <AppIconButton
-                    onClick={onSync}
-                    tone={
-                      syncColor === "error"
-                        ? "danger"
-                        : syncColor === "primary" || syncColor === "success"
-                          ? "primary"
-                          : "neutral"
-                    }
-                    size="sm"
-                    disabled={isSyncBusy}
-                    aria-label="sync"
-                  >
-                    <SyncIcon
-                      sx={{
-                        animation: isSyncAnimating
-                          ? "copilot-sync-spin 1s linear infinite"
-                          : "none",
-                        "@keyframes copilot-sync-spin": {
-                          from: { transform: "rotate(0deg)" },
-                          to: { transform: "rotate(-360deg)" },
-                        },
-                      }}
-                    />
-                  </AppIconButton>
-                </span>
-              </Tooltip>
-            )}
+                <AppIconButton
+                  onClick={onSync}
+                  tone={
+                    syncColor === "error"
+                      ? "danger"
+                      : syncColor === "primary" || syncColor === "success"
+                        ? "primary"
+                        : "neutral"
+                  }
+                  size="sm"
+                  disabled={isSyncBusy}
+                  aria-label="sync"
+                  tooltip={
+                    syncTooltip || (isSyncBusy ? "同期中です" : "最新状態を取得")
+                  }
+                >
+                  <SyncIcon
+                    sx={{
+                      animation: isSyncAnimating
+                        ? "copilot-sync-spin 1s linear infinite"
+                        : "none",
+                      "@keyframes copilot-sync-spin": {
+                        from: { transform: "rotate(0deg)" },
+                        to: { transform: "rotate(-360deg)" },
+                      },
+                    }}
+                  />
+                </AppIconButton>
+              )}
           </>
         )}
 
