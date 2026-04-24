@@ -13,6 +13,9 @@ import React from "react";
 
 import WorkflowDetail from "../WorkflowDetail";
 
+// eslint-disable-next-line no-var
+var mockUseWorkflowDetailContext = jest.fn();
+
 jest.mock(
   "@features/workflow/detail-panel/ui/WorkflowDetailHeader",
   () => ({
@@ -37,18 +40,13 @@ jest.mock(
   }),
 );
 
-// ---- useWorkflowDetailContext をモック関数にする ----
-// babel-jest の hoisting は "mock" プレフィックスの変数を認識してくれるため
-// このパターンで factory 内から参照できる
-const mockUseWorkflowDetailContext = jest.fn();
-
 jest.mock(
   "@features/workflow/detail-panel/model/WorkflowDetailContext",
   () => ({
     ...jest.requireActual(
       "@features/workflow/detail-panel/model/WorkflowDetailContext",
     ),
-    useWorkflowDetailContext: mockUseWorkflowDetailContext,
+    useWorkflowDetailContext: () => mockUseWorkflowDetailContext(),
   }),
 );
 

@@ -12,18 +12,18 @@ import { OfficeQrExperience } from "@processes/office-access";
 import { renderWithProviders } from "@shared/test-utils";
 import { screen } from "@testing-library/react";
 
+// eslint-disable-next-line no-var
+var mockUseOfficeQr = jest.fn();
+
 jest.mock("qrcode.react", () => ({
   QRCodeCanvas: ({ value }: { value: string }) => (
     <canvas data-testid="qr-code-canvas" data-value={value} />
   ),
 }));
 
-// useOfficeQr のモック
-const mockUseOfficeQr = jest.fn();
-
 jest.mock("@features/attendance/office-qr", () => ({
   ...jest.requireActual("@features/attendance/office-qr"),
-  useOfficeQr: mockUseOfficeQr,
+  useOfficeQr: () => mockUseOfficeQr(),
 }));
 
 /** useOfficeQr のデフォルト戻り値 */
