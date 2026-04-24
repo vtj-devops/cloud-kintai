@@ -12,12 +12,12 @@ export type AdminAppConfigContextProps = {
 
 export const AdminAppConfigContext = createContext<AdminAppConfigContextProps>({
   fetchAllConfigs: async () => {
-    console.log("The process is not implemented.");
+    throw new Error("AdminAppConfigContext.fetchAllConfigs is not implemented");
   },
   deleteConfig: async () => {
-    console.log("The process is not implemented.");
+    throw new Error("AdminAppConfigContext.deleteConfig is not implemented");
   },
   updateConfig: async () => {
-    console.log("The process is not implemented.");
+    throw new Error("AdminAppConfigContext.updateConfig is not implemented");
   },
 });

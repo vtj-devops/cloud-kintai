@@ -608,9 +608,7 @@ export const useCollaborativeShiftData = ({
         onCommentsReceivedRef.current?.(staffId, request.comments);
       }
 
-      console.log(
-        `[Realtime Update] Shift ${eventLabel} by another user for staff ${staffId}`,
-      );
+
     };
 
     // 各スタッフのシフト新規作成・更新をサブスクライブ

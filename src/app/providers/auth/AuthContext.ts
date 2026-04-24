@@ -30,10 +30,10 @@ export const AuthContext = createContext<AuthContextProps>({
     roles: [],
   },
   signOut: () => {
-    console.log("The process is not implemented.");
+    throw new Error("AuthContext.signOut is not implemented");
   },
   signIn: () => {
-    console.log("The process is not implemented.");
+    throw new Error("AuthContext.signIn is not implemented");
   },
   hasRole: () => false,
   isCognitoUserRole: () => false,
