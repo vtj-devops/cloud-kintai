@@ -77,6 +77,11 @@ jest.mock("@shared/lib/store/notificationSlice", () => ({
 
 // ─── Mock: shared/ui/button ──────────────────────────────────────────────────
 jest.mock("@shared/ui/button", () => ({
+  AppButton: ({ children, onClick, ...rest }: React.PropsWithChildren<{ onClick?: React.MouseEventHandler; type?: "button" | "submit" | "reset" }>) => (
+    <button type="button" onClick={onClick} {...rest}>
+      {children}
+    </button>
+  ),
   AppIconButton: ({ children, onClick, ...rest }: React.PropsWithChildren<{ onClick?: React.MouseEventHandler; "aria-label"?: string }>) => (
     <button type="button" onClick={onClick} {...rest}>
       {children}
