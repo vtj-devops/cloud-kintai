@@ -4,6 +4,7 @@ import {
   updateShiftRequest,
 } from "@shared/api/graphql/documents/mutations";
 import { graphqlBaseQuery } from "@shared/api/graphql/graphqlBaseQuery";
+import { executePaginatedQuery } from "@shared/api/graphql/paginatedQuery";
 import type {
   CreateShiftRequestInput,
   CreateShiftRequestMutation,
@@ -245,34 +246,15 @@ export const shiftApi = createApi({
             return { data: [] };
           }
 
-          const shiftRequests: ShiftRequestLite[] = [];
-          let nextToken: string | null = null;
           const filter = buildShiftRequestsFilter(arg);
-
-          do {
-            const result = await baseQuery({
-              document: listShiftRequestsLite,
-              variables: { filter, limit: 200, nextToken },
-            });
-
-            if (result.error) {
-              return { error: result.error };
-            }
-
-            const data = result.data as ListShiftRequestsLiteQuery | null;
-            const connection = data?.listShiftRequests;
-
-            if (!connection) {
-              return { error: { message: "Failed to fetch shift requests" } };
-            }
-
-            shiftRequests.push(
-              ...(connection.items?.filter(nonNullable) ?? []),
-            );
-            nextToken = connection.nextToken ?? null;
-          } while (nextToken);
-
-          return { data: shiftRequests };
+          return executePaginatedQuery<ShiftRequestLite>({
+            baseQuery,
+            document: listShiftRequestsLite,
+            variables: { filter, limit: 200 },
+            connectionExtractor: (data) =>
+              (data as ListShiftRequestsLiteQuery | null)?.listShiftRequests,
+            errorMessage: "Failed to fetch shift requests",
+          });
         },
         serializeQueryArgs: ({ queryArgs }) => ({
           ...queryArgs,

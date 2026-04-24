@@ -9,6 +9,7 @@ import {
   listWorkflows,
 } from "@shared/api/graphql/documents/queries";
 import { graphqlBaseQuery } from "@shared/api/graphql/graphqlBaseQuery";
+import { executePaginatedQuery } from "@shared/api/graphql/paginatedQuery";
 import type {
   CreateWorkflowInput,
   CreateWorkflowMutation,
@@ -31,9 +32,6 @@ type WorkflowTag = {
   type: "Workflow";
   id: string;
 };
-
-const nonNullable = <T>(value: T | null | undefined): value is T =>
-  value !== null && value !== undefined;
 
 const buildWorkflowTagId = (workflow: { id?: string | null }) =>
   workflow.id ?? "unknown";
@@ -63,31 +61,12 @@ export const workflowApi = createApi({
     }),
     getWorkflows: builder.query<Workflow[], void>({
       async queryFn(_arg, _api, _extraOptions, baseQuery) {
-        const workflows: Workflow[] = [];
-        let nextToken: string | null = null;
-
-        do {
-          const result = await baseQuery({
-            document: listWorkflows,
-            variables: { nextToken },
-          });
-
-          if (result.error) {
-            return { error: result.error };
-          }
-
-          const data = result.data as ListWorkflowsQuery | null;
-          const connection = data?.listWorkflows;
-
-          if (!connection) {
-            return { error: { message: "Failed to fetch workflows" } };
-          }
-
-          workflows.push(...(connection.items?.filter(nonNullable) ?? []));
-          nextToken = connection.nextToken ?? null;
-        } while (nextToken);
-
-        return { data: workflows };
+        return executePaginatedQuery<Workflow>({
+          baseQuery,
+          document: listWorkflows,
+          connectionExtractor: (data) => (data as ListWorkflowsQuery | null)?.listWorkflows,
+          errorMessage: "Failed to fetch workflows",
+        });
       },
       providesTags: (result) => {
         const listTag: WorkflowTag = { type: "Workflow", id: "LIST" };

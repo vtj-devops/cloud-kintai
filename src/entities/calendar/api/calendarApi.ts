@@ -16,6 +16,7 @@ import {
   listHolidayCalendars,
 } from "@shared/api/graphql/documents/queries";
 import { graphqlBaseQuery } from "@shared/api/graphql/graphqlBaseQuery";
+import { executePaginatedQuery } from "@shared/api/graphql/paginatedQuery";
 import type {
   CompanyHolidayCalendar,
   CreateCompanyHolidayCalendarInput,
@@ -83,31 +84,13 @@ export const calendarApi = createApi({
   endpoints: (builder) => ({
     getHolidayCalendars: builder.query<HolidayCalendar[], void>({
       async queryFn(_arg, _queryApi, _extraOptions, baseQuery) {
-        const calendars: HolidayCalendar[] = [];
-        let nextToken: string | null = null;
-
-        do {
-          const result = await baseQuery({
-            document: listHolidayCalendars,
-            variables: { nextToken },
-          });
-
-          if (result.error) {
-            return { error: result.error };
-          }
-
-          const data = result.data as ListHolidayCalendarsQuery | null;
-          const connection = data?.listHolidayCalendars;
-
-          if (!connection) {
-            return { error: { message: "Failed to fetch holiday calendars" } };
-          }
-
-          calendars.push(...connection.items.filter(nonNullable));
-          nextToken = connection.nextToken ?? null;
-        } while (nextToken);
-
-        return { data: calendars };
+        return executePaginatedQuery<HolidayCalendar>({
+          baseQuery,
+          document: listHolidayCalendars,
+          connectionExtractor: (data) =>
+            (data as ListHolidayCalendarsQuery | null)?.listHolidayCalendars,
+          errorMessage: "Failed to fetch holiday calendars",
+        });
       },
       providesTags: (result) => {
         const listTag: CalendarTag = { type: "HolidayCalendar", id: "LIST" };
@@ -126,33 +109,13 @@ export const calendarApi = createApi({
     }),
     getCompanyHolidayCalendars: builder.query<CompanyHolidayCalendar[], void>({
       async queryFn(_arg, _queryApi, _extraOptions, baseQuery) {
-        const calendars: CompanyHolidayCalendar[] = [];
-        let nextToken: string | null = null;
-
-        do {
-          const result = await baseQuery({
-            document: listCompanyHolidayCalendars,
-            variables: { nextToken },
-          });
-
-          if (result.error) {
-            return { error: result.error };
-          }
-
-          const data = result.data as ListCompanyHolidayCalendarsQuery | null;
-          const connection = data?.listCompanyHolidayCalendars;
-
-          if (!connection) {
-            return {
-              error: { message: "Failed to fetch company holiday calendars" },
-            };
-          }
-
-          calendars.push(...connection.items.filter(nonNullable));
-          nextToken = connection.nextToken ?? null;
-        } while (nextToken);
-
-        return { data: calendars };
+        return executePaginatedQuery<CompanyHolidayCalendar>({
+          baseQuery,
+          document: listCompanyHolidayCalendars,
+          connectionExtractor: (data) =>
+            (data as ListCompanyHolidayCalendarsQuery | null)?.listCompanyHolidayCalendars,
+          errorMessage: "Failed to fetch company holiday calendars",
+        });
       },
       providesTags: (result) => {
         const listTag: CalendarTag = {
@@ -470,33 +433,13 @@ export const calendarApi = createApi({
     }),
     getEventCalendars: builder.query<EventCalendar[], void>({
       async queryFn(_arg, _queryApi, _extraOptions, baseQuery) {
-        const calendars: EventCalendar[] = [];
-        let nextToken: string | null = null;
-
-        do {
-          const result = await baseQuery({
-            document: listEventCalendars,
-            variables: { nextToken },
-          });
-
-          if (result.error) {
-            return { error: result.error };
-          }
-
-          const data = result.data as ListEventCalendarsQuery | null;
-          const connection = data?.listEventCalendars;
-
-          if (!connection) {
-            return {
-              error: { message: "Failed to fetch event calendars" },
-            };
-          }
-
-          calendars.push(...connection.items.filter(nonNullable));
-          nextToken = connection.nextToken ?? null;
-        } while (nextToken);
-
-        return { data: calendars };
+        return executePaginatedQuery<EventCalendar>({
+          baseQuery,
+          document: listEventCalendars,
+          connectionExtractor: (data) =>
+            (data as ListEventCalendarsQuery | null)?.listEventCalendars,
+          errorMessage: "Failed to fetch event calendars",
+        });
       },
       providesTags: (result) => {
         const listTag: CalendarTag = {

@@ -7,6 +7,7 @@ import {
 } from "@shared/api/graphql/documents/mutations";
 import { getStaff, listStaff } from "@shared/api/graphql/documents/queries";
 import { graphqlBaseQuery } from "@shared/api/graphql/graphqlBaseQuery";
+import { executePaginatedQuery } from "@shared/api/graphql/paginatedQuery";
 import type {
   CreateStaffInput,
   CreateStaffMutation,
@@ -20,6 +21,7 @@ import type {
   UpdateStaffMutation,
 } from "@shared/api/graphql/types";
 
+
 export type UpdateStaffPayload = {
   input: UpdateStaffInput;
   condition?: ModelStaffConditionInput | null;
@@ -29,9 +31,6 @@ type StaffTag = {
   type: "Staff";
   id: string;
 };
-
-const nonNullable = <T>(value: T | null | undefined): value is T =>
-  value !== null && value !== undefined;
 
 const buildStaffTagId = (staff: { id?: string | null }) =>
   staff.id ?? "unknown";
@@ -43,34 +42,13 @@ export const staffApi = createApi({
   endpoints: (builder) => ({
     getStaffs: builder.query<Staff[], void>({
       async queryFn(_arg, _api, _extraOptions, baseQuery) {
-        const staffs: Staff[] = [];
-        let nextToken: string | null = null;
-
-        do {
-          const result = await baseQuery({
-            document: listStaff,
-            variables: {
-              limit: 100,
-              nextToken,
-            },
-          });
-
-          if (result.error) {
-            return { error: result.error };
-          }
-
-          const data = result.data as ListStaffQuery | null;
-          const connection = data?.listStaff;
-
-          if (!connection) {
-            return { error: { message: "Failed to fetch staffs" } };
-          }
-
-          staffs.push(...(connection.items?.filter(nonNullable) ?? []));
-          nextToken = connection.nextToken ?? null;
-        } while (nextToken);
-
-        return { data: staffs };
+        return executePaginatedQuery<Staff>({
+          baseQuery,
+          document: listStaff,
+          variables: { limit: 100 },
+          connectionExtractor: (data) => (data as ListStaffQuery | null)?.listStaff,
+          errorMessage: "Failed to fetch staffs",
+        });
       },
       providesTags: (result) => {
         const listTag: StaffTag = { type: "Staff", id: "LIST" };

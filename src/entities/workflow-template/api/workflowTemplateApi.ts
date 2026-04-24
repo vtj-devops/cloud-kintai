@@ -6,6 +6,7 @@ import {
 } from "@shared/api/graphql/documents/mutations";
 import { listWorkflowTemplates } from "@shared/api/graphql/documents/queries";
 import { graphqlBaseQuery } from "@shared/api/graphql/graphqlBaseQuery";
+import { executePaginatedQuery } from "@shared/api/graphql/paginatedQuery";
 import type {
   CreateWorkflowTemplateInput,
   CreateWorkflowTemplateMutation,
@@ -33,9 +34,6 @@ type GetWorkflowTemplatesArg = {
   organizationId: string;
 };
 
-const nonNullable = <T>(value: T | null | undefined): value is T =>
-  value !== null && value !== undefined;
-
 const buildTemplateTagId = (template: { id?: string | null }) =>
   template.id ?? "unknown";
 
@@ -49,42 +47,24 @@ export const workflowTemplateApi = createApi({
       GetWorkflowTemplatesArg
     >({
       async queryFn(arg, _api, _extraOptions, baseQuery) {
-        const templates: WorkflowTemplate[] = [];
-        let nextToken: string | null = null;
+        const result = await executePaginatedQuery<WorkflowTemplate>({
+          baseQuery,
+          document: listWorkflowTemplates,
+          variables: {
+            filter: { organizationId: { eq: arg.organizationId } },
+          } satisfies Omit<ListWorkflowTemplatesQueryVariables, "nextToken">,
+          connectionExtractor: (data) =>
+            (data as ListWorkflowTemplatesQuery | null)?.listWorkflowTemplates,
+          errorMessage: "Failed to fetch workflow templates",
+        });
 
-        do {
-          const result = await baseQuery({
-            document: listWorkflowTemplates,
-            variables: {
-              filter: {
-                organizationId: {
-                  eq: arg.organizationId,
-                },
-              },
-              nextToken,
-            } satisfies ListWorkflowTemplatesQueryVariables,
-          });
+        if (result.error) {
+          return { error: result.error };
+        }
 
-          if (result.error) {
-            return { error: result.error };
-          }
-
-          const data = result.data as ListWorkflowTemplatesQuery | null;
-          const connection = data?.listWorkflowTemplates;
-
-          if (!connection) {
-            return { error: { message: "Failed to fetch workflow templates" } };
-          }
-
-          templates.push(...(connection.items?.filter(nonNullable) ?? []));
-          nextToken = connection.nextToken ?? null;
-        } while (nextToken);
-
-        const sortedTemplates = templates.toSorted((a, b) =>
-          b.createdAt.localeCompare(a.createdAt),
-        );
-
-        return { data: sortedTemplates };
+        return {
+          data: result.data.toSorted((a, b) => b.createdAt.localeCompare(a.createdAt)),
+        };
       },
       providesTags: (result) => {
         const listTag: WorkflowTemplateTag = {
