@@ -8,6 +8,7 @@ import {
 import { getStaff, listStaff } from "@shared/api/graphql/documents/queries";
 import { graphqlBaseQuery } from "@shared/api/graphql/graphqlBaseQuery";
 import { executePaginatedQuery } from "@shared/api/graphql/paginatedQuery";
+import { buildListAndItemTags } from "@shared/api/graphql/tagBuilder";
 import type {
   CreateStaffInput,
   CreateStaffMutation,
@@ -25,11 +26,6 @@ import type {
 export type UpdateStaffPayload = {
   input: UpdateStaffInput;
   condition?: ModelStaffConditionInput | null;
-};
-
-type StaffTag = {
-  type: "Staff";
-  id: string;
 };
 
 const buildStaffTagId = (staff: { id?: string | null }) =>
@@ -50,20 +46,8 @@ export const staffApi = createApi({
           errorMessage: "Failed to fetch staffs",
         });
       },
-      providesTags: (result) => {
-        const listTag: StaffTag = { type: "Staff", id: "LIST" };
-        if (!result) {
-          return [listTag];
-        }
-
-        return [
-          listTag,
-          ...result.map((staff) => ({
-            type: "Staff" as const,
-            id: buildStaffTagId(staff),
-          })),
-        ];
-      },
+      providesTags: (result) =>
+        buildListAndItemTags("Staff", result, buildStaffTagId),
     }),
     createStaff: builder.mutation<Staff, CreateStaffInput>({
       async queryFn(input, _api, _extraOptions, baseQuery) {
@@ -97,14 +81,8 @@ export const staffApi = createApi({
 
         return { data: created };
       },
-      invalidatesTags: (result) => {
-        const listTag: StaffTag = { type: "Staff", id: "LIST" };
-        if (!result) {
-          return [listTag];
-        }
-
-        return [listTag, { type: "Staff", id: buildStaffTagId(result) }];
-      },
+      invalidatesTags: (result) =>
+        buildListAndItemTags("Staff", result ? [result] : undefined, buildStaffTagId),
     }),
     updateStaff: builder.mutation<Staff, UpdateStaffPayload>({
       async queryFn({ input, condition }, _api, _extraOptions, baseQuery) {

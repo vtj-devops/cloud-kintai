@@ -5,6 +5,7 @@ import {
 } from "@shared/api/graphql/documents/mutations";
 import { graphqlBaseQuery } from "@shared/api/graphql/graphqlBaseQuery";
 import { executePaginatedQuery } from "@shared/api/graphql/paginatedQuery";
+import { buildListAndItemTags } from "@shared/api/graphql/tagBuilder";
 import type {
   CreateShiftRequestInput,
   CreateShiftRequestMutation,
@@ -184,11 +185,6 @@ export type BatchUpdateShiftCellsResult = {
   errors: Array<{ index: number; message: string }>;
 };
 
-type ShiftRequestTag = {
-  type: "ShiftRequest";
-  id: string;
-};
-
 type ShiftCollaborationTag = {
   type: "ShiftCollaboration";
   id: string;
@@ -261,23 +257,14 @@ export const shiftApi = createApi({
           staffIds: queryArgs.staffIds.toSorted(),
         }),
         providesTags: (result, _error, arg) => {
-          const listTag: ShiftRequestTag = { type: "ShiftRequest", id: "LIST" };
           const collaborationTag: ShiftCollaborationTag = {
             type: "ShiftCollaboration",
             id: arg.targetMonth,
           };
 
-          if (!result) {
-            return [listTag, collaborationTag];
-          }
-
           return [
-            listTag,
             collaborationTag,
-            ...result.map((shiftRequest) => ({
-              type: "ShiftRequest" as const,
-              id: buildShiftRequestTagId(shiftRequest),
-            })),
+            ...buildListAndItemTags("ShiftRequest", result, buildShiftRequestTagId),
           ];
         },
       },
@@ -308,20 +295,18 @@ export const shiftApi = createApi({
         return { data: item };
       },
       providesTags: (result, _error, arg) => {
-        const listTag: ShiftRequestTag = { type: "ShiftRequest", id: "LIST" };
         const collaborationTag: ShiftCollaborationTag = {
           type: "ShiftCollaboration",
           id: arg.targetMonth,
         };
 
-        if (!result) {
-          return [listTag, collaborationTag];
-        }
-
         return [
-          listTag,
           collaborationTag,
-          { type: "ShiftRequest" as const, id: buildShiftRequestTagId(result) },
+          ...buildListAndItemTags(
+            "ShiftRequest",
+            result ? [result] : undefined,
+            buildShiftRequestTagId,
+          ),
         ];
       },
     }),

@@ -17,6 +17,7 @@ import {
 } from "@shared/api/graphql/documents/queries";
 import { graphqlBaseQuery } from "@shared/api/graphql/graphqlBaseQuery";
 import { executePaginatedQuery } from "@shared/api/graphql/paginatedQuery";
+import { buildListAndItemTags } from "@shared/api/graphql/tagBuilder";
 import type {
   Attendance,
   AttendanceHistoryInput,
@@ -719,23 +720,12 @@ export const attendanceApi = createApi({
           },
         };
       },
-      providesTags: (result) => {
-        const listTag = { type: "Attendance" as const, id: "LIST" };
-        const attendances = result?.attendances ?? [];
-        if (!attendances.length) {
-          return [listTag];
-        }
-
-        return [
-          listTag,
-          ...attendances.map((attendance) => ({
-            type: "Attendance" as const,
-            id:
-              attendance.id ||
-              buildAttendanceCacheId(attendance.staffId, attendance.workDate),
-          })),
-        ];
-      },
+      providesTags: (result) =>
+        buildListAndItemTags(
+          "Attendance",
+          result?.attendances,
+          (a) => a.id || buildAttendanceCacheId(a.staffId, a.workDate),
+        ),
     }),
     listRecentAttendancesWithWarnings: builder.query<
       AttendanceListResponse,
@@ -829,22 +819,12 @@ export const attendanceApi = createApi({
           },
         };
       },
-      providesTags: (result) => {
-        const listTag = { type: "Attendance" as const, id: "LIST" };
-        if (!result || !result.attendances) {
-          return [listTag];
-        }
-
-        return [
-          listTag,
-          ...result.attendances.map((attendance) => ({
-            type: "Attendance" as const,
-            id:
-              attendance.id ||
-              buildAttendanceCacheId(attendance.staffId, attendance.workDate),
-          })),
-        ];
-      },
+      providesTags: (result) =>
+        buildListAndItemTags(
+          "Attendance",
+          result?.attendances,
+          (a) => a.id || buildAttendanceCacheId(a.staffId, a.workDate),
+        ),
     }),
     listAttendancesByDateRange: builder.query<
       Attendance[],
@@ -1112,22 +1092,12 @@ export const attendanceApi = createApi({
 
           return { data: createdAttendance };
         },
-        invalidatesTags: (result) => {
-          const listTag = { type: "Attendance" as const, id: "LIST" };
-          if (!result) {
-            return [listTag];
-          }
-
-          return [
-            listTag,
-            {
-              type: "Attendance" as const,
-              id:
-                result.id ||
-                buildAttendanceCacheId(result.staffId, result.workDate),
-            },
-          ];
-        },
+        invalidatesTags: (result) =>
+          buildListAndItemTags(
+            "Attendance",
+            result ? [result] : undefined,
+            (r) => r.id || buildAttendanceCacheId(r.staffId, r.workDate),
+          ),
       },
     ),
     upsertAttendanceByStaffAndDate: builder.mutation<

@@ -7,6 +7,7 @@ import {
 import { listWorkflowTemplates } from "@shared/api/graphql/documents/queries";
 import { graphqlBaseQuery } from "@shared/api/graphql/graphqlBaseQuery";
 import { executePaginatedQuery } from "@shared/api/graphql/paginatedQuery";
+import { buildListAndItemTags } from "@shared/api/graphql/tagBuilder";
 import type {
   CreateWorkflowTemplateInput,
   CreateWorkflowTemplateMutation,
@@ -23,11 +24,6 @@ import type {
 export type UpdateWorkflowTemplatePayload = {
   input: UpdateWorkflowTemplateInput;
   condition?: ModelWorkflowTemplateConditionInput | null;
-};
-
-type WorkflowTemplateTag = {
-  type: "WorkflowTemplate";
-  id: string;
 };
 
 type GetWorkflowTemplatesArg = {
@@ -66,23 +62,8 @@ export const workflowTemplateApi = createApi({
           data: result.data.toSorted((a, b) => b.createdAt.localeCompare(a.createdAt)),
         };
       },
-      providesTags: (result) => {
-        const listTag: WorkflowTemplateTag = {
-          type: "WorkflowTemplate",
-          id: "LIST",
-        };
-        if (!result) {
-          return [listTag];
-        }
-
-        return [
-          listTag,
-          ...result.map((template) => ({
-            type: "WorkflowTemplate" as const,
-            id: buildTemplateTagId(template),
-          })),
-        ];
-      },
+      providesTags: (result) =>
+        buildListAndItemTags("WorkflowTemplate", result, buildTemplateTagId),
     }),
     createWorkflowTemplate: builder.mutation<
       WorkflowTemplate,
@@ -135,20 +116,12 @@ export const workflowTemplateApi = createApi({
 
         return { data: updated };
       },
-      invalidatesTags: (result) => {
-        const listTag: WorkflowTemplateTag = {
-          type: "WorkflowTemplate",
-          id: "LIST",
-        };
-        if (!result) {
-          return [listTag];
-        }
-
-        return [
-          listTag,
-          { type: "WorkflowTemplate" as const, id: buildTemplateTagId(result) },
-        ];
-      },
+      invalidatesTags: (result) =>
+        buildListAndItemTags(
+          "WorkflowTemplate",
+          result ? [result] : undefined,
+          buildTemplateTagId,
+        ),
     }),
     deleteWorkflowTemplate: builder.mutation<
       WorkflowTemplate,
@@ -174,12 +147,11 @@ export const workflowTemplateApi = createApi({
         return { data: deleted };
       },
       invalidatesTags: (result, _error, arg) => {
-        const listTag: WorkflowTemplateTag = {
-          type: "WorkflowTemplate",
-          id: "LIST",
-        };
         const targetId = arg.id ?? buildTemplateTagId(result ?? {});
-        return [listTag, { type: "WorkflowTemplate", id: targetId }];
+        return [
+          { type: "WorkflowTemplate", id: "LIST" },
+          { type: "WorkflowTemplate", id: targetId },
+        ];
       },
     }),
   }),
