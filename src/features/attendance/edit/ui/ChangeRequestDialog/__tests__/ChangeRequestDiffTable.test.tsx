@@ -1,6 +1,5 @@
 import { Attendance, AttendanceChangeRequest } from "@shared/api/graphql/types";
 import { render, screen, within } from "@testing-library/react";
-import React from "react";
 
 import {
   buildChangeRequestDiffRows,

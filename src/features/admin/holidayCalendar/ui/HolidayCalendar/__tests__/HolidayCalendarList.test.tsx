@@ -112,12 +112,10 @@ jest.mock("@shared/ui/button", () => ({
     children,
     onClick,
     disabled,
-    ..._rest
   }: {
     children: React.ReactNode;
     onClick?: () => void;
     disabled?: boolean;
-    [key: string]: unknown;
   }) => (
     <button onClick={onClick} disabled={disabled}>
       {children}
@@ -127,12 +125,10 @@ jest.mock("@shared/ui/button", () => ({
     children,
     onClick,
     "aria-label": ariaLabel,
-    ..._rest
   }: {
     children: React.ReactNode;
     onClick?: () => void;
     "aria-label"?: string;
-    [key: string]: unknown;
   }) => (
     <button onClick={onClick} aria-label={ariaLabel}>
       {children}

@@ -192,7 +192,7 @@ describe("useAdminOperationLogs", () => {
         id: "log-2",
         timestamp: "2024-01-15T10:00:00.000Z",
       });
-      fetchAdminOperationLogs
+      mockFetchLogs
         .mockResolvedValueOnce({
           items: [initial],
           nextToken: "token-1",
@@ -216,7 +216,7 @@ describe("useAdminOperationLogs", () => {
     });
 
     it("updates nextToken to null when response returns null", async () => {
-      fetchAdminOperationLogs
+      mockFetchLogs
         .mockResolvedValueOnce({
           items: [makeLog()],
           nextToken: "token-1",
@@ -238,7 +238,7 @@ describe("useAdminOperationLogs", () => {
     });
 
     it("accumulates excludedInvalidRecordCount across loadMore calls", async () => {
-      fetchAdminOperationLogs
+      mockFetchLogs
         .mockResolvedValueOnce({
           items: [makeLog({ id: "log-1" })],
           nextToken: "token-1",
@@ -264,7 +264,7 @@ describe("useAdminOperationLogs", () => {
     });
 
     it("sets error state and rethrows on loadMore failure", async () => {
-      fetchAdminOperationLogs
+      mockFetchLogs
         .mockResolvedValueOnce({
           items: [makeLog()],
           nextToken: "token-1",

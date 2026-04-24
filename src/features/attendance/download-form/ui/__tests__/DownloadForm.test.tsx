@@ -1,7 +1,6 @@
 import { AuthContext, type AuthContextProps } from "@app/providers/auth/AuthContext";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import React from "react";
 import { MemoryRouter } from "react-router-dom";
 
 import DownloadForm from "../DownloadForm";

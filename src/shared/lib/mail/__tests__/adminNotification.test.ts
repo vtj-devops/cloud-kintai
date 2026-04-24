@@ -1,3 +1,4 @@
+import type { StaffType } from "@entities/staff/model/useStaffs/useStaffs";
 import { StaffRole } from "@entities/staff/model/useStaffs/useStaffs";
 
 import {
@@ -17,14 +18,20 @@ jest.mock("@shared/api/graphql/documents/queries", () => ({
   sendMail: "sendMail",
 }));
 
-const makeStaff = (overrides: Partial<ReturnType<typeof makeStaff>> = {}) => ({
+const makeStaff = (overrides: Partial<StaffType> = {}): StaffType => ({
   id: "s1",
+  cognitoUserId: "cognito-1",
   familyName: "山田",
   givenName: "太郎",
   mailAddress: "admin@example.com",
+  owner: false,
   role: StaffRole.ADMIN,
-  shiftGroup: null as string | null,
-  workType: null as string | null,
+  enabled: true,
+  status: "",
+  createdAt: "2024-01-01T00:00:00.000Z",
+  updatedAt: "2024-01-01T00:00:00.000Z",
+  shiftGroup: null,
+  workType: null,
   ...overrides,
 });
 

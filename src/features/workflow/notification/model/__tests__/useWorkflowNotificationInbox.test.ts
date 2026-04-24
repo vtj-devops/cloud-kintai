@@ -2,7 +2,6 @@ import { AuthContext, AuthContextProps } from "@app/providers/auth/AuthContext";
 import { StaffRole, useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import { useWorkflowNotificationInbox } from "@features/workflow/notification/model/useWorkflowNotificationInbox";
 import { graphqlClient } from "@shared/api/amplify/graphqlClient";
-import { buildVersionOrUpdatedAtCondition, getNextVersion } from "@shared/api/graphql/concurrency";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import React from "react";
 
@@ -56,8 +55,6 @@ jest.mock("@shared/lib/logger", () => ({
 
 const mockUseStaffs = useStaffs as jest.Mock;
 const mockGraphql = graphqlClient.graphql as jest.Mock;
-const _mockBuildVersionCondition = buildVersionOrUpdatedAtCondition as jest.Mock;
-const _mockGetNextVersion = getNextVersion as jest.Mock;
 
 // ---------------------------------------------------------------------------
 // Test data factories
