@@ -9,7 +9,6 @@ import {
   Divider,
   Stack,
   styled,
-  Tooltip,
   Typography,
 } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
@@ -204,15 +203,14 @@ export default function DesktopCalendarView({
             </Typography>
           </Stack>
           <Box>
-            <Tooltip title="今月に戻る">
-              <AppIconButton
-                onClick={() => updateMonth(() => dayjs().startOf("month"))}
-                aria-label="今月に戻る"
-                size="sm"
-              >
-                <Typography variant="body2">今月</Typography>
-              </AppIconButton>
-            </Tooltip>
+            <AppIconButton
+              onClick={() => updateMonth(() => dayjs().startOf("month"))}
+              aria-label="今月に戻る"
+              size="sm"
+              tooltip="今月に戻る"
+            >
+              <Typography variant="body2">今月</Typography>
+            </AppIconButton>
           </Box>
         </Stack>
 
@@ -375,18 +373,17 @@ export default function DesktopCalendarView({
                       sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
                     >
                       {onOpenInRightPanel && attendance && (
-                        <Tooltip title="右側で開く">
-                          <AppIconButton
-                            size="sm"
-                            aria-label="右側で開く"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onOpenInRightPanel(attendance, date);
-                            }}
-                          >
-                            <OpenInNewOutlinedIcon sx={{ fontSize: "16px" }} />
-                          </AppIconButton>
-                        </Tooltip>
+                        <AppIconButton
+                          size="sm"
+                          aria-label="右側で開く"
+                          tooltip="右側で開く"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenInRightPanel(attendance, date);
+                          }}
+                        >
+                          <OpenInNewOutlinedIcon sx={{ fontSize: "16px" }} />
+                        </AppIconButton>
                       )}
                       <AttendanceStatusChip status={status} />
                     </Box>

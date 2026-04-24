@@ -103,16 +103,15 @@ export const UndoRedoToolbar: React.FC<UndoRedoToolbarProps> = ({
         {onPrint && (
           <>
             <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 0.5 }} />
-            <Tooltip title="シフト調整表を印刷">
-              <AppIconButton
-                onClick={onPrint}
-                tone="primary"
-                size="sm"
-                aria-label="print"
-              >
-                <PrintIcon />
-              </AppIconButton>
-            </Tooltip>
+            <AppIconButton
+              onClick={onPrint}
+              tone="primary"
+              size="sm"
+              aria-label="print"
+              tooltip="シフト調整表を印刷"
+            >
+              <PrintIcon />
+            </AppIconButton>
 
             {onSync && (
               <Tooltip
@@ -153,36 +152,34 @@ export const UndoRedoToolbar: React.FC<UndoRedoToolbarProps> = ({
         )}
 
         {onShowSuggestions && (
-          <Tooltip title="シフト提案を表示">
-            <Badge
-              color="error"
-              badgeContent={suggestionsBadgeCount}
-              max={9}
-              invisible={!suggestionsBadgeCount || suggestionsBadgeCount <= 0}
+          <Badge
+            color="error"
+            badgeContent={suggestionsBadgeCount}
+            max={9}
+            invisible={!suggestionsBadgeCount || suggestionsBadgeCount <= 0}
+          >
+            <AppIconButton
+              onClick={onShowSuggestions}
+              tone="primary"
+              size="sm"
+              aria-label="show suggestions"
+              tooltip="シフト提案を表示"
             >
-              <AppIconButton
-                onClick={onShowSuggestions}
-                tone="primary"
-                size="sm"
-                aria-label="show suggestions"
-              >
-                <LightbulbIcon />
-              </AppIconButton>
-            </Badge>
-          </Tooltip>
+              <LightbulbIcon />
+            </AppIconButton>
+          </Badge>
         )}
 
         {onShowHelp && (
-          <Tooltip title="ヘルプ">
-            <AppIconButton
-              onClick={onShowHelp}
-              tone="neutral"
-              size="sm"
-              aria-label="show help"
-            >
-              <HelpOutlineIcon />
-            </AppIconButton>
-          </Tooltip>
+          <AppIconButton
+            onClick={onShowHelp}
+            tone="neutral"
+            size="sm"
+            aria-label="show help"
+            tooltip="ヘルプ"
+          >
+            <HelpOutlineIcon />
+          </AppIconButton>
         )}
       </Stack>
     </Paper>

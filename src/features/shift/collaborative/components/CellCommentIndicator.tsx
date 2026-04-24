@@ -1,5 +1,5 @@
 import MessageOutlinedIcon from "@mui/icons-material/MessageOutlined";
-import { Badge, Box, Tooltip } from "@mui/material";
+import { Badge, Box } from "@mui/material";
 import { AppIconButton } from "@shared/ui/button";
 import React from "react";
 
@@ -21,37 +21,34 @@ export const CellCommentIndicator: React.FC<CellCommentIndicatorProps> = ({
   const hasComments = commentCount > 0;
 
   return (
-    <Tooltip
-      title={hasComments ? `${commentCount}件のコメント` : "コメントを追加"}
+    <Box
+      component="span"
+      sx={{
+        display: "inline-flex",
+        alignItems: "center",
+        opacity: hasComments ? 1 : 0.4,
+      }}
     >
-      <Box
-        component="span"
-        sx={{
-          display: "inline-flex",
-          alignItems: "center",
-          opacity: hasComments ? 1 : 0.4,
-        }}
+      <AppIconButton
+        size="sm"
+        aria-label="コメント"
+        tooltip={hasComments ? `${commentCount}件のコメント` : "コメントを追加"}
+        onClick={onClick}
+        disabled={disabled}
       >
-        <AppIconButton
-          size="sm"
-          aria-label="コメント"
-          onClick={onClick}
-          disabled={disabled}
+        <Badge
+          badgeContent={commentCount}
+          color="primary"
+          overlap="circular"
+          variant="standard"
         >
-          <Badge
-            badgeContent={commentCount}
-            color="primary"
-            overlap="circular"
-            variant="standard"
-          >
-            <MessageOutlinedIcon
-              fontSize="small"
-              sx={{ color: "primary.main" }}
-            />
-          </Badge>
-        </AppIconButton>
-      </Box>
-    </Tooltip>
+          <MessageOutlinedIcon
+            fontSize="small"
+            sx={{ color: "primary.main" }}
+          />
+        </Badge>
+      </AppIconButton>
+    </Box>
   );
 };
 

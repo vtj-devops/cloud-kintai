@@ -1,7 +1,6 @@
 import ViewAgendaIcon from "@mui/icons-material/ViewAgenda";
 import ViewColumnIcon from "@mui/icons-material/ViewColumn";
 import ViewWeekIcon from "@mui/icons-material/ViewWeek";
-import { Tooltip } from "@mui/material";
 import { AppIconButton } from "@shared/ui/button";
 import React from "react";
 
@@ -37,17 +36,14 @@ export const SplitModeToggle: React.FC<SplitModeToggleProps> = ({
   const label = labelByMode[mode];
 
   return (
-    <Tooltip title={label}>
-      <span>
-        <AppIconButton
-          onClick={onToggle}
-          disabled={disabled}
-          aria-label={label}
-          size="sm"
-        >
-          {iconByMode[mode]}
-        </AppIconButton>
-      </span>
-    </Tooltip>
+    <AppIconButton
+      onClick={onToggle}
+      disabled={disabled}
+      aria-label={label}
+      size="sm"
+      tooltip={label}
+    >
+      {iconByMode[mode]}
+    </AppIconButton>
   );
 };
