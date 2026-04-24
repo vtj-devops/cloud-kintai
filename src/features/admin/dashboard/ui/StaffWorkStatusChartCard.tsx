@@ -1,4 +1,5 @@
 import { Tooltip, Typography } from "@mui/material";
+import { DataStateContainer } from "@shared/ui/feedback/DataStateContainer";
 import { type ChartOptions } from "chart.js";
 import { memo } from "react";
 import { Bar } from "react-chartjs-2";
@@ -68,21 +69,26 @@ function StaffWorkStatusChartCardComponent({
         </Typography>
       ) : null}
       <div className="mt-1 h-72">
-        {isLoading ? (
-          <div className="flex h-full items-center justify-center text-xs font-medium text-slate-500">
-            集計中
-          </div>
-        ) : hasData ? (
+        <DataStateContainer
+          isLoading={isLoading}
+          hasData={hasData}
+          loadingContent={
+            <div className="flex h-full items-center justify-center text-xs font-medium text-slate-500">
+              集計中
+            </div>
+          }
+          emptyContent={
+            <div className="flex h-full items-center justify-center text-xs font-medium text-slate-500">
+              表示可能な勤務データがありません
+            </div>
+          }
+        >
           <Bar
             data={chartData}
             options={chartOptions}
             data-testid="admin-dashboard-staff-work-status-chart"
           />
-        ) : (
-          <div className="flex h-full items-center justify-center text-xs font-medium text-slate-500">
-            表示可能な勤務データがありません
-          </div>
-        )}
+        </DataStateContainer>
       </div>
     </DashboardCard>
   );
