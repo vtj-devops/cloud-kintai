@@ -98,6 +98,8 @@ export default function AppButton(props: AppButtonProps) {
     return (
       <label
         {...labelProps}
+        role="button"
+        tabIndex={resolvedDisabled ? -1 : 0}
         aria-disabled={resolvedDisabled}
         className={joinClassNames("app-button", className)}
         data-app-button-variant={variant}
