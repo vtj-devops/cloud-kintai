@@ -1,3 +1,5 @@
+import type { Attendance, CloseDate } from "@shared/api/graphql/types";
+
 import {
   aggregateAttendanceStatistics,
   buildMonthlyTerms,
@@ -8,6 +10,7 @@ const ISO = (dateStr: string, timeStr: string) =>
 
 const makeAttendance = (
   overrides: Partial<{
+    id: string;
     workDate: string;
     startTime: string;
     endTime: string;
@@ -16,8 +19,10 @@ const makeAttendance = (
     absentFlag: boolean;
     rests: Array<{ startTime: string; endTime: string }>;
   }> = {},
-) => ({
+): Attendance => ({
+  __typename: "Attendance",
   id: "att1",
+  staffId: "staff001",
   workDate: "2024-03-05",
   startTime: null,
   endTime: null,
@@ -25,21 +30,26 @@ const makeAttendance = (
   specialHolidayFlag: false,
   absentFlag: false,
   rests: [],
+  createdAt: "",
+  updatedAt: "",
   ...overrides,
-});
+} as Attendance);
 
 const makeCloseDate = (
   overrides: Partial<{
+    id: string;
     closeDate: string;
     startDate: string;
     endDate: string;
     updatedAt: string;
   }> = {},
-) => ({
+): CloseDate => ({
+  __typename: "CloseDate",
   id: "cd1",
   closeDate: "2024-03-31",
   startDate: "2024-03-01",
   endDate: "2024-03-31",
+  createdAt: "",
   updatedAt: "2024-03-31T00:00:00Z",
   ...overrides,
 });

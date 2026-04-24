@@ -26,11 +26,11 @@ const makeWorkflow = (overrides: Partial<WorkflowData> = {}): WorkflowData =>
     status: "PENDING" as never,
     category: "PAID_LEAVE" as never,
     overTimeDetails: {
-      __typename: "OverTimeDetails",
+      __typename: "OverTimeWorkflow",
       startTime: "2024-12-25",
       endTime: "2024-12-27",
-      date: null,
-      reason: null,
+      date: "",
+      reason: "",
     },
     createdAt: "2024-12-25T00:00:00Z",
     updatedAt: "2024-12-25T00:00:00Z",
@@ -72,7 +72,7 @@ const makeUpdateAttendance = (): { trigger: UpdateAttendanceTrigger; calls: obje
   const trigger: UpdateAttendanceTrigger = (input) => ({
     unwrap: () => {
       calls.push(input);
-      return Promise.resolve({ id: "att001", ...input } as never);
+      return Promise.resolve({ ...input } as never);
     },
   });
   return { trigger, calls };
@@ -101,11 +101,11 @@ describe("processPaidLeaveApprovalAttendance", () => {
     const result = await processPaidLeaveApprovalAttendance({
       workflow: makeWorkflow({
         overTimeDetails: {
-          __typename: "OverTimeDetails",
-          startTime: null,
+          __typename: "OverTimeWorkflow",
+          startTime: "",
           endTime: "2024-12-27",
-          date: null,
-          reason: null,
+          date: "",
+          reason: "",
         },
       }),
       staffs: [makeStaff()],
@@ -124,11 +124,11 @@ describe("processPaidLeaveApprovalAttendance", () => {
     const result = await processPaidLeaveApprovalAttendance({
       workflow: makeWorkflow({
         overTimeDetails: {
-          __typename: "OverTimeDetails",
+          __typename: "OverTimeWorkflow",
           startTime: "not-a-date",
           endTime: "also-not-a-date",
-          date: null,
-          reason: null,
+          date: "",
+          reason: "",
         },
       }),
       staffs: [makeStaff()],
@@ -183,7 +183,7 @@ describe("processPaidLeaveApprovalAttendance", () => {
   it("staffs に一致するスタッフがない場合、workflow.staffId をそのまま使う", async () => {
     const { trigger: create, calls } = makeCreateAttendance();
     await processPaidLeaveApprovalAttendance({
-      workflow: makeWorkflow({ staffId: "unknown-staff", overTimeDetails: { __typename: "OverTimeDetails", startTime: "2024-12-25", endTime: "2024-12-25", date: null, reason: null } }),
+      workflow: makeWorkflow({ staffId: "unknown-staff", overTimeDetails: { __typename: "OverTimeWorkflow", startTime: "2024-12-25", endTime: "2024-12-25", date: "", reason: "" } }),
       staffs: [],
       getStartTime: mockGetStartTime,
       getEndTime: mockGetEndTime,
@@ -204,17 +204,17 @@ describe("processCompensatoryLeaveApprovalAttendance", () => {
   const makeCompWorkflow = () =>
     makeWorkflow({
       overTimeDetails: {
-        __typename: "OverTimeDetails",
+        __typename: "OverTimeWorkflow",
         startTime: "2024-12-26",
-        endTime: null,
+        endTime: "",
         date: "2024-12-24",
-        reason: null,
+        reason: "",
       },
     });
 
   it("startTime がない場合、missing_date でスキップする", async () => {
     const result = await processCompensatoryLeaveApprovalAttendance({
-      workflow: makeWorkflow({ overTimeDetails: { __typename: "OverTimeDetails", startTime: null, endTime: null, date: null, reason: null } }),
+      workflow: makeWorkflow({ overTimeDetails: { __typename: "OverTimeWorkflow", startTime: "", endTime: "", date: "", reason: "" } }),
       staffs: [],
       getStartTime: mockGetStartTime,
       getEndTime: mockGetEndTime,
@@ -229,7 +229,7 @@ describe("processCompensatoryLeaveApprovalAttendance", () => {
 
   it("startTime が不正な場合、invalid_date でスキップする", async () => {
     const result = await processCompensatoryLeaveApprovalAttendance({
-      workflow: makeWorkflow({ overTimeDetails: { __typename: "OverTimeDetails", startTime: "not-a-date", endTime: null, date: null, reason: null } }),
+      workflow: makeWorkflow({ overTimeDetails: { __typename: "OverTimeWorkflow", startTime: "not-a-date", endTime: "", date: "", reason: "" } }),
       staffs: [],
       getStartTime: mockGetStartTime,
       getEndTime: mockGetEndTime,
@@ -285,9 +285,9 @@ describe("processClockCorrectionApprovalAttendance", () => {
   const makeClockInWorkflow = () =>
     makeWorkflow({
       overTimeDetails: {
-        __typename: "OverTimeDetails",
+        __typename: "OverTimeWorkflow",
         startTime: "09:00",
-        endTime: null,
+        endTime: "",
         date: "2024-12-25",
         reason: "打刻修正(出勤忘れ)",
       },
@@ -296,8 +296,8 @@ describe("processClockCorrectionApprovalAttendance", () => {
   const makeClockOutWorkflow = () =>
     makeWorkflow({
       overTimeDetails: {
-        __typename: "OverTimeDetails",
-        startTime: null,
+        __typename: "OverTimeWorkflow",
+        startTime: "",
         endTime: "18:00",
         date: "2024-12-25",
         reason: CLOCK_CORRECTION_CHECK_OUT_LABEL,
@@ -309,11 +309,11 @@ describe("processClockCorrectionApprovalAttendance", () => {
       processClockCorrectionApprovalAttendance({
         workflow: makeWorkflow({
           overTimeDetails: {
-            __typename: "OverTimeDetails",
+            __typename: "OverTimeWorkflow",
             startTime: "09:00",
-            endTime: null,
-            date: null,
-            reason: null,
+            endTime: "",
+            date: "",
+            reason: "",
           },
         }),
         staffs: [makeStaff()],
@@ -329,11 +329,11 @@ describe("processClockCorrectionApprovalAttendance", () => {
       processClockCorrectionApprovalAttendance({
         workflow: makeWorkflow({
           overTimeDetails: {
-            __typename: "OverTimeDetails",
-            startTime: null,
-            endTime: null,
+            __typename: "OverTimeWorkflow",
+            startTime: "",
+            endTime: "",
             date: "2024-12-25",
-            reason: null,
+            reason: "",
           },
         }),
         staffs: [makeStaff()],
@@ -349,11 +349,11 @@ describe("processClockCorrectionApprovalAttendance", () => {
       processClockCorrectionApprovalAttendance({
         workflow: makeWorkflow({
           overTimeDetails: {
-            __typename: "OverTimeDetails",
+            __typename: "OverTimeWorkflow",
             startTime: "09:00",
-            endTime: null,
+            endTime: "",
             date: "2024/12/25",
-            reason: null,
+            reason: "",
           },
         }),
         staffs: [makeStaff()],
@@ -369,11 +369,11 @@ describe("processClockCorrectionApprovalAttendance", () => {
       processClockCorrectionApprovalAttendance({
         workflow: makeWorkflow({
           overTimeDetails: {
-            __typename: "OverTimeDetails",
+            __typename: "OverTimeWorkflow",
             startTime: "9:00",
-            endTime: null,
+            endTime: "",
             date: "2024-12-25",
-            reason: null,
+            reason: "",
           },
         }),
         staffs: [makeStaff()],
@@ -418,8 +418,8 @@ describe("processClockCorrectionApprovalAttendance", () => {
       getAttendanceByStaffAndDate: makeGetAttendance({
         id: "att001",
         revision: 1,
-        startTime: null,
-        endTime: null,
+        startTime: "",
+        endTime: "",
         goDirectlyFlag: false,
         returnDirectlyFlag: false,
         absentFlag: false,
@@ -444,7 +444,7 @@ describe("processClockCorrectionApprovalAttendance", () => {
         id: "att001",
         revision: 1,
         startTime: "2024-12-25T09:00:00+09:00",
-        endTime: null,
+        endTime: "",
         goDirectlyFlag: false,
         returnDirectlyFlag: false,
         absentFlag: false,
