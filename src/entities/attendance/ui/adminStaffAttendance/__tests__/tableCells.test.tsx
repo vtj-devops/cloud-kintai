@@ -53,6 +53,7 @@ function WithConfig({
 }
 
 const makeAttendance = (overrides = {}) => ({
+  __typename: "Attendance" as const,
   id: "a1",
   staffId: "s1",
   workDate: "2024-04-01",
@@ -157,6 +158,7 @@ describe("WorkDateTableCell", () => {
               workDate="2024-01-01"
               holidayCalendars={[
                 {
+                  __typename: "HolidayCalendar" as const,
                   id: "h1",
                   holidayDate: "2024-01-01",
                   name: "元日",
@@ -236,6 +238,7 @@ describe("RestTimeTableCell", () => {
           attendance={makeAttendance({
             rests: [
               {
+                __typename: "Rest" as const,
                 startTime: "2024-04-01T03:00:00.000Z",
                 endTime: "2024-04-01T04:00:00.000Z",
               },

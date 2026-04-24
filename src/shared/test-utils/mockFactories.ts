@@ -7,11 +7,16 @@ import type { CognitoUser } from "@entities/staff/model/useCognitoUser";
 import type { StaffType } from "@entities/staff/model/useStaffs/useStaffs";
 import { StaffRole } from "@entities/staff/model/useStaffs/useStaffs";
 import type {
+  ApprovalStep,
   Attendance,
   AttendanceChangeRequest,
+  CompanyHolidayCalendar,
   DailyReport,
+  HolidayCalendar,
+  Rest,
   ShiftRequest,
   Workflow,
+  WorkflowComment,
 } from "@shared/api/graphql/types";
 import {
   ApprovalStatus,
@@ -281,6 +286,73 @@ export function createMockDailyReport(
     comments: [],
     version: 1,
     createdAt: "2024-01-01T09:00:00.000Z",
+    ...overrides,
+  };
+}
+
+export function createMockRest(overrides?: Partial<Rest>): Rest {
+  return {
+    __typename: "Rest",
+    startTime: "2024-01-01T12:00:00.000Z",
+    endTime: "2024-01-01T13:00:00.000Z",
+    ...overrides,
+  };
+}
+
+export function createMockHolidayCalendar(
+  overrides?: Partial<HolidayCalendar>,
+): HolidayCalendar {
+  return {
+    __typename: "HolidayCalendar",
+    id: "mock-holiday-id",
+    holidayDate: "2024-01-01",
+    name: "元日",
+    version: 1,
+    createdAt: "2024-01-01T00:00:00.000Z",
+    updatedAt: "2024-01-01T00:00:00.000Z",
+    ...overrides,
+  };
+}
+
+export function createMockCompanyHolidayCalendar(
+  overrides?: Partial<CompanyHolidayCalendar>,
+): CompanyHolidayCalendar {
+  return {
+    __typename: "CompanyHolidayCalendar",
+    id: "mock-company-holiday-id",
+    holidayDate: "2024-01-01",
+    name: "元日",
+    version: 1,
+    createdAt: "2024-01-01T00:00:00.000Z",
+    updatedAt: "2024-01-01T00:00:00.000Z",
+    ...overrides,
+  };
+}
+
+export function createMockApprovalStep(
+  overrides?: Partial<ApprovalStep>,
+): ApprovalStep {
+  return {
+    __typename: "ApprovalStep",
+    id: "mock-step-id",
+    approverStaffId: "mock-approver-id",
+    decisionStatus: ApprovalStatus.PENDING,
+    approverComment: null,
+    decisionTimestamp: null,
+    stepOrder: 0,
+    ...overrides,
+  };
+}
+
+export function createMockWorkflowComment(
+  overrides?: Partial<WorkflowComment>,
+): WorkflowComment {
+  return {
+    __typename: "WorkflowComment",
+    id: "mock-comment-id",
+    staffId: "mock-staff-id",
+    text: "テストコメント",
+    createdAt: "2024-01-01T00:00:00.000Z",
     ...overrides,
   };
 }

@@ -99,6 +99,7 @@ jest.mock("@mui/x-date-pickers", () => ({
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
 const baseHoliday = {
+  __typename: "CompanyHolidayCalendar" as const,
   id: "holiday-edit-1",
   holidayDate: "2024-05-03",
   name: "憲法記念日",

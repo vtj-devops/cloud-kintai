@@ -1,5 +1,6 @@
 import { StaffRole } from "@entities/staff/model/useStaffs/useStaffs";
 import { WorkflowCategory, WorkflowStatus } from "@shared/api/graphql/types";
+import { createMockUser } from "@shared/test-utils/mockFactories";
 import { act, renderHook, waitFor } from "@testing-library/react";
 
 import useWorkflowCommentThread from "../useWorkflowCommentThread";
@@ -118,7 +119,7 @@ describe("useWorkflowCommentThread", () => {
       const { result } = renderHook(() =>
         useWorkflowCommentThread({
           ...defaultParams,
-          cognitoUser: { id: "unknown-cognito" },
+          cognitoUser: createMockUser({ id: "unknown-cognito" }),
         }),
       );
       expect(result.current.currentStaff).toBeUndefined();

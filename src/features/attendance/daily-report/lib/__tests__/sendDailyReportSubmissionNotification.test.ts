@@ -1,4 +1,6 @@
+import { StaffRole } from "@entities/staff/model/useStaffs/useStaffs";
 import { DailyReportStatus } from "@shared/api/graphql/types";
+import { createMockStaff } from "@shared/test-utils/mockFactories";
 
 import { sendDailyReportSubmissionNotification } from "../sendDailyReportSubmissionNotification";
 
@@ -12,15 +14,15 @@ const { sendAdminNotificationMail } = jest.requireMock("@shared/lib/mail/adminNo
   sendAdminNotificationMail: jest.Mock;
 };
 
-const STAFF = {
+const STAFF = createMockStaff({
   id: "staff1",
   familyName: "山田",
   givenName: "太郎",
   mailAddress: "yamada@example.com",
-  role: "ADMIN" as const,
+  role: StaffRole.ADMIN,
   shiftGroup: "グループA",
   workType: null,
-};
+});
 
 const BASE_REPORT = {
   id: "report1",

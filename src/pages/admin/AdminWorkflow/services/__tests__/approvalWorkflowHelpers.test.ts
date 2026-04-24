@@ -25,6 +25,7 @@ describe("buildApprovalStepInputs", () => {
     const workflow = makeWorkflow({
       approvalSteps: [
         {
+          __typename: "ApprovalStep" as const,
           id: "step-1",
           approverStaffId: "approver-1",
           decisionStatus: ApprovalStatus.PENDING,
@@ -103,14 +104,14 @@ describe("mapCommentsToInputs", () => {
   });
 
   it("null エントリをフィルタリングする", () => {
-    const comments = [null, { id: "c1", staffId: "s1", text: "hello", createdAt: "2024-01-01" } as WorkflowComment, null];
+    const comments = [null, { __typename: "WorkflowComment" as const, id: "c1", staffId: "s1", text: "hello", createdAt: "2024-01-01" } as WorkflowComment, null];
     const result = mapCommentsToInputs(comments);
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe("c1");
   });
 
   it("全フィールドをマッピングする", () => {
-    const comment: WorkflowComment = { id: "c1", staffId: "s1", text: "hi", createdAt: "2024-01-01" };
+    const comment: WorkflowComment = { __typename: "WorkflowComment", id: "c1", staffId: "s1", text: "hi", createdAt: "2024-01-01" };
     const result = mapCommentsToInputs([comment]);
     expect(result[0]).toEqual({ id: "c1", staffId: "s1", text: "hi", createdAt: "2024-01-01" });
   });

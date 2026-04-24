@@ -47,7 +47,7 @@ const makeAttendance = (overrides: Partial<Attendance> = {}): Attendance => ({
   goDirectlyFlag: false,
   returnDirectlyFlag: false,
   absentFlag: false,
-  rests: [{ startTime: "2024-06-01T12:00:00.000Z", endTime: "2024-06-01T13:00:00.000Z" }],
+  rests: [{ __typename: "Rest" as const, startTime: "2024-06-01T12:00:00.000Z", endTime: "2024-06-01T13:00:00.000Z" }],
   hourlyPaidHolidayTimes: [],
   remarks: null,
   paidHolidayFlag: false,

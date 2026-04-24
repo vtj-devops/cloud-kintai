@@ -1,3 +1,5 @@
+import type { GraphQLResult } from "aws-amplify/api";
+
 import {
   buildRevisionCondition,
   buildUpdatedAtCondition,
@@ -113,7 +115,7 @@ describe("getGraphQLErrorMessage", () => {
 
   it("競合エラーのとき競合メッセージを返す", () => {
     const result = getGraphQLErrorMessage(
-      [{ message: "ConditionalCheckFailed" }],
+      [{ message: "ConditionalCheckFailed" }] as unknown as GraphQLResult<unknown>["errors"],
       "fallback",
     );
     expect(result).toContain("他の更新が先に反映されました");
@@ -121,7 +123,7 @@ describe("getGraphQLErrorMessage", () => {
 
   it("一般エラーのときそのメッセージを返す", () => {
     const result = getGraphQLErrorMessage(
-      [{ message: "Internal server error" }],
+      [{ message: "Internal server error" }] as unknown as GraphQLResult<unknown>["errors"],
       "fallback",
     );
     expect(result).toBe("Internal server error");
@@ -129,7 +131,7 @@ describe("getGraphQLErrorMessage", () => {
 
   it("カスタム競合メッセージを使用できる", () => {
     const result = getGraphQLErrorMessage(
-      [{ message: "ConditionalCheckFailed" }],
+      [{ message: "ConditionalCheckFailed" }] as unknown as GraphQLResult<unknown>["errors"],
       "fallback",
       "競合発生",
     );
