@@ -257,6 +257,29 @@ describe("useAttendanceSummaryData", () => {
     expect(result.current.filteredAttendances).toHaveLength(0);
   });
 
+  it("今日の日付で endTime がある勤怠は filteredAttendances に含まれる", () => {
+    const todayStr = dayjs().format("YYYY-MM-DD");
+    const todayAttendance = createMockAttendance({
+      workDate: todayStr,
+      startTime: `${todayStr}T09:00:00Z`,
+      endTime: `${todayStr}T18:00:00Z`,
+    });
+    mockUseListAttendancesByDateRangeQuery.mockReturnValue({
+      data: [todayAttendance],
+      isLoading: false,
+      isFetching: false,
+      isUninitialized: false,
+      error: null,
+    });
+
+    const { result } = renderHook(() => useAttendanceSummaryData(), {
+      wrapper: createWrapper(),
+    });
+
+    expect(result.current.filteredAttendances).toHaveLength(1);
+    expect(result.current.filteredAttendances[0].workDate).toBe(todayStr);
+  });
+
   it("effectiveDateRange を返す（start/end が Dayjs オブジェクト）", () => {
     const { result } = renderHook(() => useAttendanceSummaryData(), {
       wrapper: createWrapper(),
