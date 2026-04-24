@@ -2,12 +2,11 @@ import { formatDateRangeLabel } from "@entities/attendance/lib/aggregationDateRa
 import { calcAttendanceSummary } from "@features/attendance/time-recorder/lib/attendanceSummaryCalculators";
 import { useAttendanceChartData } from "@features/attendance/time-recorder/model/useAttendanceChartData";
 import { useAttendanceSummaryData } from "@features/attendance/time-recorder/model/useAttendanceSummaryData";
+import { StatCard } from "@shared/ui/card";
 import InfoIconTooltip from "@shared/ui/tooltip/InfoIconTooltip";
 import { SectionTitle } from "@shared/ui/typography";
 
 import RegisterSummaryAttendanceErrorCountCard from "./RegisterSummaryAttendanceErrorCountCard";
-import RegisterSummaryTotalWorkHoursCard from "./RegisterSummaryTotalWorkHoursCard";
-import RegisterSummaryWorkDaysCard from "./RegisterSummaryWorkDaysCard";
 import RegisterSummaryWorkStatusChartCard from "./RegisterSummaryWorkStatusChartCard";
 
 type RegisterAttendanceSummaryCardProps = {
@@ -58,8 +57,8 @@ export default function RegisterAttendanceSummaryCard({
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3">
-        <RegisterSummaryTotalWorkHoursCard totalHoursLabel={totalHoursLabel} />
-        <RegisterSummaryWorkDaysCard workDaysLabel={workDaysLabel} />
+        <StatCard label="合計勤務時間" value={totalHoursLabel} />
+        <StatCard label="勤務日数" value={workDaysLabel} />
       </div>
 
       <RegisterSummaryAttendanceErrorCountCard
