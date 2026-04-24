@@ -1,8 +1,10 @@
 import { act,renderHook } from "@testing-library/react";
 import dayjs from "dayjs";
 import React from "react";
+import type { Control, UseFormGetValues, UseFormSetValue } from "react-hook-form";
 
 import { AttendanceEditContext , defaultAttendanceEditContextValue } from "../AttendanceEditProvider";
+import type { AttendanceEditInputs } from "../common";
 import { useAutoConfiguredTimeFlag } from "../useAutoConfiguredTimeFlag";
 
 // useAppConfig のモック（default export）
@@ -41,7 +43,7 @@ describe("useAutoConfiguredTimeFlag", () => {
 
   describe("disabled フラグ", () => {
     it("control が undefined のとき disabled = true になる", () => {
-      const wrapper = makeWrapper({ control: undefined, setValue: jest.fn() as any });
+      const wrapper = makeWrapper({ control: undefined, setValue: jest.fn() as unknown as UseFormSetValue<AttendanceEditInputs> });
       const { result } = renderHook(
         () => useAutoConfiguredTimeFlag({ timeField: "startTime" }),
         { wrapper },
@@ -50,7 +52,7 @@ describe("useAutoConfiguredTimeFlag", () => {
     });
 
     it("setValue が undefined のとき disabled = true になる", () => {
-      const wrapper = makeWrapper({ control: {} as any, setValue: undefined });
+      const wrapper = makeWrapper({ control: {} as unknown as Control<AttendanceEditInputs>, setValue: undefined });
       const { result } = renderHook(
         () => useAutoConfiguredTimeFlag({ timeField: "startTime" }),
         { wrapper },
@@ -60,8 +62,8 @@ describe("useAutoConfiguredTimeFlag", () => {
 
     it("control と setValue が両方ある場合 disabled = false になる", () => {
       const wrapper = makeWrapper({
-        control: {} as any,
-        setValue: jest.fn() as any,
+        control: {} as unknown as Control<AttendanceEditInputs>,
+        setValue: jest.fn() as unknown as UseFormSetValue<AttendanceEditInputs>,
       });
       const { result } = renderHook(
         () => useAutoConfiguredTimeFlag({ timeField: "startTime" }),
@@ -74,10 +76,10 @@ describe("useAutoConfiguredTimeFlag", () => {
   describe("highlighted フラグ", () => {
     it("初期状態では highlighted = false", () => {
       const wrapper = makeWrapper({
-        control: {} as any,
-        setValue: jest.fn() as any,
+        control: {} as unknown as Control<AttendanceEditInputs>,
+        setValue: jest.fn() as unknown as UseFormSetValue<AttendanceEditInputs>,
         workDate,
-        getValues: (() => null) as any,
+        getValues: (() => null) as unknown as UseFormGetValues<AttendanceEditInputs>,
       });
       const { result } = renderHook(
         () => useAutoConfiguredTimeFlag({ timeField: "startTime" }),
@@ -89,10 +91,10 @@ describe("useAutoConfiguredTimeFlag", () => {
     it("applyConfiguredTime(true) 後に highlighted = true になり、タイムアウト後に false に戻る", () => {
       const mockSetValue = jest.fn();
       const wrapper = makeWrapper({
-        control: {} as any,
-        setValue: mockSetValue as any,
+        control: {} as unknown as Control<AttendanceEditInputs>,
+        setValue: mockSetValue as unknown as UseFormSetValue<AttendanceEditInputs>,
         workDate,
-        getValues: (() => null) as any,
+        getValues: (() => null) as unknown as UseFormGetValues<AttendanceEditInputs>,
       });
       const { result } = renderHook(
         () =>
@@ -119,10 +121,10 @@ describe("useAutoConfiguredTimeFlag", () => {
     it("checked = false のとき setValue を呼ばない", () => {
       const mockSetValue = jest.fn();
       const wrapper = makeWrapper({
-        control: {} as any,
-        setValue: mockSetValue as any,
+        control: {} as unknown as Control<AttendanceEditInputs>,
+        setValue: mockSetValue as unknown as UseFormSetValue<AttendanceEditInputs>,
         workDate,
-        getValues: (() => null) as any,
+        getValues: (() => null) as unknown as UseFormGetValues<AttendanceEditInputs>,
       });
       const { result } = renderHook(
         () => useAutoConfiguredTimeFlag({ timeField: "startTime" }),
@@ -138,10 +140,10 @@ describe("useAutoConfiguredTimeFlag", () => {
 
     it("setValue が undefined のとき applyConfiguredTime(true) は何もしない", () => {
       const wrapper = makeWrapper({
-        control: {} as any,
+        control: {} as unknown as Control<AttendanceEditInputs>,
         setValue: undefined,
         workDate,
-        getValues: (() => null) as any,
+        getValues: (() => null) as unknown as UseFormGetValues<AttendanceEditInputs>,
       });
       const { result } = renderHook(
         () => useAutoConfiguredTimeFlag({ timeField: "startTime" }),
@@ -159,10 +161,10 @@ describe("useAutoConfiguredTimeFlag", () => {
     it("startTime フィールド: applyConfiguredTime(true) が setValue を呼ぶ", () => {
       const mockSetValue = jest.fn();
       const wrapper = makeWrapper({
-        control: {} as any,
-        setValue: mockSetValue as any,
+        control: {} as unknown as Control<AttendanceEditInputs>,
+        setValue: mockSetValue as unknown as UseFormSetValue<AttendanceEditInputs>,
         workDate,
-        getValues: (() => null) as any,
+        getValues: (() => null) as unknown as UseFormGetValues<AttendanceEditInputs>,
       });
       const { result } = renderHook(
         () => useAutoConfiguredTimeFlag({ timeField: "startTime" }),
@@ -185,10 +187,10 @@ describe("useAutoConfiguredTimeFlag", () => {
     it("endTime フィールド: workDate がある場合 setValue を呼ぶ", () => {
       const mockSetValue = jest.fn();
       const wrapper = makeWrapper({
-        control: {} as any,
-        setValue: mockSetValue as any,
+        control: {} as unknown as Control<AttendanceEditInputs>,
+        setValue: mockSetValue as unknown as UseFormSetValue<AttendanceEditInputs>,
         workDate,
-        getValues: (() => null) as any,
+        getValues: (() => null) as unknown as UseFormGetValues<AttendanceEditInputs>,
       });
       const { result } = renderHook(
         () => useAutoConfiguredTimeFlag({ timeField: "endTime" }),
@@ -207,10 +209,10 @@ describe("useAutoConfiguredTimeFlag", () => {
     it("endTime フィールド: workDate が null のとき setValue を呼ばない", () => {
       const mockSetValue = jest.fn();
       const wrapper = makeWrapper({
-        control: {} as any,
-        setValue: mockSetValue as any,
+        control: {} as unknown as Control<AttendanceEditInputs>,
+        setValue: mockSetValue as unknown as UseFormSetValue<AttendanceEditInputs>,
         workDate: null,
-        getValues: (() => null) as any,
+        getValues: (() => null) as unknown as UseFormGetValues<AttendanceEditInputs>,
       });
       const { result } = renderHook(
         () => useAutoConfiguredTimeFlag({ timeField: "endTime" }),
@@ -230,10 +232,10 @@ describe("useAutoConfiguredTimeFlag", () => {
       const existingTime = "2024-02-20T10:30:00.000Z";
       const mockGetValues = jest.fn().mockReturnValue(existingTime);
       const wrapper = makeWrapper({
-        control: {} as any,
-        setValue: mockSetValue as any,
+        control: {} as unknown as Control<AttendanceEditInputs>,
+        setValue: mockSetValue as unknown as UseFormSetValue<AttendanceEditInputs>,
         workDate: null, // workDate は null だが getValues で補う
-        getValues: mockGetValues as any,
+        getValues: mockGetValues as unknown as UseFormGetValues<AttendanceEditInputs>,
       });
       const { result } = renderHook(
         () => useAutoConfiguredTimeFlag({ timeField: "startTime" }),
@@ -251,10 +253,10 @@ describe("useAutoConfiguredTimeFlag", () => {
     it("applyConfiguredTime(true) で設定される時刻が getEndTime の時刻を反映する（endTime）", () => {
       const mockSetValue = jest.fn();
       const wrapper = makeWrapper({
-        control: {} as any,
-        setValue: mockSetValue as any,
+        control: {} as unknown as Control<AttendanceEditInputs>,
+        setValue: mockSetValue as unknown as UseFormSetValue<AttendanceEditInputs>,
         workDate,
-        getValues: (() => null) as any,
+        getValues: (() => null) as unknown as UseFormGetValues<AttendanceEditInputs>,
       });
       const { result } = renderHook(
         () => useAutoConfiguredTimeFlag({ timeField: "endTime" }),
@@ -275,10 +277,10 @@ describe("useAutoConfiguredTimeFlag", () => {
 
   describe("返却値に control が含まれる", () => {
     it("context の control がそのまま返る", () => {
-      const mockControl = {} as any;
+      const mockControl = {} as unknown as Control<AttendanceEditInputs>;
       const wrapper = makeWrapper({
         control: mockControl,
-        setValue: jest.fn() as any,
+        setValue: jest.fn() as unknown as UseFormSetValue<AttendanceEditInputs>,
       });
       const { result } = renderHook(
         () => useAutoConfiguredTimeFlag({ timeField: "startTime" }),

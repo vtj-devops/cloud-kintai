@@ -379,7 +379,7 @@ describe("AdminStaffEditor", () => {
       // The form values are set via setValue in useEffect → getValues reflects them after render
       await waitFor(() => {
         // Cognito ID badge shows staff cognito user id (from getValues)
-        const badges = screen.getAllByText(/-/);
+        const _badges = screen.getAllByText(/-/);
         // at minimum renders without error
         expect(screen.getByTestId("save-button")).toBeInTheDocument();
       });

@@ -272,12 +272,6 @@ export default function WorkflowCarouselDialog({
 
   useEffect(() => {
     if (!open) return;
-    setCurrentIndex(initialIndex);
-    setIsCompleted(false);
-  }, [initialIndex, open]);
-
-  useEffect(() => {
-    if (!open) return;
 
     previousActiveElementRef.current = document.activeElement;
     const previousOverflow = document.body.style.overflow;

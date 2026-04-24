@@ -674,10 +674,10 @@ describe("DailyReportCarouselDialog", () => {
     it("actionError clears when comment input changes after an error", async () => {
       const user = userEvent.setup();
       const report = makeReport();
-      let callCount = 0;
+      let _callCount = 0;
       mockGraphql.mockImplementation((params: GraphqlCallParams) => {
         if (isMutationCall(params)) {
-          callCount++;
+          _callCount++;
           return Promise.reject(new Error("更新エラー"));
         }
         return Promise.resolve(makeFetchResponse(report));

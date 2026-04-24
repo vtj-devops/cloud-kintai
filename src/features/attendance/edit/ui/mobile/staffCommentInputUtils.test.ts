@@ -1,4 +1,4 @@
-import { createSelectReasonHandler, getEnabledReasons } from "../staffCommentInputUtils";
+import { createSelectReasonHandler, getEnabledReasons } from "./staffCommentInputUtils";
 
 describe("getEnabledReasons", () => {
   it("enabled な理由だけを返す", () => {

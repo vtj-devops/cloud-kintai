@@ -7,7 +7,7 @@ import NoRestTimeMessage from "./NoRestTimeMessage";
 import {
   calcTotalRestTime,
   RestTimeInput,
-} from "./RestTimeInput/RestTimeInput";
+} from "./RestTimeInput";
 
 export default function RestTimeItem() {
   const { restFields, restAppend, changeRequests, watch, workDate, isOnBreak } =

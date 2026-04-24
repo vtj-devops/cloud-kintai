@@ -11,9 +11,6 @@ describe("preloadRoute", () => {
   });
 
   it("登録済みルートのモジュールローダーを呼び出す", async () => {
-    const mockImport = jest
-      .fn()
-      .mockResolvedValue({ default: () => null });
     jest.mock("../../pages/Register", () => ({ default: () => null }), {
       virtual: true,
     });
@@ -23,7 +20,6 @@ describe("preloadRoute", () => {
   });
 
   it("同じhrefを2回呼んでも重複ロードしない", () => {
-    const calls: string[] = [];
     // Just ensure the function doesn't crash on re-call
     preloadRoute("/register");
     preloadRoute("/register");
@@ -41,7 +37,6 @@ describe("scheduleIdleRoutePreload", () => {
     isAdminUser: boolean;
     isOperatorUser?: boolean;
   }) => void;
-  let preloadRoute: (href: string) => void;
 
   beforeEach(async () => {
     jest.resetModules();
@@ -55,7 +50,6 @@ describe("scheduleIdleRoutePreload", () => {
 
     const mod = await import("../routePreloaders");
     scheduleIdleRoutePreload = mod.scheduleIdleRoutePreload;
-    preloadRoute = mod.preloadRoute;
   });
 
   afterEach(() => {

@@ -4,8 +4,7 @@ import { collectAttendanceErrorMessages } from "@entities/attendance/validation/
 import type { AttendanceEditContextProps } from "@features/attendance/edit/model/AttendanceEditProvider";
 import AttendanceEditProvider from "@features/attendance/edit/model/AttendanceEditProvider";
 import { AttendanceEditInputs } from "@features/attendance/edit/model/common";
-import DesktopEditor from "@features/attendance/edit/ui/desktopEditor/DesktopEditor";
-import { MobileEditor } from "@features/attendance/edit/ui/mobileEditor/MobileEditor";
+import { AttendanceEditForm } from "@features/attendance/edit/ui/AttendanceEditForm";
 import { useAppNotification } from "@shared/lib/useAppNotification";
 import { PageContent } from "@shared/ui/layout";
 import dayjs from "dayjs";
@@ -155,15 +154,7 @@ export default function AttendanceEdit() {
       >
         {dialog}
         <AttendanceEditErrorAlert messages={errorMessages} />
-        <div className="block md:hidden" data-testid="attendance-mobile-editor">
-          <MobileEditor />
-        </div>
-        <div
-          className="hidden md:block"
-          data-testid="attendance-desktop-editor"
-        >
-          <DesktopEditor />
-        </div>
+        <AttendanceEditForm />
       </PageContent>
     </AttendanceEditProvider>
   );

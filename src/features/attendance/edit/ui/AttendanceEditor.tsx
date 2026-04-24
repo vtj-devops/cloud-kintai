@@ -217,6 +217,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
   const watchedEndTime = watch("endTime");
   const watchedStartTime = watch("startTime");
   const watchedRests = watch("rests");
+  // eslint-disable-next-line react-hooks/incompatible-library -- react-hook-form's watch() is not a React hook
   const watchedHourlyPaidHolidayTimes = watch("hourlyPaidHolidayTimes");
   const errorMessages = useMemo(
     () => collectAttendanceErrorMessages(errors),

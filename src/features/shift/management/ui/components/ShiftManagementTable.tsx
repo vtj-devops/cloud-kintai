@@ -17,7 +17,11 @@ import { ShiftManagementTableRow } from "./ShiftManagementTableRow";
 
 type Props = {
   days: Dayjs[];
-  groupedShiftStaffs: any;
+  groupedShiftStaffs: {
+    groupId?: string;
+    groupName?: string;
+    staffs: { id: string; name: string }[];
+  }[];
   holidaySet: Set<string>;
   companyHolidaySet: Set<string>;
   holidayNameMap: Map<string, string>;

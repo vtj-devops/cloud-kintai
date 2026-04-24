@@ -1,6 +1,8 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
+import type { UseFormGetValues } from "react-hook-form";
 
 import { useAttendanceRecord } from "../useAttendanceRecord";
+import { createMockAttendanceRecordParams } from "./testUtils";
 
 // ---- モック定義 ----
 
@@ -95,23 +97,7 @@ describe("useAttendanceRecord", () => {
   describe("初期状態", () => {
     it("targetStaffId / targetWorkDate が未指定のとき正しい初期値を返す", async () => {
       // params を外側で生成して参照を安定させる
-      const params = {
-        targetStaffId: undefined as string | undefined,
-        targetWorkDate: undefined as string | undefined,
-        readOnly: false,
-        setValue: jest.fn() as any,
-        reset: jest.fn() as any,
-        restReplace: jest.fn() as any,
-        hourlyPaidHolidayTimeReplace: jest.fn() as any,
-        systemCommentReplace: jest.fn() as any,
-        getValues: jest.fn() as any,
-        logger: {
-          error: jest.fn(),
-          debug: jest.fn(),
-          info: jest.fn(),
-          warn: jest.fn(),
-        } as any,
-      };
+      const params = createMockAttendanceRecordParams();
 
       const { result } = renderHook(() => useAttendanceRecord(params));
 
@@ -134,23 +120,9 @@ describe("useAttendanceRecord", () => {
   // ----------------------------------------------------------------
   describe("スタッフ取得（targetStaffId が指定されたとき）", () => {
     it("fetchStaff が targetStaffId で呼ばれる", async () => {
-      const params = {
-        targetStaffId: "staff-001",
-        targetWorkDate: undefined as string | undefined,
-        readOnly: false,
-        setValue: jest.fn() as any,
-        reset: jest.fn() as any,
-        restReplace: jest.fn() as any,
-        hourlyPaidHolidayTimeReplace: jest.fn() as any,
-        systemCommentReplace: jest.fn() as any,
-        getValues: jest.fn() as any,
-        logger: {
-          error: jest.fn(),
-          debug: jest.fn(),
-          info: jest.fn(),
-          warn: jest.fn(),
-        } as any,
-      };
+      const params = createMockAttendanceRecordParams({
+      targetStaffId: "staff-001",
+    });
 
       renderHook(() => useAttendanceRecord(params));
 
@@ -160,23 +132,9 @@ describe("useAttendanceRecord", () => {
     });
 
     it("fetchStaff 成功時に staff がセットされる", async () => {
-      const params = {
-        targetStaffId: "staff-001",
-        targetWorkDate: undefined as string | undefined,
-        readOnly: false,
-        setValue: jest.fn() as any,
-        reset: jest.fn() as any,
-        restReplace: jest.fn() as any,
-        hourlyPaidHolidayTimeReplace: jest.fn() as any,
-        systemCommentReplace: jest.fn() as any,
-        getValues: jest.fn() as any,
-        logger: {
-          error: jest.fn(),
-          debug: jest.fn(),
-          info: jest.fn(),
-          warn: jest.fn(),
-        } as any,
-      };
+      const params = createMockAttendanceRecordParams({
+      targetStaffId: "staff-001",
+    });
 
       const { result } = renderHook(() => useAttendanceRecord(params));
 
@@ -196,18 +154,10 @@ describe("useAttendanceRecord", () => {
         info: jest.fn(),
         warn: jest.fn(),
       };
-      const params = {
-        targetStaffId: "staff-001",
-        targetWorkDate: undefined as string | undefined,
-        readOnly: false,
-        setValue: jest.fn() as any,
-        reset: jest.fn() as any,
-        restReplace: jest.fn() as any,
-        hourlyPaidHolidayTimeReplace: jest.fn() as any,
-        systemCommentReplace: jest.fn() as any,
-        getValues: jest.fn() as any,
-        logger: mockLogger as any,
-      };
+      const params = createMockAttendanceRecordParams({
+      targetStaffId: "staff-001",
+      logger: mockLogger,
+    });
 
       const { result } = renderHook(() => useAttendanceRecord(params));
 
@@ -227,23 +177,11 @@ describe("useAttendanceRecord", () => {
   // ----------------------------------------------------------------
   describe("勤怠データ取得（staff + targetWorkDate が揃ったとき）", () => {
     it("triggerGetAttendance が staff.cognitoUserId と targetWorkDate で呼ばれる", async () => {
-      const params = {
-        targetStaffId: "staff-001",
-        targetWorkDate: "2024-01-15",
-        readOnly: false,
-        setValue: jest.fn() as any,
-        reset: jest.fn() as any,
-        restReplace: jest.fn() as any,
-        hourlyPaidHolidayTimeReplace: jest.fn() as any,
-        systemCommentReplace: jest.fn() as any,
-        getValues: jest.fn(() => []) as any,
-        logger: {
-          error: jest.fn(),
-          debug: jest.fn(),
-          info: jest.fn(),
-          warn: jest.fn(),
-        } as any,
-      };
+      const params = createMockAttendanceRecordParams({
+      targetStaffId: "staff-001",
+      targetWorkDate: "2024-01-15",
+      getValues: jest.fn(() => []) as unknown as UseFormGetValues<AttendanceEditInputs>,
+    });
 
       renderHook(() => useAttendanceRecord(params));
 
@@ -268,23 +206,16 @@ describe("useAttendanceRecord", () => {
         unwrap: () => Promise.resolve(null),
       });
 
-      const params = {
-        targetStaffId: "staff-001",
-        targetWorkDate: "2024-01-15",
-        readOnly: false,
-        setValue: mockSetValue as any,
-        reset: mockReset as any,
-        restReplace: mockRestReplace as any,
-        hourlyPaidHolidayTimeReplace: mockHourlyPaidHolidayTimeReplace as any,
-        systemCommentReplace: mockSystemCommentReplace as any,
-        getValues: jest.fn(() => []) as any,
-        logger: {
-          error: jest.fn(),
-          debug: jest.fn(),
-          info: jest.fn(),
-          warn: jest.fn(),
-        } as any,
-      };
+      const params = createMockAttendanceRecordParams({
+      targetStaffId: "staff-001",
+      targetWorkDate: "2024-01-15",
+      setValue: mockSetValue,
+      reset: mockReset,
+      restReplace: mockRestReplace,
+      hourlyPaidHolidayTimeReplace: mockHourlyPaidHolidayTimeReplace,
+      systemCommentReplace: mockSystemCommentReplace,
+      getValues: jest.fn(() => []) as unknown as UseFormGetValues<AttendanceEditInputs>,
+    });
 
       renderHook(() => useAttendanceRecord(params));
 
@@ -302,23 +233,11 @@ describe("useAttendanceRecord", () => {
         unwrap: () => Promise.reject(new Error("API error")),
       });
 
-      const params = {
-        targetStaffId: "staff-001",
-        targetWorkDate: "2024-01-15",
-        readOnly: false,
-        setValue: jest.fn() as any,
-        reset: jest.fn() as any,
-        restReplace: jest.fn() as any,
-        hourlyPaidHolidayTimeReplace: jest.fn() as any,
-        systemCommentReplace: jest.fn() as any,
-        getValues: jest.fn(() => []) as any,
-        logger: {
-          error: jest.fn(),
-          debug: jest.fn(),
-          info: jest.fn(),
-          warn: jest.fn(),
-        } as any,
-      };
+      const params = createMockAttendanceRecordParams({
+      targetStaffId: "staff-001",
+      targetWorkDate: "2024-01-15",
+      getValues: jest.fn(() => []) as unknown as UseFormGetValues<AttendanceEditInputs>,
+    });
 
       renderHook(() => useAttendanceRecord(params));
 
@@ -335,23 +254,10 @@ describe("useAttendanceRecord", () => {
     it("applyHistory(0) が form の setValue を正しく呼ぶ（sortedHistories が空の場合は何もしない）", () => {
       // attendance が null → sortedHistories = []
       const mockSetValue = jest.fn();
-      const params = {
-        targetStaffId: undefined as string | undefined,
-        targetWorkDate: undefined as string | undefined,
-        readOnly: false,
-        setValue: mockSetValue as any,
-        reset: jest.fn() as any,
-        restReplace: jest.fn() as any,
-        hourlyPaidHolidayTimeReplace: jest.fn() as any,
-        systemCommentReplace: jest.fn() as any,
-        getValues: jest.fn(() => []) as any,
-        logger: {
-          error: jest.fn(),
-          debug: jest.fn(),
-          info: jest.fn(),
-          warn: jest.fn(),
-        } as any,
-      };
+      const params = createMockAttendanceRecordParams({
+      setValue: mockSetValue,
+      getValues: jest.fn(() => []) as unknown as UseFormGetValues<AttendanceEditInputs>,
+    });
 
       const { result } = renderHook(() => useAttendanceRecord(params));
 
@@ -381,23 +287,12 @@ describe("useAttendanceRecord", () => {
       const mockRestReplace = jest.fn();
       const mockHourlyPaidHolidayTimeReplace = jest.fn();
 
-      const params = {
-        targetStaffId: undefined as string | undefined,
-        targetWorkDate: undefined as string | undefined,
-        readOnly: false,
-        setValue: mockSetValue as any,
-        reset: jest.fn() as any,
-        restReplace: mockRestReplace as any,
-        hourlyPaidHolidayTimeReplace: mockHourlyPaidHolidayTimeReplace as any,
-        systemCommentReplace: jest.fn() as any,
-        getValues: jest.fn(() => []) as any,
-        logger: {
-          error: jest.fn(),
-          debug: jest.fn(),
-          info: jest.fn(),
-          warn: jest.fn(),
-        } as any,
-      };
+      const params = createMockAttendanceRecordParams({
+      setValue: mockSetValue,
+      restReplace: mockRestReplace,
+      hourlyPaidHolidayTimeReplace: mockHourlyPaidHolidayTimeReplace,
+      getValues: jest.fn(() => []) as unknown as UseFormGetValues<AttendanceEditInputs>,
+    });
 
       const { result } = renderHook(() => useAttendanceRecord(params));
 
@@ -432,23 +327,10 @@ describe("useAttendanceRecord", () => {
 
     it("存在しないインデックスを指定しても applyHistory は何もしない", () => {
       const mockSetValue = jest.fn();
-      const params = {
-        targetStaffId: undefined as string | undefined,
-        targetWorkDate: undefined as string | undefined,
-        readOnly: false,
-        setValue: mockSetValue as any,
-        reset: jest.fn() as any,
-        restReplace: jest.fn() as any,
-        hourlyPaidHolidayTimeReplace: jest.fn() as any,
-        systemCommentReplace: jest.fn() as any,
-        getValues: jest.fn(() => []) as any,
-        logger: {
-          error: jest.fn(),
-          debug: jest.fn(),
-          info: jest.fn(),
-          warn: jest.fn(),
-        } as any,
-      };
+      const params = createMockAttendanceRecordParams({
+      setValue: mockSetValue,
+      getValues: jest.fn(() => []) as unknown as UseFormGetValues<AttendanceEditInputs>,
+    });
 
       const { result } = renderHook(() => useAttendanceRecord(params));
 
@@ -465,23 +347,7 @@ describe("useAttendanceRecord", () => {
   // ----------------------------------------------------------------
   describe("setHistoryIndex", () => {
     it("setHistoryIndex で historyIndex が更新される", () => {
-      const params = {
-        targetStaffId: undefined as string | undefined,
-        targetWorkDate: undefined as string | undefined,
-        readOnly: false,
-        setValue: jest.fn() as any,
-        reset: jest.fn() as any,
-        restReplace: jest.fn() as any,
-        hourlyPaidHolidayTimeReplace: jest.fn() as any,
-        systemCommentReplace: jest.fn() as any,
-        getValues: jest.fn() as any,
-        logger: {
-          error: jest.fn(),
-          debug: jest.fn(),
-          info: jest.fn(),
-          warn: jest.fn(),
-        } as any,
-      };
+      const params = createMockAttendanceRecordParams();
 
       const { result } = renderHook(() => useAttendanceRecord(params));
 
@@ -498,23 +364,9 @@ describe("useAttendanceRecord", () => {
   // ----------------------------------------------------------------
   describe("refetchAttendance", () => {
     it("staff がないとき refetchAttendance は triggerGetAttendance を呼ばない", async () => {
-      const params = {
-        targetStaffId: undefined as string | undefined,
-        targetWorkDate: "2024-01-15",
-        readOnly: false,
-        setValue: jest.fn() as any,
-        reset: jest.fn() as any,
-        restReplace: jest.fn() as any,
-        hourlyPaidHolidayTimeReplace: jest.fn() as any,
-        systemCommentReplace: jest.fn() as any,
-        getValues: jest.fn() as any,
-        logger: {
-          error: jest.fn(),
-          debug: jest.fn(),
-          info: jest.fn(),
-          warn: jest.fn(),
-        } as any,
-      };
+      const params = createMockAttendanceRecordParams({
+      targetWorkDate: "2024-01-15",
+    });
 
       const { result } = renderHook(() => useAttendanceRecord(params));
 
@@ -531,23 +383,11 @@ describe("useAttendanceRecord", () => {
     });
 
     it("staff と targetWorkDate が揃っているとき refetchAttendance が triggerGetAttendance を呼ぶ", async () => {
-      const params = {
-        targetStaffId: "staff-001",
-        targetWorkDate: "2024-01-15",
-        readOnly: false,
-        setValue: jest.fn() as any,
-        reset: jest.fn() as any,
-        restReplace: jest.fn() as any,
-        hourlyPaidHolidayTimeReplace: jest.fn() as any,
-        systemCommentReplace: jest.fn() as any,
-        getValues: jest.fn(() => []) as any,
-        logger: {
-          error: jest.fn(),
-          debug: jest.fn(),
-          info: jest.fn(),
-          warn: jest.fn(),
-        } as any,
-      };
+      const params = createMockAttendanceRecordParams({
+      targetStaffId: "staff-001",
+      targetWorkDate: "2024-01-15",
+      getValues: jest.fn(() => []) as unknown as UseFormGetValues<AttendanceEditInputs>,
+    });
 
       const { result } = renderHook(() => useAttendanceRecord(params));
 
@@ -582,18 +422,12 @@ describe("useAttendanceRecord", () => {
         info: jest.fn(),
         warn: jest.fn(),
       };
-      const params = {
-        targetStaffId: "staff-001",
-        targetWorkDate: "2024-01-15",
-        readOnly: false,
-        setValue: jest.fn() as any,
-        reset: jest.fn() as any,
-        restReplace: jest.fn() as any,
-        hourlyPaidHolidayTimeReplace: jest.fn() as any,
-        systemCommentReplace: jest.fn() as any,
-        getValues: jest.fn(() => []) as any,
-        logger: mockLogger as any,
-      };
+      const params = createMockAttendanceRecordParams({
+      targetStaffId: "staff-001",
+      targetWorkDate: "2024-01-15",
+      getValues: jest.fn(() => []) as unknown as UseFormGetValues<AttendanceEditInputs>,
+      logger: mockLogger,
+    });
 
       const { result } = renderHook(() => useAttendanceRecord(params));
 
@@ -645,23 +479,9 @@ describe("useAttendanceRecord", () => {
         changeRequests: [],
       };
 
-      const params = {
-        targetStaffId: undefined as string | undefined,
-        targetWorkDate: undefined as string | undefined,
-        readOnly: false,
-        setValue: jest.fn() as any,
-        reset: jest.fn() as any,
-        restReplace: jest.fn() as any,
-        hourlyPaidHolidayTimeReplace: jest.fn() as any,
-        systemCommentReplace: jest.fn() as any,
-        getValues: jest.fn(() => []) as any,
-        logger: {
-          error: jest.fn(),
-          debug: jest.fn(),
-          info: jest.fn(),
-          warn: jest.fn(),
-        } as any,
-      };
+      const params = createMockAttendanceRecordParams({
+      getValues: jest.fn(() => []) as unknown as UseFormGetValues<AttendanceEditInputs>,
+    });
 
       const { result } = renderHook(() => useAttendanceRecord(params));
 
@@ -683,46 +503,16 @@ describe("useAttendanceRecord", () => {
   describe("hasAttendanceFetched", () => {
     it("attendanceData が undefined のとき hasAttendanceFetched = false", () => {
       mockAttendanceQueryData = undefined;
-      const params = {
-        targetStaffId: undefined as string | undefined,
-        targetWorkDate: undefined as string | undefined,
-        readOnly: false,
-        setValue: jest.fn() as any,
-        reset: jest.fn() as any,
-        restReplace: jest.fn() as any,
-        hourlyPaidHolidayTimeReplace: jest.fn() as any,
-        systemCommentReplace: jest.fn() as any,
-        getValues: jest.fn() as any,
-        logger: {
-          error: jest.fn(),
-          debug: jest.fn(),
-          info: jest.fn(),
-          warn: jest.fn(),
-        } as any,
-      };
+      const params = createMockAttendanceRecordParams();
       const { result } = renderHook(() => useAttendanceRecord(params));
       expect(result.current.hasAttendanceFetched).toBe(false);
     });
 
     it("attendanceData が null のとき hasAttendanceFetched = true", () => {
       mockAttendanceQueryData = null;
-      const params = {
-        targetStaffId: undefined as string | undefined,
-        targetWorkDate: undefined as string | undefined,
-        readOnly: false,
-        setValue: jest.fn() as any,
-        reset: jest.fn() as any,
-        restReplace: jest.fn() as any,
-        hourlyPaidHolidayTimeReplace: jest.fn() as any,
-        systemCommentReplace: jest.fn() as any,
-        getValues: jest.fn(() => []) as any,
-        logger: {
-          error: jest.fn(),
-          debug: jest.fn(),
-          info: jest.fn(),
-          warn: jest.fn(),
-        } as any,
-      };
+      const params = createMockAttendanceRecordParams({
+      getValues: jest.fn(() => []) as unknown as UseFormGetValues<AttendanceEditInputs>,
+    });
       const { result } = renderHook(() => useAttendanceRecord(params));
       expect(result.current.hasAttendanceFetched).toBe(true);
       mockAttendanceQueryData = undefined;

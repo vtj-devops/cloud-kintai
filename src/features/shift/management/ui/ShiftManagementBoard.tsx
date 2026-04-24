@@ -310,7 +310,13 @@ export default function ShiftManagementBoard() {
       {!loading && !shiftRequestsLoading && (
         <ShiftManagementTable
           days={days}
-          groupedShiftStaffs={groupedShiftStaffs}
+          groupedShiftStaffs={groupedShiftStaffs.map((group) => ({
+            groupName: group.groupName,
+            staffs: group.members.map((staff) => ({
+              id: staff.id,
+              name: `${staff.familyName}${staff.givenName}`,
+            })),
+          }))}
           holidaySet={holidaySet}
           companyHolidaySet={companyHolidaySet}
           holidayNameMap={holidayNameMap}

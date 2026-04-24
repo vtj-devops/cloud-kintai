@@ -53,17 +53,14 @@ jest.mock("./useAttendanceEditFormSync", () => ({
   }),
 }));
 
-jest.mock("@/features/attendance/edit/ui/desktopEditor/DesktopEditor", () => {
-  function MockDesktopEditor() {
-    return <div>desktop-editor</div>;
-  }
-
-  return MockDesktopEditor;
-});
-
-jest.mock("@/features/attendance/edit/ui/mobileEditor/MobileEditor", () => ({
-  MobileEditor: function MockMobileEditor() {
-    return <div>mobile-editor</div>;
+jest.mock("@features/attendance/edit/ui/AttendanceEditForm", () => ({
+  AttendanceEditForm: function MockAttendanceEditForm() {
+    return (
+      <>
+        <div data-testid="attendance-mobile-editor">mobile-editor</div>
+        <div data-testid="attendance-desktop-editor">desktop-editor</div>
+      </>
+    );
   },
 }));
 

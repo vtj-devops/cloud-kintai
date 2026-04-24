@@ -3,7 +3,6 @@ import {
   Dispatch,
   SetStateAction,
   useCallback,
-  useEffect,
   useMemo,
   useState,
   useTransition,
@@ -52,17 +51,6 @@ export const useShiftPlanRows = (): UseShiftPlanRowsReturn => {
     Record<number, ShiftPlanRow[]>
   >(() => ({ [initialYear]: createDefaultRows(initialYear) }));
 
-  useEffect(() => {
-    setYearlyPlans((prev) => {
-      if (prev[selectedYear]) return prev;
-      return { ...prev, [selectedYear]: getOrInitYearRows(selectedYear, prev) };
-    });
-    setSavedYearlyPlans((prev) => {
-      if (prev[selectedYear]) return prev;
-      return { ...prev, [selectedYear]: getOrInitYearRows(selectedYear, prev) };
-    });
-  }, [selectedYear]);
-
   const currentRows = yearlyPlans[selectedYear] ?? [];
 
   const isDirty = useMemo(() => {
@@ -94,6 +82,10 @@ export const useShiftPlanRows = (): UseShiftPlanRowsReturn => {
       const nextYear = selectedYear + delta;
       startTransition(() => {
         ensureYearRows(nextYear);
+        setSavedYearlyPlans((prev) => {
+          if (prev[nextYear]) return prev;
+          return { ...prev, [nextYear]: getOrInitYearRows(nextYear, prev) };
+        });
         setSelectedYear(nextYear);
       });
     },

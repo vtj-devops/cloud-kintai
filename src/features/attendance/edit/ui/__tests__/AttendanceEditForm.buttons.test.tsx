@@ -36,7 +36,7 @@ jest.mock("@entities/operation-log/model/useOperationLog", () => () => ({
   create: jest.fn(),
 }));
 
-describe("DesktopEditor buttons", () => {
+describe("AttendanceEditForm buttons", () => {
   const renderWithContext = async (
     ctx: Partial<React.ContextType<typeof AttendanceEditContext>>
   ) => {
@@ -81,11 +81,11 @@ describe("DesktopEditor buttons", () => {
       ...ctx,
     };
 
-    const { default: DesktopEditor } = await import("../DesktopEditor");
+    const { AttendanceEditForm } = await import("../AttendanceEditForm");
     return render(
       <MemoryRouter>
         <AttendanceEditProvider value={value}>
-          <DesktopEditor />
+          <AttendanceEditForm />
         </AttendanceEditProvider>
       </MemoryRouter>
     );

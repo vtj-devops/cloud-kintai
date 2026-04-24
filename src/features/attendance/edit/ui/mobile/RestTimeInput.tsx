@@ -11,8 +11,8 @@ import {
   UseFieldArrayRemove,
 } from "react-hook-form";
 
-import RestEndTimeInput from "../../desktopEditor/RestTimeItem/RestTimeInput/RestEndTimeInput";
-import RestStartTimeInput from "../../desktopEditor/RestTimeItem/RestTimeInput/RestStartTimeInput";
+import RestEndTimeInput from "../desktop/RestEndTimeInput";
+import RestStartTimeInput from "../desktop/RestStartTimeInput";
 
 type RestTimeInputProps = {
   restFields: FieldArrayWithId<AttendanceEditInputs, "rests", "id">[];

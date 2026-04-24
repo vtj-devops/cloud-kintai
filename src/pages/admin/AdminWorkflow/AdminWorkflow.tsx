@@ -479,6 +479,7 @@ export default function AdminWorkflow() {
 
         {isCarouselOpen && selectedWorkflowId && (
           <WorkflowCarouselDialog
+            key={selectedWorkflowId}
             open={isCarouselOpen}
             onClose={() => {
               setIsCarouselOpen(false);

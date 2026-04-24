@@ -4,8 +4,8 @@ import StartTimeInput from "@features/attendance/edit/ui/items/WorkTimeItem/Star
 import { Label } from "@features/attendance/edit/ui/mobile/Label";
 import { useContext } from "react";
 
-import { GoDirectlyFlagInput } from "../GoDirectlyFlagInput";
-import { ReturnDirectlyFlagInput } from "../ReturnDirectlyFlagInput";
+import { GoDirectlyFlagInput } from "./GoDirectlyFlagInput";
+import { ReturnDirectlyFlagInput } from "./ReturnDirectlyFlagInput";
 
 export function WorkTimeInput() {
   const { workDate, control, setValue } = useContext(AttendanceEditContext);

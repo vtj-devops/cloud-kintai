@@ -12,10 +12,9 @@ import { AttendanceEditInputs } from "@features/attendance/edit/model/common";
 import { render, renderHook, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import dayjs from "dayjs";
-import React from "react";
 import { FieldArrayWithId, useForm } from "react-hook-form";
 
-import RestEndTimeInput from "../RestEndTimeInput";
+import RestEndTimeInput from "./RestEndTimeInput";
 
 // ─── AppConfig mock value ──────────────────────────────────────────────────────
 

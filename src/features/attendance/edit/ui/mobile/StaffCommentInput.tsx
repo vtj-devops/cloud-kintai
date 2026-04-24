@@ -4,9 +4,9 @@ import {
   createSelectReasonHandler,
   getEnabledReasons,
   ReasonItem,
-} from "@features/attendance/edit/ui/mobileEditor/staffCommentInputUtils";
-import { StaffCommentReasonButtons } from "@features/attendance/edit/ui/mobileEditor/StaffCommentReasonButtons";
-import { StaffCommentTextarea } from "@features/attendance/edit/ui/mobileEditor/StaffCommentTextarea";
+} from "@features/attendance/edit/ui/mobile/staffCommentInputUtils";
+import { StaffCommentReasonButtons } from "@features/attendance/edit/ui/mobile/StaffCommentReasonButtons";
+import { StaffCommentTextarea } from "@features/attendance/edit/ui/mobile/StaffCommentTextarea";
 import { SectionTitle } from "@shared/ui/typography";
 import { useContext, useMemo, useState } from "react";
 
