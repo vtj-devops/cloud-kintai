@@ -1,17 +1,11 @@
+import { type UpdateStaffPayload } from "@entities/staff/api/staffApi";
 import { graphqlClient } from "@shared/api/amplify/graphqlClient";
 import * as mutations from "@shared/api/graphql/documents/mutations";
 import {
-  ModelStaffConditionInput,
   Staff,
-  UpdateStaffInput,
   UpdateStaffMutation,
 } from "@shared/api/graphql/types";
 import { GraphQLResult } from "aws-amplify/api";
-
-export type UpdateStaffPayload = {
-  input: UpdateStaffInput;
-  condition?: ModelStaffConditionInput | null;
-};
 
 export default async function updateStaff({
   input,

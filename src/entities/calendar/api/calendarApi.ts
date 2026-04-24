@@ -47,21 +47,13 @@ import type {
   UpdateHolidayCalendarInput,
   UpdateHolidayCalendarMutation,
 } from "@shared/api/graphql/types";
+import { type UpdatePayload } from "@shared/api/graphql/updatePayload";
 
-export type UpdateHolidayCalendarPayload = {
-  input: UpdateHolidayCalendarInput;
-  condition?: ModelHolidayCalendarConditionInput | null;
-};
+export type UpdateHolidayCalendarPayload = UpdatePayload<UpdateHolidayCalendarInput, ModelHolidayCalendarConditionInput>;
 
-export type UpdateCompanyHolidayCalendarPayload = {
-  input: UpdateCompanyHolidayCalendarInput;
-  condition?: ModelCompanyHolidayCalendarConditionInput | null;
-};
+export type UpdateCompanyHolidayCalendarPayload = UpdatePayload<UpdateCompanyHolidayCalendarInput, ModelCompanyHolidayCalendarConditionInput>;
 
-export type UpdateEventCalendarPayload = {
-  input: UpdateEventCalendarInput;
-  condition?: ModelEventCalendarConditionInput | null;
-};
+export type UpdateEventCalendarPayload = UpdatePayload<UpdateEventCalendarInput, ModelEventCalendarConditionInput>;
 
 // Exported for testing
 export const nonNullable = <T>(value: T | null | undefined): value is T =>

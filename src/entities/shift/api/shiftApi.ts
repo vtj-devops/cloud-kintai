@@ -17,6 +17,7 @@ import type {
   UpdateShiftRequestInput,
   UpdateShiftRequestMutation,
 } from "@shared/api/graphql/types";
+import { type UpdatePayload } from "@shared/api/graphql/updatePayload";
 
 export type ShiftRequestLite = {
   id: string;
@@ -166,10 +167,7 @@ export type ShiftRequestQueryArgs = {
   targetMonth: string;
 };
 
-export type UpdateShiftRequestPayload = {
-  input: UpdateShiftRequestInput;
-  condition?: ModelShiftRequestConditionInput | null;
-};
+export type UpdateShiftRequestPayload = UpdatePayload<UpdateShiftRequestInput, ModelShiftRequestConditionInput>;
 
 export type CreateShiftRequestPayload = {
   input: CreateShiftRequestInput;

@@ -16,11 +16,9 @@ import type {
   UpdateAppConfigInput,
   UpdateAppConfigMutation,
 } from "@shared/api/graphql/types";
+import { type UpdatePayload } from "@shared/api/graphql/updatePayload";
 
-export type UpdateAppConfigPayload = {
-  input: UpdateAppConfigInput;
-  condition?: ModelAppConfigConditionInput | null;
-};
+export type UpdateAppConfigPayload = UpdatePayload<UpdateAppConfigInput, ModelAppConfigConditionInput>;
 
 // Exported for testing
 export const nonNullable = <T>(value: T | null | undefined): value is T =>

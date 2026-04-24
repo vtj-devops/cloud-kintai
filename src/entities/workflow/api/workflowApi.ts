@@ -23,11 +23,9 @@ import type {
   UpdateWorkflowMutation,
   Workflow,
 } from "@shared/api/graphql/types";
+import { type UpdatePayload } from "@shared/api/graphql/updatePayload";
 
-export type UpdateWorkflowPayload = {
-  input: UpdateWorkflowInput;
-  condition?: ModelWorkflowConditionInput | null;
-};
+export type UpdateWorkflowPayload = UpdatePayload<UpdateWorkflowInput, ModelWorkflowConditionInput>;
 
 const buildWorkflowTagId = (workflow: { id?: string | null }) =>
   workflow.id ?? "unknown";

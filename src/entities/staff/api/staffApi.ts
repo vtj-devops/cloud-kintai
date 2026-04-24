@@ -21,12 +21,10 @@ import type {
   UpdateStaffInput,
   UpdateStaffMutation,
 } from "@shared/api/graphql/types";
+import { type UpdatePayload } from "@shared/api/graphql/updatePayload";
 
 
-export type UpdateStaffPayload = {
-  input: UpdateStaffInput;
-  condition?: ModelStaffConditionInput | null;
-};
+export type UpdateStaffPayload = UpdatePayload<UpdateStaffInput, ModelStaffConditionInput>;
 
 const buildStaffTagId = (staff: { id?: string | null }) =>
   staff.id ?? "unknown";

@@ -20,11 +20,9 @@ import type {
   UpdateWorkflowTemplateMutation,
   WorkflowTemplate,
 } from "@shared/api/graphql/types";
+import { type UpdatePayload } from "@shared/api/graphql/updatePayload";
 
-export type UpdateWorkflowTemplatePayload = {
-  input: UpdateWorkflowTemplateInput;
-  condition?: ModelWorkflowTemplateConditionInput | null;
-};
+export type UpdateWorkflowTemplatePayload = UpdatePayload<UpdateWorkflowTemplateInput, ModelWorkflowTemplateConditionInput>;
 
 type GetWorkflowTemplatesArg = {
   organizationId: string;
