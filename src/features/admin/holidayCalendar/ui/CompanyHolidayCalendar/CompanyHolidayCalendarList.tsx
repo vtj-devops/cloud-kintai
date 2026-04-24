@@ -3,13 +3,13 @@ import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import { type UpdateCompanyHolidayCalendarPayload, useBulkCreateCompanyHolidayCalendarsMutation, useCreateCompanyHolidayCalendarMutation, useDeleteCompanyHolidayCalendarMutation, useGetCompanyHolidayCalendarsQuery, useUpdateCompanyHolidayCalendarMutation, } from "@entities/calendar/api/calendarApi";
 import { useHolidayCalendarList } from "@features/admin/holidayCalendar/model/useHolidayCalendarList";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Button, FormControl, InputLabel, LinearProgress, MenuItem, Paper, Select, Stack, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, TextField, Typography, } from "@mui/material";
+import { FormControl, InputLabel, LinearProgress, MenuItem, Paper, Select, Stack, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, TextField, Typography, } from "@mui/material";
 import { buildVersionOrUpdatedAtCondition, getNextVersion, } from "@shared/api/graphql/concurrency";
 import { CompanyHolidayCalendar } from "@shared/api/graphql/types";
 import { CompanyHolidayCalendarMessage } from "@shared/lib/message/CompanyHolidayCalendarMessage";
 import { MessageStatus } from "@shared/lib/message/Message";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
-import { AppIconButton } from "@shared/ui/button";
+import { AppButton, AppIconButton } from "@shared/ui/button";
 import dayjs from "dayjs";
 import { useCallback, useEffect } from "react";
 
@@ -122,11 +122,11 @@ export default function CompanyHolidayCalendarList() {
             <TextField label="休日名で検索" size="small" value={nameFilter} onChange={(e) => {
             setNameFilter(e.target.value);
         }} sx={{ minWidth: 200 }}/>
-            <Button size="small" onClick={() => {
+            <AppButton size="sm" variant="ghost" onClick={() => {
             clearFilters();
         }}>
               クリア
-            </Button>
+            </AppButton>
           </Stack>
         </Paper>
       </Stack>

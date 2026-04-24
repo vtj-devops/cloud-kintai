@@ -8,10 +8,10 @@ import useAttendanceDaily, { AttendanceDaily, DuplicateAttendanceDaily, } from "
 import { useCalendars } from "@entities/calendar/model/useCalendars";
 import { useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import SearchIcon from "@mui/icons-material/Search";
-import { Alert, AlertTitle, Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography, } from "@mui/material";
+import { Alert, AlertTitle, Box, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography, } from "@mui/material";
 import { Attendance } from "@shared/api/graphql/types";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
-import { AppIconButton } from "@shared/ui/button";
+import { AppButton, AppIconButton } from "@shared/ui/button";
 import dayjs from "dayjs";
 import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -579,9 +579,9 @@ export default function AttendanceDailyList() {
                         {dup.ids.join(", ") || "-"}
                       </TableCell>
                       <TableCell align="right">
-                        <Button variant="contained" color="error" size="small" data-staff-id={dup.staffId} onClick={handleOpenConfirmClick}>
+                        <AppButton variant="solid" tone="danger" size="sm" data-staff-id={dup.staffId} onClick={handleOpenConfirmClick}>
                           確認
-                        </Button>
+                        </AppButton>
                       </TableCell>
                     </TableRow>))}
               </TableBody>
@@ -681,12 +681,12 @@ export default function AttendanceDailyList() {
             </>)}
         </DialogContent>
         <DialogActions>
-          {selectionMode === "record" && selectedRecordIndex !== null && (<Button color="error" variant="outlined" onClick={handleDeleteDuplicates}>
+          {selectionMode === "record" && selectedRecordIndex !== null && (<AppButton variant="outline" tone="danger" onClick={handleDeleteDuplicates}>
               選択したデータを残す
-            </Button>)}
-          <Button onClick={handleCloseConfirm} color="inherit">
+            </AppButton>)}
+          <AppButton variant="ghost" tone="neutral" onClick={handleCloseConfirm}>
             閉じる
-          </Button>
+          </AppButton>
         </DialogActions>
       </Dialog>
 
