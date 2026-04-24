@@ -107,7 +107,7 @@ describe("useWorkflowTemplates", () => {
     mockCreate.mockReturnValue({ unwrap: jest.fn().mockResolvedValue({ id: "new-1" }) });
     const { result } = renderHook(() => useWorkflowTemplates(defaultParams));
     await act(async () => {
-      await result.current.createTemplate({ title: "New", content: "{}" });
+      await result.current.createTemplate({ name: "New", title: "New", content: "{}" });
     });
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({ title: "New", organizationId: "org-1" }),
@@ -118,7 +118,7 @@ describe("useWorkflowTemplates", () => {
     const { result } = renderHook(() =>
       useWorkflowTemplates({ isAuthenticated: false, organizationId: "org-1" }),
     );
-    await expect(result.current.createTemplate({ title: "New", content: "{}" })).rejects.toThrow(
+    await expect(result.current.createTemplate({ name: "New", title: "New", content: "{}" })).rejects.toThrow(
       "User is not authenticated",
     );
   });

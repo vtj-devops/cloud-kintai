@@ -1,7 +1,9 @@
 import { useDynamicWorkflowForm } from "@features/workflow/application-form/model/useDynamicWorkflowForm";
 import { extractExistingWorkflowComments } from "@features/workflow/comment-thread/model/workflowCommentBuilder";
 import { useWorkflowEditLoaderState } from "@features/workflow/hooks/useWorkflowEditLoaderState";
+import type { WorkflowEntity } from "@features/workflow/hooks/useWorkflowLoaderWorkflow";
 import { WorkflowCategory, WorkflowStatus } from "@shared/api/graphql/types";
+import { createMockStaff, createMockWorkflow } from "@shared/test-utils/mockFactories";
 import { act, renderHook } from "@testing-library/react";
 
 jest.mock("@features/workflow/application-form/model/initDynamicFields", () => ({
@@ -35,20 +37,21 @@ beforeEach(() => {
   });
 });
 
-const makeWorkflow = (overrides = {}) => ({
-  id: "wf-1",
-  staffId: "staff-1",
-  organizationId: "org-1",
-  category: WorkflowCategory.PAID_LEAVE,
-  status: WorkflowStatus.SUBMITTED,
-  overTimeDetails: null,
-  createdAt: "2024-03-01T00:00:00.000Z",
-  ...overrides,
-});
+const makeWorkflow = (overrides: Partial<WorkflowEntity> = {}): WorkflowEntity =>
+  createMockWorkflow({
+    id: "wf-1",
+    staffId: "staff-1",
+    category: WorkflowCategory.PAID_LEAVE,
+    status: WorkflowStatus.SUBMITTED,
+    overTimeDetails: null,
+    createdAt: "2024-03-01T00:00:00.000Z",
+    updatedAt: "2024-03-01T00:00:00.000Z",
+    ...overrides,
+  }) as WorkflowEntity;
 
 const STAFFS = [
-  { id: "staff-1", familyName: "山田", givenName: "太郎" },
-  { id: "staff-2", familyName: "鈴木", givenName: "花子" },
+  createMockStaff({ id: "staff-1", familyName: "山田", givenName: "太郎" }),
+  createMockStaff({ id: "staff-2", familyName: "鈴木", givenName: "花子" }),
 ];
 
 describe("useWorkflowEditLoaderState", () => {
@@ -78,7 +81,7 @@ describe("useWorkflowEditLoaderState", () => {
   });
 
   it("staffId が null の場合は applicant が null", () => {
-    const workflow = makeWorkflow({ staffId: null });
+    const workflow = makeWorkflow({ staffId: null as unknown as string });
     const { result } = renderHook(() =>
       useWorkflowEditLoaderState(workflow, STAFFS),
     );
@@ -124,7 +127,7 @@ describe("useWorkflowEditLoaderState", () => {
   });
 
   it("extractExistingWorkflowComments の結果が existingComments に設定される", () => {
-    const comments = [{ commentId: "c1", content: "hello", createdAt: "" }];
+    const comments = [{ id: "c1", staffId: "staff-1", text: "hello", createdAt: "" }];
     mockExtractComments.mockReturnValue(comments);
     const workflow = makeWorkflow();
     const { result } = renderHook(() =>
@@ -138,7 +141,7 @@ describe("useWorkflowEditLoaderState", () => {
     const { result } = renderHook(() =>
       useWorkflowEditLoaderState(workflow, STAFFS),
     );
-    const newComments = [{ commentId: "c2", content: "new", createdAt: "" }];
+    const newComments = [{ id: "c2", staffId: "staff-1", text: "new", createdAt: "" }];
     act(() => {
       result.current.setExistingComments(newComments);
     });

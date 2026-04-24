@@ -1,4 +1,4 @@
-import { WorkflowCategory } from "@shared/api/graphql/types";
+import { WorkflowCategory, WorkflowStatus } from "@shared/api/graphql/types";
 
 import {
   buildWorkflowCommentActorName,
@@ -27,8 +27,10 @@ jest.mock("@shared/lib/mail/adminNotification", () => ({
 }));
 
 const BASE_WORKFLOW = {
+  __typename: "Workflow" as const,
   id: "wf1",
   staffId: "applicant1",
+  status: WorkflowStatus.SUBMITTED,
   category: WorkflowCategory.PAID_LEAVE,
   updatedAt: "2024-03-01T10:00:00Z",
   createdAt: "2024-03-01T09:00:00Z",

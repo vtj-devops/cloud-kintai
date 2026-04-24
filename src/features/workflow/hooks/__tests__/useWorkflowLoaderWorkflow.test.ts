@@ -3,6 +3,7 @@ import { useGetWorkflowQuery, workflowApi } from "@entities/workflow/api/workflo
 import { useWorkflowLoaderWorkflow, WorkflowEntity } from "@features/workflow/hooks/useWorkflowLoaderWorkflow";
 import { subscribeWorkflowCommentNotifications } from "@features/workflow/notification/model/workflowNotificationEventService";
 import { graphqlClient } from "@shared/api/amplify/graphqlClient";
+import { WorkflowStatus } from "@shared/api/graphql/types";
 import { act, renderHook } from "@testing-library/react";
 
 jest.mock("@app/hooks", () => ({ useAppDispatchV2: jest.fn() }));
@@ -42,7 +43,7 @@ const mockUpsertQueryData = workflowApi.util.upsertQueryData as jest.Mock;
 const makeWorkflow = (overrides: Partial<WorkflowEntity> = {}): WorkflowEntity =>
   ({
     id: "wf-1",
-    status: "PENDING",
+    status: WorkflowStatus.PENDING,
     staffId: "staff-1",
     comments: [],
     ...overrides,
@@ -81,7 +82,7 @@ describe("useWorkflowLoaderWorkflow", () => {
 
     it("returns RTK Query data when available, overriding initialWorkflow", () => {
       const initial = makeWorkflow({ id: "wf-1" });
-      const fetched = makeWorkflow({ id: "wf-1", status: "APPROVED" });
+      const fetched = makeWorkflow({ id: "wf-1", status: WorkflowStatus.APPROVED });
       mockUseGetWorkflowQuery.mockReturnValue({ data: fetched });
 
       const { result } = renderHook(() =>
@@ -141,7 +142,7 @@ describe("useWorkflowLoaderWorkflow", () => {
       mockUseGetWorkflowQuery.mockReturnValue({ data: wf });
       mockUpsertQueryData.mockReturnValue({ type: "mock" });
       const fetchResult = Promise.resolve({
-        data: { getWorkflow: { ...wf, status: "APPROVED" } },
+        data: { getWorkflow: { ...wf, status: WorkflowStatus.APPROVED } },
       });
       mockGraphql.mockImplementation(makeGraphqlMock(fetchResult));
 

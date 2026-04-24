@@ -5,6 +5,7 @@ export {
 } from "./graphqlMocks";
 export {
   createMockAppConfig,
+  createMockApprovalStep,
   createMockAttendance,
   createMockChangeRequest,
   createMockDailyReport,
@@ -12,6 +13,7 @@ export {
   createMockStaff,
   createMockUser,
   createMockWorkflow,
+  createMockWorkflowComment,
 } from "./mockFactories";
 export type { RenderWithProvidersOptions } from "./renderWithProviders";
 export {

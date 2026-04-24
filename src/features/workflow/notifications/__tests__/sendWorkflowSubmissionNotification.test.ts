@@ -84,8 +84,11 @@ describe("sendWorkflowSubmissionNotification", () => {
     const workflow = makeWorkflow({
       category: WorkflowCategory.ABSENCE,
       overTimeDetails: {
+        __typename: "OverTimeWorkflow" as const,
+        date: "2024-03-10",
         startTime: "2024-03-10T00:00:00Z",
         endTime: "2024-03-12T00:00:00Z",
+        reason: "",
       },
     });
     await sendWorkflowSubmissionNotification({
@@ -101,7 +104,13 @@ describe("sendWorkflowSubmissionNotification", () => {
     const workflow = makeWorkflow({
       category: WorkflowCategory.CUSTOM,
       customWorkflowTitle: "特別申請",
-      overTimeDetails: { date: "2024-03-15" },
+      overTimeDetails: {
+        __typename: "OverTimeWorkflow" as const,
+        date: "2024-03-15",
+        startTime: "2024-03-15T00:00:00Z",
+        endTime: "2024-03-15T00:00:00Z",
+        reason: "",
+      },
     });
     await sendWorkflowSubmissionNotification({
       staffs: [],
@@ -114,7 +123,13 @@ describe("sendWorkflowSubmissionNotification", () => {
 
   it("reason が存在する場合 body に含まれる", async () => {
     const workflow = makeWorkflow({
-      overTimeDetails: { date: "2024-03-15", reason: "緊急対応のため" },
+      overTimeDetails: {
+        __typename: "OverTimeWorkflow" as const,
+        date: "2024-03-15",
+        startTime: "2024-03-15T00:00:00Z",
+        endTime: "2024-03-15T00:00:00Z",
+        reason: "緊急対応のため",
+      },
     });
     await sendWorkflowSubmissionNotification({
       staffs: [],

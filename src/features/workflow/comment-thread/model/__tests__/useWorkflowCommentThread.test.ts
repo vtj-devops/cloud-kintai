@@ -1,6 +1,12 @@
 import { StaffRole } from "@entities/staff/model/useStaffs/useStaffs";
+import type { WorkflowEntity } from "@features/workflow/hooks/useWorkflowLoaderWorkflow";
 import { WorkflowCategory, WorkflowStatus } from "@shared/api/graphql/types";
-import { createMockUser } from "@shared/test-utils/mockFactories";
+import {
+  createMockStaff,
+  createMockUser,
+  createMockWorkflow,
+  createMockWorkflowComment,
+} from "@shared/test-utils/mockFactories";
 import { act, renderHook, waitFor } from "@testing-library/react";
 
 import useWorkflowCommentThread from "../useWorkflowCommentThread";
@@ -16,48 +22,50 @@ jest.mock("../submitWorkflowComment", () => ({
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
-const STAFF_A = {
+const STAFF_A = createMockStaff({
   id: "staff-1",
   cognitoUserId: "cognito-1",
   familyName: "山田",
   givenName: "太郎",
   role: StaffRole.STAFF,
-};
+});
 
-const STAFF_B = {
+const STAFF_B = createMockStaff({
   id: "staff-2",
   cognitoUserId: "cognito-2",
   familyName: "鈴木",
   givenName: "花子",
   role: StaffRole.ADMIN,
-};
-
-const makeWorkflow = (overrides: Record<string, unknown> = {}) => ({
-  __typename: "Workflow" as const,
-  id: "wf-1",
-  staffId: "staff-1",
-  status: WorkflowStatus.PENDING,
-  category: WorkflowCategory.PAID_LEAVE,
-  comments: [],
-  approvalSteps: [],
-  createdAt: "2024-01-01T00:00:00.000Z",
-  updatedAt: "2024-01-01T00:00:00.000Z",
-  ...overrides,
 });
 
-const makeComment = (overrides: Record<string, unknown> = {}) => ({
-  __typename: "WorkflowComment" as const,
-  id: "comment-1",
-  staffId: "staff-1",
-  text: "テストコメント",
-  createdAt: "2024-01-01T00:00:00.000Z",
-  ...overrides,
-});
+const makeWorkflow = (overrides: Partial<WorkflowEntity> = {}): WorkflowEntity =>
+  createMockWorkflow({
+    id: "wf-1",
+    staffId: "staff-1",
+    status: WorkflowStatus.PENDING,
+    category: WorkflowCategory.PAID_LEAVE,
+    comments: [],
+    approvalSteps: [],
+    createdAt: "2024-01-01T00:00:00.000Z",
+    updatedAt: "2024-01-01T00:00:00.000Z",
+    ...overrides,
+  }) as WorkflowEntity;
+
+const makeComment = (
+  overrides: Partial<{ id: string; staffId: string; text: string; createdAt: string }> = {},
+) =>
+  createMockWorkflowComment({
+    id: "comment-1",
+    staffId: "staff-1",
+    text: "テストコメント",
+    createdAt: "2024-01-01T00:00:00.000Z",
+    ...overrides,
+  });
 
 const defaultParams = {
   workflow: makeWorkflow(),
   staffs: [STAFF_A, STAFF_B],
-  cognitoUser: { id: "cognito-1", familyName: "山田", givenName: "太郎" },
+  cognitoUser: createMockUser({ id: "cognito-1", familyName: "山田", givenName: "太郎" }),
   onWorkflowChange: jest.fn(),
   notifySuccess: jest.fn(),
   notifyError: jest.fn(),

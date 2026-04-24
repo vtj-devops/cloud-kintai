@@ -5,6 +5,7 @@ import {
   useUpdateWorkflowMutation,
 } from "@entities/workflow/api/workflowApi";
 import { graphqlClient } from "@shared/api/amplify/graphqlClient";
+import { WorkflowCategory, WorkflowStatus } from "@shared/api/graphql/types";
 import { act, renderHook } from "@testing-library/react";
 
 import useWorkflows from "../useWorkflows";
@@ -33,7 +34,7 @@ const mockGetQuery = useGetWorkflowsQuery as jest.Mock;
 const mockCreateMutation = useCreateWorkflowMutation as jest.Mock;
 const mockUpdateMutation = useUpdateWorkflowMutation as jest.Mock;
 const mockDeleteMutation = useDeleteWorkflowMutation as jest.Mock;
-const mockGraphqlClient = graphqlClient as { graphql: jest.Mock };
+const mockGraphqlClient = graphqlClient as unknown as { graphql: jest.Mock };
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -63,7 +64,7 @@ describe("useWorkflows", () => {
   });
 
   it("workflows データを返す", () => {
-    const workflows = [{ id: "wf-1", category: "PAID_LEAVE" }];
+    const workflows = [{ id: "wf-1", category: WorkflowCategory.PAID_LEAVE }];
     mockGetQuery.mockReturnValue({
       data: workflows,
       isLoading: false,
@@ -119,7 +120,7 @@ describe("useWorkflows", () => {
     mockCreate.mockReturnValue({ unwrap: jest.fn().mockResolvedValue({ id: "wf-new" }) });
     const { result } = renderHook(() => useWorkflows({ isAuthenticated: true }));
     await act(async () => {
-      await result.current.create({ staffId: "s1", organizationId: "org-1", category: "PAID_LEAVE" });
+      await result.current.create({ staffId: "s1", status: WorkflowStatus.DRAFT, category: WorkflowCategory.PAID_LEAVE });
     });
     expect(mockCreate).toHaveBeenCalled();
   });
@@ -127,7 +128,7 @@ describe("useWorkflows", () => {
   it("create: 未認証の場合は例外をスロー", async () => {
     const { result } = renderHook(() => useWorkflows({ isAuthenticated: false }));
     await expect(
-      result.current.create({ staffId: "s1", organizationId: "org-1", category: "PAID_LEAVE" }),
+      result.current.create({ staffId: "s1", status: WorkflowStatus.DRAFT, category: WorkflowCategory.PAID_LEAVE }),
     ).rejects.toThrow("User is not authenticated");
   });
 

@@ -66,12 +66,10 @@ const makeDefaultContext = (overrides = {}) => ({
   ui: { expandedMessages: {}, input: "", sending: false },
   actions: {
     permissions: {
+      isSubmittedOrLater: false,
+      isFinalized: false,
       withdrawDisabled: false,
-      withdrawTooltip: "",
       editDisabled: false,
-      editTooltip: "",
-      canApprove: false,
-      canReject: false,
     },
     onBack: jest.fn(),
     onWithdraw: jest.fn(),
@@ -89,12 +87,10 @@ const makeDefaultContext = (overrides = {}) => ({
   categoryLabel: "残業申請",
   approvalSteps: [],
   permissions: {
+    isSubmittedOrLater: false,
+    isFinalized: false,
     withdrawDisabled: false,
-    withdrawTooltip: "",
     editDisabled: false,
-    editTooltip: "",
-    canApprove: false,
-    canReject: false,
   },
   onBack: jest.fn(),
   onWithdraw: jest.fn(),
@@ -163,12 +159,10 @@ describe("WorkflowDetailActions", () => {
   it("withdrawDisabled のとき取り下げボタンが disabled", () => {
     renderWithContext(<WorkflowDetailActions />, {
       permissions: {
+        isSubmittedOrLater: false,
+        isFinalized: false,
         withdrawDisabled: true,
-        withdrawTooltip: "取り下げ不可",
         editDisabled: false,
-        editTooltip: "",
-        canApprove: false,
-        canReject: false,
       },
     });
     expect(screen.getByRole("button", { name: "取り下げ" })).toBeDisabled();
@@ -177,12 +171,10 @@ describe("WorkflowDetailActions", () => {
   it("editDisabled のとき編集ボタンが disabled", () => {
     renderWithContext(<WorkflowDetailActions />, {
       permissions: {
+        isSubmittedOrLater: false,
+        isFinalized: false,
         withdrawDisabled: false,
-        withdrawTooltip: "",
         editDisabled: true,
-        editTooltip: "編集不可",
-        canApprove: false,
-        canReject: false,
       },
     });
     expect(screen.getByRole("button", { name: "編集" })).toBeDisabled();
