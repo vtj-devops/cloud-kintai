@@ -245,7 +245,7 @@ describe("DailyReportCarouselDialog", () => {
       mockFetchOnly(report);
       renderDialog({ onClose, selectedReport: report, filteredReports: [report] });
       // The close button is the only button in the header (border-b) section
-      const headerEl = screen.getByText("日報を確認").closest(".border-b")!;
+      const headerEl = screen.getByText("日報を確認").closest(".border-b") as HTMLElement;
       const closeBtn = within(headerEl).getByRole("button");
       await user.click(closeBtn);
       expect(onClose).toHaveBeenCalled();

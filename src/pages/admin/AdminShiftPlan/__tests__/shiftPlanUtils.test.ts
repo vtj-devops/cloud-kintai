@@ -93,14 +93,11 @@ describe("buildRowsFromPlans", () => {
     overrides: Partial<ShiftPlanMonthSetting> = {}
   ): ShiftPlanMonthSetting => ({
     __typename: "ShiftPlanMonthSetting",
-    id: `plan-${month}`,
     month,
     editStart: `2024-0${month}-05`,
     editEnd: `2024-0${month}-25`,
     enabled: true,
     dailyCapacities: [],
-    createdAt: "",
-    updatedAt: "",
     ...overrides,
   });
 

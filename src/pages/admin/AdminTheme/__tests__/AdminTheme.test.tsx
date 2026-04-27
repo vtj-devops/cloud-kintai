@@ -126,9 +126,6 @@ function makeContextValue(overrides: Partial<React.ContextType<typeof AppConfigC
     saveConfig: mockSaveConfig,
     fetchConfig: mockFetchConfig,
     getThemeTokens: mockGetThemeTokens,
-    // required by AppConfigContextProps
-    fetchConfig: mockFetchConfig,
-    saveConfig: mockSaveConfig,
     ...overrides,
   } as unknown as React.ContextType<typeof AppConfigContext>;
 }
@@ -342,7 +339,7 @@ describe("AdminTheme", () => {
 
     it("configIdがない場合はCreateAppConfigInputで保存する", async () => {
       const user = userEvent.setup();
-      mockGetConfigId.mockReturnValue(null);
+      mockGetConfigId.mockReturnValue(null as unknown as string);
       renderAdminTheme();
 
       await selectDifferentPreset(user);
