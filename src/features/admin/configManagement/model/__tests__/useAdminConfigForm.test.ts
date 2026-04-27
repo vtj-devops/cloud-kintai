@@ -1,6 +1,9 @@
 import { useAppDispatchV2 } from "@app/hooks";
 import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
-import { buildCreatePayload, buildUpdatePayload } from "@features/admin/configManagement/lib/payloadHelpers";
+import {
+  buildCreatePayload,
+  buildUpdatePayload,
+} from "@features/admin/configManagement/lib/payloadHelpers";
 import { validateAdminConfigForm } from "@features/admin/configManagement/lib/validation";
 import { useAdminConfigForm } from "@features/admin/configManagement/model/useAdminConfigForm";
 import { act, renderHook, waitFor } from "@testing-library/react";
@@ -65,11 +68,15 @@ const createContextValue = (overrides: Record<string, unknown> = {}) => ({
   getAbsentEnabled: jest.fn().mockReturnValue(false),
   getAttendanceStatisticsEnabled: jest.fn().mockReturnValue(false),
   getWorkflowNotificationEnabled: jest.fn().mockReturnValue(false),
-  getTimeRecorderAnnouncement: jest.fn().mockReturnValue({ enabled: false, message: "" }),
+  getTimeRecorderAnnouncement: jest
+    .fn()
+    .mockReturnValue({ enabled: false, message: "" }),
   getOverTimeCheckEnabled: jest.fn().mockReturnValue(false),
   getShiftCollaborativeEnabled: jest.fn().mockReturnValue(false),
   getShiftDefaultMode: jest.fn().mockReturnValue("normal"),
-  getThemeTokens: jest.fn().mockReturnValue({ component: { adminPanel: { sectionSpacing: 2 } } }),
+  getThemeTokens: jest
+    .fn()
+    .mockReturnValue({ component: { adminPanel: { sectionSpacing: 2 } } }),
   ...overrides,
 });
 
@@ -77,7 +84,11 @@ const buildWrapper = (contextValue: ReturnType<typeof createContextValue>) => {
   const Wrapper = ({ children }: { children: React.ReactNode }) =>
     React.createElement(
       AppConfigContext.Provider,
-      { value: contextValue as unknown as React.ContextType<typeof AppConfigContext> },
+      {
+        value: contextValue as unknown as React.ContextType<
+          typeof AppConfigContext
+        >,
+      },
       children,
     );
   Wrapper.displayName = "TestWrapper";
@@ -121,8 +132,14 @@ describe("useAdminConfigForm", () => {
 
     it("links / reasons / officeMode がコンテキストの値で初期化される", async () => {
       const ctx = createContextValue({
-        getLinks: jest.fn().mockReturnValue([{ label: "Link A", url: "https://a.com", enabled: true, icon: "" }]),
-        getReasons: jest.fn().mockReturnValue([{ reason: "reason1", enabled: true }]),
+        getLinks: jest
+          .fn()
+          .mockReturnValue([
+            { label: "Link A", url: "https://a.com", enabled: true, icon: "" },
+          ]),
+        getReasons: jest
+          .fn()
+          .mockReturnValue([{ reason: "reason1", enabled: true }]),
         getOfficeMode: jest.fn().mockReturnValue(true),
       });
       const { result } = renderHook(() => useAdminConfigForm(), {
@@ -156,7 +173,9 @@ describe("useAdminConfigForm", () => {
     });
 
     it("getConfigId が null を返すとき id は null のまま", async () => {
-      const ctx = createContextValue({ getConfigId: jest.fn().mockReturnValue(null) });
+      const ctx = createContextValue({
+        getConfigId: jest.fn().mockReturnValue(null),
+      });
       const { result: _result } = renderHook(() => useAdminConfigForm(), {
         wrapper: buildWrapper(ctx),
       });
@@ -177,7 +196,9 @@ describe("useAdminConfigForm", () => {
       });
 
       await waitFor(() => {
-        expect(result.current.amHolidayStartTime?.format("HH:mm")).toBe("09:30");
+        expect(result.current.amHolidayStartTime?.format("HH:mm")).toBe(
+          "09:30",
+        );
       });
     });
   });
@@ -192,17 +213,28 @@ describe("useAdminConfigForm", () => {
         wrapper: buildWrapper(ctx),
       });
 
-      act(() => { result.current.handleAddLink(); });
+      act(() => {
+        result.current.handleAddLink();
+      });
 
       expect(result.current.links).toHaveLength(1);
-      expect(result.current.links[0]).toEqual({ label: "", url: "", enabled: true, icon: "" });
+      expect(result.current.links[0]).toEqual({
+        label: "",
+        url: "",
+        enabled: true,
+        icon: "",
+      });
     });
   });
 
   describe("handleLinkChange", () => {
     it("指定インデックスのリンクフィールドを更新する", async () => {
       const ctx = createContextValue({
-        getLinks: jest.fn().mockReturnValue([{ label: "old", url: "", enabled: true, icon: "" }]),
+        getLinks: jest
+          .fn()
+          .mockReturnValue([
+            { label: "old", url: "", enabled: true, icon: "" },
+          ]),
       });
       const { result } = renderHook(() => useAdminConfigForm(), {
         wrapper: buildWrapper(ctx),
@@ -210,7 +242,9 @@ describe("useAdminConfigForm", () => {
 
       await waitFor(() => expect(result.current.links).toHaveLength(1));
 
-      act(() => { result.current.handleLinkChange(0, "label", "new label"); });
+      act(() => {
+        result.current.handleLinkChange(0, "label", "new label");
+      });
 
       expect(result.current.links[0].label).toBe("new label");
     });
@@ -230,7 +264,9 @@ describe("useAdminConfigForm", () => {
 
       await waitFor(() => expect(result.current.links).toHaveLength(2));
 
-      act(() => { result.current.handleRemoveLink(0); });
+      act(() => {
+        result.current.handleRemoveLink(0);
+      });
 
       expect(result.current.links).toHaveLength(1);
       expect(result.current.links[0].label).toBe("B");
@@ -247,7 +283,9 @@ describe("useAdminConfigForm", () => {
         wrapper: buildWrapper(ctx),
       });
 
-      act(() => { result.current.handleAddReason(); });
+      act(() => {
+        result.current.handleAddReason();
+      });
 
       expect(result.current.reasons).toHaveLength(1);
       expect(result.current.reasons[0]).toEqual({ reason: "", enabled: true });
@@ -257,7 +295,9 @@ describe("useAdminConfigForm", () => {
   describe("handleReasonChange", () => {
     it("指定インデックスの理由フィールドを更新する", async () => {
       const ctx = createContextValue({
-        getReasons: jest.fn().mockReturnValue([{ reason: "old reason", enabled: true }]),
+        getReasons: jest
+          .fn()
+          .mockReturnValue([{ reason: "old reason", enabled: true }]),
       });
       const { result } = renderHook(() => useAdminConfigForm(), {
         wrapper: buildWrapper(ctx),
@@ -265,7 +305,9 @@ describe("useAdminConfigForm", () => {
 
       await waitFor(() => expect(result.current.reasons).toHaveLength(1));
 
-      act(() => { result.current.handleReasonChange(0, "reason", "new reason"); });
+      act(() => {
+        result.current.handleReasonChange(0, "reason", "new reason");
+      });
 
       expect(result.current.reasons[0].reason).toBe("new reason");
     });
@@ -285,7 +327,9 @@ describe("useAdminConfigForm", () => {
 
       await waitFor(() => expect(result.current.reasons).toHaveLength(2));
 
-      act(() => { result.current.handleRemoveReason(1); });
+      act(() => {
+        result.current.handleRemoveReason(1);
+      });
 
       expect(result.current.reasons).toHaveLength(1);
       expect(result.current.reasons[0].reason).toBe("R1");
@@ -322,7 +366,9 @@ describe("useAdminConfigForm", () => {
         wrapper: buildWrapper(ctx),
       });
 
-      act(() => { result.current.handleAddQuickInputStartTime(); });
+      act(() => {
+        result.current.handleAddQuickInputStartTime();
+      });
 
       expect(result.current.quickInputStartTimes).toHaveLength(1);
       expect(result.current.quickInputStartTimes[0].enabled).toBe(true);
@@ -332,32 +378,46 @@ describe("useAdminConfigForm", () => {
   describe("handleQuickInputStartTimeChange", () => {
     it("指定インデックスの時間を更新する", async () => {
       const ctx = createContextValue({
-        getQuickInputStartTimes: jest.fn().mockReturnValue([{ time: "09:00", enabled: true }]),
+        getQuickInputStartTimes: jest
+          .fn()
+          .mockReturnValue([{ time: "09:00", enabled: true }]),
       });
       const { result } = renderHook(() => useAdminConfigForm(), {
         wrapper: buildWrapper(ctx),
       });
 
-      await waitFor(() => expect(result.current.quickInputStartTimes).toHaveLength(1));
+      await waitFor(() =>
+        expect(result.current.quickInputStartTimes).toHaveLength(1),
+      );
 
       const newTime = dayjs("10:30", "HH:mm");
-      act(() => { result.current.handleQuickInputStartTimeChange(0, newTime); });
+      act(() => {
+        result.current.handleQuickInputStartTimeChange(0, newTime);
+      });
 
-      expect(result.current.quickInputStartTimes[0].time.format("HH:mm")).toBe("10:30");
+      expect(result.current.quickInputStartTimes[0].time.format("HH:mm")).toBe(
+        "10:30",
+      );
     });
 
     it("null の場合は変更しない", async () => {
       const ctx = createContextValue({
-        getQuickInputStartTimes: jest.fn().mockReturnValue([{ time: "09:00", enabled: true }]),
+        getQuickInputStartTimes: jest
+          .fn()
+          .mockReturnValue([{ time: "09:00", enabled: true }]),
       });
       const { result } = renderHook(() => useAdminConfigForm(), {
         wrapper: buildWrapper(ctx),
       });
 
-      await waitFor(() => expect(result.current.quickInputStartTimes).toHaveLength(1));
+      await waitFor(() =>
+        expect(result.current.quickInputStartTimes).toHaveLength(1),
+      );
       const originalTime = result.current.quickInputStartTimes[0].time;
 
-      act(() => { result.current.handleQuickInputStartTimeChange(0, null); });
+      act(() => {
+        result.current.handleQuickInputStartTimeChange(0, null);
+      });
 
       expect(result.current.quickInputStartTimes[0].time).toBe(originalTime);
     });
@@ -366,15 +426,21 @@ describe("useAdminConfigForm", () => {
   describe("handleQuickInputStartTimeToggle", () => {
     it("指定インデックスの enabled を切り替える", async () => {
       const ctx = createContextValue({
-        getQuickInputStartTimes: jest.fn().mockReturnValue([{ time: "09:00", enabled: true }]),
+        getQuickInputStartTimes: jest
+          .fn()
+          .mockReturnValue([{ time: "09:00", enabled: true }]),
       });
       const { result } = renderHook(() => useAdminConfigForm(), {
         wrapper: buildWrapper(ctx),
       });
 
-      await waitFor(() => expect(result.current.quickInputStartTimes).toHaveLength(1));
+      await waitFor(() =>
+        expect(result.current.quickInputStartTimes).toHaveLength(1),
+      );
 
-      act(() => { result.current.handleQuickInputStartTimeToggle(0); });
+      act(() => {
+        result.current.handleQuickInputStartTimeToggle(0);
+      });
 
       expect(result.current.quickInputStartTimes[0].enabled).toBe(false);
     });
@@ -392,9 +458,13 @@ describe("useAdminConfigForm", () => {
         wrapper: buildWrapper(ctx),
       });
 
-      await waitFor(() => expect(result.current.quickInputStartTimes).toHaveLength(2));
+      await waitFor(() =>
+        expect(result.current.quickInputStartTimes).toHaveLength(2),
+      );
 
-      act(() => { result.current.handleRemoveQuickInputStartTime(0); });
+      act(() => {
+        result.current.handleRemoveQuickInputStartTime(0);
+      });
 
       expect(result.current.quickInputStartTimes).toHaveLength(1);
     });
@@ -407,7 +477,7 @@ describe("useAdminConfigForm", () => {
     it("false に変更すると shiftDefaultMode が 'normal' にリセットされる", async () => {
       const ctx = createContextValue({
         getShiftCollaborativeEnabled: jest.fn().mockReturnValue(true),
-        getShiftDefaultMode: jest.fn().mockReturnValue("personal"),
+        getShiftDefaultMode: jest.fn().mockReturnValue("collaborative"),
       });
       const { result } = renderHook(() => useAdminConfigForm(), {
         wrapper: buildWrapper(ctx),
@@ -415,7 +485,7 @@ describe("useAdminConfigForm", () => {
 
       // まず個人モードに設定されていることを確認
       await waitFor(() => {
-        expect(result.current.shiftDefaultMode).toBe("personal");
+        expect(result.current.shiftDefaultMode).toBe("collaborative");
         expect(result.current.shiftCollaborativeEnabled).toBe(true);
       });
 
@@ -432,13 +502,15 @@ describe("useAdminConfigForm", () => {
     it("true に変更しても shiftDefaultMode はリセットされない", async () => {
       const ctx = createContextValue({
         getShiftCollaborativeEnabled: jest.fn().mockReturnValue(false),
-        getShiftDefaultMode: jest.fn().mockReturnValue("personal"),
+        getShiftDefaultMode: jest.fn().mockReturnValue("collaborative"),
       });
       const { result } = renderHook(() => useAdminConfigForm(), {
         wrapper: buildWrapper(ctx),
       });
 
-      await waitFor(() => expect(result.current.shiftCollaborativeEnabled).toBe(false));
+      await waitFor(() =>
+        expect(result.current.shiftCollaborativeEnabled).toBe(false),
+      );
 
       act(() => {
         result.current.handleShiftCollaborativeEnabledChange({
@@ -448,7 +520,7 @@ describe("useAdminConfigForm", () => {
 
       expect(result.current.shiftCollaborativeEnabled).toBe(true);
       // shiftDefaultMode は変更前の値が保持される
-      expect(result.current.shiftDefaultMode).toBe("personal");
+      expect(result.current.shiftDefaultMode).toBe("collaborative");
     });
   });
 
@@ -459,9 +531,11 @@ describe("useAdminConfigForm", () => {
         wrapper: buildWrapper(ctx),
       });
 
-      act(() => { result.current.handleShiftDefaultModeChange("personal"); });
+      act(() => {
+        result.current.handleShiftDefaultModeChange("collaborative");
+      });
 
-      expect(result.current.shiftDefaultMode).toBe("personal");
+      expect(result.current.shiftDefaultMode).toBe("collaborative");
     });
   });
 
@@ -480,48 +554,70 @@ describe("useAdminConfigForm", () => {
         wrapper: buildWrapper(ctx),
       });
 
-      await act(async () => { await result.current.handleSave(); });
+      await act(async () => {
+        await result.current.handleSave();
+      });
 
       expect(mockDispatch).toHaveBeenCalledWith(
-        expect.objectContaining({ payload: expect.objectContaining({ tone: "error" }) }),
+        expect.objectContaining({
+          payload: expect.objectContaining({ tone: "error" }),
+        }),
       );
       expect(mockSaveConfig).not.toHaveBeenCalled();
     });
 
     it("id なし (create) : buildCreatePayload を呼び saveConfig + S14001 通知 + fetchConfig を実行する", async () => {
-      const ctx = createContextValue({ getConfigId: jest.fn().mockReturnValue(null) });
+      const ctx = createContextValue({
+        getConfigId: jest.fn().mockReturnValue(null),
+      });
       const { result } = renderHook(() => useAdminConfigForm(), {
         wrapper: buildWrapper(ctx),
       });
 
       await waitFor(() => expect(ctx.getConfigId).toHaveBeenCalled());
 
-      await act(async () => { await result.current.handleSave(); });
+      await act(async () => {
+        await result.current.handleSave();
+      });
 
       expect(buildCreatePayload).toHaveBeenCalled();
       expect(buildUpdatePayload).not.toHaveBeenCalled();
       expect(mockSaveConfig).toHaveBeenCalledWith({ type: "create" });
       expect(mockDispatch).toHaveBeenCalledWith(
-        expect.objectContaining({ payload: expect.objectContaining({ tone: "success", message: "S14001" }) }),
+        expect.objectContaining({
+          payload: expect.objectContaining({
+            tone: "success",
+            message: "S14001",
+          }),
+        }),
       );
       expect(mockFetchConfig).toHaveBeenCalled();
     });
 
     it("id あり (update) : buildUpdatePayload を呼び saveConfig + S14002 通知 + fetchConfig を実行する", async () => {
-      const ctx = createContextValue({ getConfigId: jest.fn().mockReturnValue("config-1") });
+      const ctx = createContextValue({
+        getConfigId: jest.fn().mockReturnValue("config-1"),
+      });
       const { result } = renderHook(() => useAdminConfigForm(), {
         wrapper: buildWrapper(ctx),
       });
 
       await waitFor(() => expect(ctx.getConfigId).toHaveBeenCalled());
 
-      await act(async () => { await result.current.handleSave(); });
+      await act(async () => {
+        await result.current.handleSave();
+      });
 
       expect(buildUpdatePayload).toHaveBeenCalled();
       expect(buildCreatePayload).not.toHaveBeenCalled();
       expect(mockSaveConfig).toHaveBeenCalledWith({ type: "update" });
       expect(mockDispatch).toHaveBeenCalledWith(
-        expect.objectContaining({ payload: expect.objectContaining({ tone: "success", message: "S14002" }) }),
+        expect.objectContaining({
+          payload: expect.objectContaining({
+            tone: "success",
+            message: "S14002",
+          }),
+        }),
       );
       expect(mockFetchConfig).toHaveBeenCalled();
     });
@@ -535,10 +631,17 @@ describe("useAdminConfigForm", () => {
 
       await waitFor(() => expect(ctx.getConfigId).toHaveBeenCalled());
 
-      await act(async () => { await result.current.handleSave(); });
+      await act(async () => {
+        await result.current.handleSave();
+      });
 
       expect(mockDispatch).toHaveBeenCalledWith(
-        expect.objectContaining({ payload: expect.objectContaining({ tone: "error", message: "E14001" }) }),
+        expect.objectContaining({
+          payload: expect.objectContaining({
+            tone: "error",
+            message: "E14001",
+          }),
+        }),
       );
     });
   });

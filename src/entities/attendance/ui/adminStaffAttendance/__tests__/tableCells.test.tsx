@@ -14,17 +14,15 @@ jest.mock("@mui/material", () => {
   const actual = jest.requireActual("@mui/material");
   return {
     ...actual,
-    styled:
-      (Component: React.ElementType) =>
-      () =>
-        function StyledComponent(props: Record<string, unknown>) {
-          return <Component {...props} />;
-        },
+    styled: (Component: React.ElementType) => () =>
+      function StyledComponent(props: Record<string, unknown>) {
+        return <Component {...props} />;
+      },
   };
 });
 
 const makeAppConfigContext = (
-  overrides: Record<string, unknown> = {}
+  overrides: Record<string, unknown> = {},
 ): React.ContextType<typeof AppConfigContext> =>
   ({
     getStartTime: () => dayjs("2024-01-01T09:00:00"),
@@ -81,7 +79,7 @@ describe("CreatedAtTableCell", () => {
             <CreatedAtTableCell createdAt="2024-04-01T00:00:00.000Z" />
           </tr>
         </tbody>
-      </table>
+      </table>,
     );
     expect(screen.getByRole("cell")).toHaveTextContent("2024/04/01");
   });
@@ -91,10 +89,10 @@ describe("CreatedAtTableCell", () => {
       <table>
         <tbody>
           <tr>
-            <CreatedAtTableCell createdAt={null} />
+            <CreatedAtTableCell createdAt="" />
           </tr>
         </tbody>
-      </table>
+      </table>,
     );
     expect(screen.getByRole("cell")).toHaveTextContent("");
   });
@@ -110,7 +108,7 @@ describe("UpdatedAtTableCell", () => {
             <UpdatedAtTableCell updatedAt="2024-04-02T05:00:00.000Z" />
           </tr>
         </tbody>
-      </table>
+      </table>,
     );
     expect(screen.getByRole("cell")).toHaveTextContent("2024/04/02");
   });
@@ -120,10 +118,10 @@ describe("UpdatedAtTableCell", () => {
       <table>
         <tbody>
           <tr>
-            <UpdatedAtTableCell updatedAt={null} />
+            <UpdatedAtTableCell updatedAt="" />
           </tr>
         </tbody>
-      </table>
+      </table>,
     );
     expect(screen.getByRole("cell")).toHaveTextContent("");
   });
@@ -143,7 +141,7 @@ describe("WorkDateTableCell", () => {
             />
           </tr>
         </tbody>
-      </table>
+      </table>,
     );
     expect(screen.getByRole("cell")).toHaveTextContent("4/1");
     expect(screen.getByRole("cell")).toHaveTextContent("月");
@@ -170,7 +168,7 @@ describe("WorkDateTableCell", () => {
             />
           </tr>
         </tbody>
-      </table>
+      </table>,
     );
     expect(screen.getByRole("cell")).toHaveTextContent("元日");
   });
@@ -182,7 +180,7 @@ describe("WorkTimeTableCell", () => {
     render(
       <WithConfig>
         <WorkTimeTableCell attendance={makeAttendance()} />
-      </WithConfig>
+      </WithConfig>,
     );
     const cell = screen.getByRole("cell");
     expect(cell).toHaveTextContent("〜");
@@ -191,8 +189,14 @@ describe("WorkTimeTableCell", () => {
   it("有給休暇の場合は既定値を表示する", () => {
     render(
       <WithConfig>
-        <WorkTimeTableCell attendance={makeAttendance({ paidHolidayFlag: true, startTime: null, endTime: null })} />
-      </WithConfig>
+        <WorkTimeTableCell
+          attendance={makeAttendance({
+            paidHolidayFlag: true,
+            startTime: null,
+            endTime: null,
+          })}
+        />
+      </WithConfig>,
     );
     const cell = screen.getByRole("cell");
     expect(cell).toHaveTextContent("9:00");
@@ -205,7 +209,7 @@ describe("WorkTimeTableCell", () => {
         <WorkTimeTableCell
           attendance={makeAttendance({ startTime: null, endTime: null })}
         />
-      </WithConfig>
+      </WithConfig>,
     );
     expect(screen.getByRole("cell")).toHaveTextContent("");
   });
@@ -213,8 +217,10 @@ describe("WorkTimeTableCell", () => {
   it("直行フラグがある場合「直行」を表示する", () => {
     render(
       <WithConfig>
-        <WorkTimeTableCell attendance={makeAttendance({ goDirectlyFlag: true })} />
-      </WithConfig>
+        <WorkTimeTableCell
+          attendance={makeAttendance({ goDirectlyFlag: true })}
+        />
+      </WithConfig>,
     );
     expect(screen.getByRole("cell")).toHaveTextContent("直行");
   });
@@ -222,8 +228,10 @@ describe("WorkTimeTableCell", () => {
   it("直帰フラグがある場合「直帰」を表示する", () => {
     render(
       <WithConfig>
-        <WorkTimeTableCell attendance={makeAttendance({ returnDirectlyFlag: true })} />
-      </WithConfig>
+        <WorkTimeTableCell
+          attendance={makeAttendance({ returnDirectlyFlag: true })}
+        />
+      </WithConfig>,
     );
     expect(screen.getByRole("cell")).toHaveTextContent("直帰");
   });
@@ -245,7 +253,7 @@ describe("RestTimeTableCell", () => {
             ],
           })}
         />
-      </WithConfig>
+      </WithConfig>,
     );
     const cell = screen.getByRole("cell");
     expect(cell).toHaveTextContent("〜");
@@ -257,7 +265,7 @@ describe("RestTimeTableCell", () => {
         <RestTimeTableCell
           attendance={makeAttendance({ paidHolidayFlag: true, rests: [] })}
         />
-      </WithConfig>
+      </WithConfig>,
     );
     const cell = screen.getByRole("cell");
     expect(cell).toHaveTextContent("12:00");
@@ -268,7 +276,7 @@ describe("RestTimeTableCell", () => {
     render(
       <WithConfig>
         <RestTimeTableCell attendance={makeAttendance({ rests: [] })} />
-      </WithConfig>
+      </WithConfig>,
     );
     expect(screen.getByRole("cell")).toHaveTextContent("");
   });
@@ -277,7 +285,7 @@ describe("RestTimeTableCell", () => {
     render(
       <WithConfig>
         <RestTimeTableCell attendance={makeAttendance({ rests: null })} />
-      </WithConfig>
+      </WithConfig>,
     );
     expect(screen.getByRole("cell")).toHaveTextContent("");
   });
@@ -296,7 +304,7 @@ describe("SummaryTableCell", () => {
             />
           </tr>
         </tbody>
-      </table>
+      </table>,
     );
     expect(screen.getByText("特別休暇")).toBeInTheDocument();
   });
@@ -312,7 +320,7 @@ describe("SummaryTableCell", () => {
             />
           </tr>
         </tbody>
-      </table>
+      </table>,
     );
     expect(screen.getByText("有給休暇")).toBeInTheDocument();
   });
@@ -322,13 +330,10 @@ describe("SummaryTableCell", () => {
       <table>
         <tbody>
           <tr>
-            <SummaryTableCell
-              substituteHolidayDate={null}
-              absentFlag={true}
-            />
+            <SummaryTableCell substituteHolidayDate={null} absentFlag={true} />
           </tr>
         </tbody>
-      </table>
+      </table>,
     );
     expect(screen.getByText("欠勤")).toBeInTheDocument();
   });
@@ -341,7 +346,7 @@ describe("SummaryTableCell", () => {
             <SummaryTableCell substituteHolidayDate="2024-04-15" />
           </tr>
         </tbody>
-      </table>
+      </table>,
     );
     expect(screen.getByRole("cell")).toHaveTextContent("振替休日");
   });
@@ -354,7 +359,7 @@ describe("SummaryTableCell", () => {
             <SummaryTableCell substituteHolidayDate={null} />
           </tr>
         </tbody>
-      </table>
+      </table>,
     );
     expect(screen.queryByText("特別休暇")).not.toBeInTheDocument();
     expect(screen.queryByText("有給休暇")).not.toBeInTheDocument();

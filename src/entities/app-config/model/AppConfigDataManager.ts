@@ -36,7 +36,7 @@ export class AppConfigDataManager {
     }
 
     const appConfigs: AppConfig[] = response.data.listAppConfigs.items.filter(
-      (item): item is NonNullable<typeof item> => item !== null
+      (item): item is NonNullable<typeof item> => item !== null,
     );
 
     // 1件以上のデータがある場合は、エラーを投げる
@@ -66,8 +66,12 @@ export class AppConfigDataManager {
     return appConfig;
   }
 
-  async update(input: UpdateAppConfigInput) {
+  async update(input: Omit<UpdateAppConfigInput, "id">) {
     const current = await this.fetch(input.name ?? "default");
+    if (!current?.id) {
+      throw new Error("Failed to fetch current app config");
+    }
+
     const condition: ModelAppConfigConditionInput | undefined =
       buildVersionOrUpdatedAtCondition(current?.version, current?.updatedAt);
 
@@ -75,6 +79,7 @@ export class AppConfigDataManager {
       query: updateAppConfig,
       variables: {
         input: {
+          id: current.id,
           ...input,
           version: getNextVersion(current?.version),
         },

@@ -12,7 +12,19 @@ import {
 // ----------------------------------------------------------------
 type HistoryItem = Parameters<typeof convertHistoryToInput>[0];
 
-const makeHistory = (overrides: Partial<HistoryItem> = {}): HistoryItem =>
+type HistoryOverrides = Partial<
+  Omit<
+    HistoryItem,
+    "recordedAt" | "updatedAt" | "submittedAt" | "recordedByStaffId"
+  >
+> & {
+  recordedAt?: string | null;
+  updatedAt?: string | null;
+  submittedAt?: string | null;
+  recordedByStaffId?: string | null;
+};
+
+const makeHistory = (overrides: HistoryOverrides = {}): HistoryItem =>
   ({
     __typename: "ShiftRequestHistory",
     version: 1,
@@ -25,12 +37,18 @@ const makeHistory = (overrides: Partial<HistoryItem> = {}): HistoryItem =>
     recordedByStaffId: "staff001",
     changeReason: null,
     ...overrides,
-  }) as HistoryItem;
+  }) as unknown as HistoryItem;
 
 type ShiftRequestItem = Parameters<typeof processShiftRequestItems>[0][number];
 
+type ShiftRequestItemOverrides = Partial<
+  Omit<ShiftRequestItem, "targetMonth">
+> & {
+  targetMonth?: string | null;
+};
+
 const makeShiftItem = (
-  overrides: Partial<ShiftRequestItem> = {}
+  overrides: ShiftRequestItemOverrides = {},
 ): ShiftRequestItem =>
   ({
     __typename: "ShiftRequest",
@@ -45,7 +63,7 @@ const makeShiftItem = (
     createdAt: "2024-12-01T00:00:00Z",
     updatedAt: "2024-12-01T00:00:00Z",
     ...overrides,
-  }) as ShiftRequestItem;
+  }) as unknown as ShiftRequestItem;
 
 // ----------------------------------------------------------------
 // convertHistoryToInput
@@ -75,14 +93,23 @@ describe("convertHistoryToInput", () => {
     const history = makeHistory({
       entries: [
         null,
-        { __typename: "ShiftRequestDayPreference", date: "2024-12-25", status: ShiftRequestStatus.WORK },
-        { __typename: "ShiftRequestDayPreference", date: "2024-12-26", status: ShiftRequestStatus.FIXED_OFF },
+        {
+          __typename: "ShiftRequestDayPreference",
+          date: "2024-12-25",
+          status: ShiftRequestStatus.WORK,
+        },
+        {
+          __typename: "ShiftRequestDayPreference",
+          date: "2024-12-26",
+          status: ShiftRequestStatus.FIXED_OFF,
+        },
       ] as HistoryItem["entries"],
     });
     const result = convertHistoryToInput(history);
-    expect(result.entries).toHaveLength(2);
-    expect(result.entries[0]).toEqual({ date: "2024-12-25", status: ShiftRequestStatus.WORK });
-    expect(result.entries[1]).toEqual({ date: "2024-12-26", status: ShiftRequestStatus.FIXED_OFF });
+    expect(result.entries).toEqual([
+      { date: "2024-12-25", status: ShiftRequestStatus.WORK },
+      { date: "2024-12-26", status: ShiftRequestStatus.FIXED_OFF },
+    ]);
   });
 
   it("entries が null の場合、空配列を返す", () => {
@@ -172,7 +199,7 @@ describe("processShiftRequestItems", () => {
     const { nextAssignments } = processShiftRequestItems(
       items,
       new Set(["staff001"]),
-      "2024-12"
+      "2024-12",
     );
     expect(nextAssignments.size).toBe(0);
   });
@@ -196,7 +223,7 @@ describe("processShiftRequestItems", () => {
     const { nextAssignments } = processShiftRequestItems(
       [item],
       new Set(["staff001"]),
-      "2024-12"
+      "2024-12",
     );
     const assignments = nextAssignments.get("staff001")!;
     expect(assignments["2024-12-25"]).toBe("work");
@@ -214,7 +241,7 @@ describe("processShiftRequestItems", () => {
     const { nextHistoryMeta } = processShiftRequestItems(
       [item],
       new Set(["staff001"]),
-      "2024-12"
+      "2024-12",
     );
     const meta = nextHistoryMeta.get("staff001") as ShiftRequestHistoryMeta;
     expect(meta.changeCount).toBe(3);
@@ -231,7 +258,7 @@ describe("processShiftRequestItems", () => {
     const { nextHistoryMeta } = processShiftRequestItems(
       [item],
       new Set(["staff001"]),
-      "2024-12"
+      "2024-12",
     );
     const meta = nextHistoryMeta.get("staff001") as ShiftRequestHistoryMeta;
     expect(meta.latestChangeAt).toBeNull();
@@ -248,7 +275,7 @@ describe("processShiftRequestItems", () => {
     const { nextRecords } = processShiftRequestItems(
       [item],
       new Set(["staff001"]),
-      "2024-12"
+      "2024-12",
     );
     const record = nextRecords.get("staff001") as ShiftRequestRecordSnapshot;
     expect(record.id).toBe("sr-123");
@@ -263,7 +290,7 @@ describe("processShiftRequestItems", () => {
     const { nextRecords } = processShiftRequestItems(
       [item],
       new Set(["staff001"]),
-      "2024-11"
+      "2024-11",
     );
     const record = nextRecords.get("staff001") as ShiftRequestRecordSnapshot;
     expect(record.targetMonth).toBe("2024-11");
@@ -274,7 +301,7 @@ describe("processShiftRequestItems", () => {
     const { nextHistoryMeta, nextRecords } = processShiftRequestItems(
       [item],
       new Set(["staff001"]),
-      "2024-12"
+      "2024-12",
     );
     expect(nextHistoryMeta.get("staff001")?.changeCount).toBe(0);
     expect(nextRecords.get("staff001")?.histories).toEqual([]);

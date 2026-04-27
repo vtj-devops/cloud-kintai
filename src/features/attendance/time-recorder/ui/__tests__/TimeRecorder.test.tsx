@@ -1,4 +1,7 @@
-import { AuthContext, type AuthContextProps } from "@app/providers/auth/AuthContext";
+import {
+  AuthContext,
+  type AuthContextProps,
+} from "@app/providers/auth/AuthContext";
 import {
   useGetAttendanceByStaffAndDateQuery,
   useListAttendancesByDateRangeWithPlaceholdersQuery,
@@ -7,6 +10,7 @@ import {
 } from "@entities/attendance/api/attendanceApi";
 import useCloseDates from "@entities/attendance/model/useCloseDates";
 import { useCalendars } from "@entities/calendar/model/useCalendars";
+import type { CognitoUser } from "@entities/staff/model/useCognitoUser";
 import fetchStaff from "@entities/staff/model/useStaff/fetchStaff";
 import { graphqlClient } from "@shared/api/amplify/graphqlClient";
 import type { Attendance, Staff } from "@shared/api/graphql/types";
@@ -22,7 +26,9 @@ import { goDirectlyCallback } from "../goDirectlyCallback";
 import { restEndCallback } from "../restEndCallback";
 import { restStartCallback } from "../restStartCallback";
 import { returnDirectlyCallback } from "../returnDirectlyCallback";
-import TimeRecorder, { type TimeRecorderElapsedWorkInfo } from "../TimeRecorder";
+import TimeRecorder, {
+  type TimeRecorderElapsedWorkInfo,
+} from "../TimeRecorder";
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -165,14 +171,16 @@ const MOCK_STAFF: Staff = {
   role: "staff",
   enabled: true,
   status: "active",
+  createdAt: "2024-12-01T00:00:00.000Z",
+  updatedAt: "2024-12-01T00:00:00.000Z",
 };
 
-const MOCK_COGNITO_USER = {
+const MOCK_COGNITO_USER: CognitoUser = {
   id: "user-1",
   givenName: "Test",
   familyName: "User",
   mailAddress: "test@example.com",
-  owner: false as boolean | null,
+  owner: false,
   roles: [],
   emailVerified: true,
 };
@@ -216,7 +224,7 @@ type SetupOptions = {
 };
 
 function setupMocks(options: SetupOptions = {}) {
-  (useDispatch as jest.Mock).mockReturnValue(mockDispatch);
+  (useDispatch as unknown as jest.Mock).mockReturnValue(mockDispatch);
 
   (useGetAttendanceByStaffAndDateQuery as jest.Mock).mockReturnValue({
     data: options.attendanceData,
@@ -302,9 +310,7 @@ describe("TimeRecorder", () => {
       setupMocks({ attendanceLoading: true });
       renderTimeRecorder();
 
-      expect(
-        screen.getByTestId("time-recorder-loading"),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId("time-recorder-loading")).toBeInTheDocument();
       expect(
         screen.queryByTestId("time-recorder-view"),
       ).not.toBeInTheDocument();
@@ -314,9 +320,7 @@ describe("TimeRecorder", () => {
       setupMocks({ calendarLoading: true });
       renderTimeRecorder();
 
-      expect(
-        screen.getByTestId("time-recorder-loading"),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId("time-recorder-loading")).toBeInTheDocument();
     });
 
     it("workStatus が確定するまでローディングビューを表示する（初期状態）", () => {
@@ -331,18 +335,14 @@ describe("TimeRecorder", () => {
       });
       renderTimeRecorder();
 
-      expect(
-        screen.getByTestId("time-recorder-loading"),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId("time-recorder-loading")).toBeInTheDocument();
     });
 
     it("cognitoUser がない場合はローディングビューを表示する", () => {
       renderTimeRecorder({}, { cognitoUser: undefined });
 
       // !shouldFetchAttendance → attendanceLoading = true
-      expect(
-        screen.getByTestId("time-recorder-loading"),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId("time-recorder-loading")).toBeInTheDocument();
     });
   });
 
@@ -352,9 +352,7 @@ describe("TimeRecorder", () => {
       renderTimeRecorder();
 
       await waitFor(() => {
-        expect(
-          screen.getByTestId("time-recorder-view"),
-        ).toBeInTheDocument();
+        expect(screen.getByTestId("time-recorder-view")).toBeInTheDocument();
       });
       expect(screen.getByTestId("ctx-work-status")).toHaveTextContent(
         "BEFORE_WORK",
@@ -476,9 +474,7 @@ describe("TimeRecorder", () => {
       renderTimeRecorder();
 
       await waitFor(() => {
-        expect(
-          screen.getByTestId("btn-return-directly"),
-        ).toBeInTheDocument();
+        expect(screen.getByTestId("btn-return-directly")).toBeInTheDocument();
       });
       await userEvent.click(screen.getByTestId("btn-return-directly"));
 
@@ -605,9 +601,7 @@ describe("TimeRecorder", () => {
       renderTimeRecorder();
 
       await waitFor(() => {
-        expect(
-          screen.getByTestId("time-recorder-view"),
-        ).toBeInTheDocument();
+        expect(screen.getByTestId("time-recorder-view")).toBeInTheDocument();
       });
       expect(screen.getByTestId("ctx-clock-in-text")).toHaveTextContent("");
     });
@@ -621,16 +615,11 @@ describe("TimeRecorder", () => {
           changeRequests: [
             {
               __typename: "AttendanceChangeRequest",
-              id: "cr-1",
               completed: false,
               startTime: null,
               endTime: null,
               rests: null,
               remarks: null,
-              requestedAt: "2024-12-25T00:00:00.000Z",
-              requesterId: "user-1",
-              updatedAt: "2024-12-25T00:00:00.000Z",
-              createdAt: "2024-12-25T00:00:00.000Z",
             },
           ],
         }),
@@ -638,9 +627,9 @@ describe("TimeRecorder", () => {
       renderTimeRecorder();
 
       await waitFor(() => {
-        expect(
-          screen.getByTestId("ctx-has-change-request"),
-        ).toHaveTextContent("true");
+        expect(screen.getByTestId("ctx-has-change-request")).toHaveTextContent(
+          "true",
+        );
       });
     });
 
@@ -650,16 +639,11 @@ describe("TimeRecorder", () => {
           changeRequests: [
             {
               __typename: "AttendanceChangeRequest",
-              id: "cr-1",
               completed: true,
               startTime: null,
               endTime: null,
               rests: null,
               remarks: null,
-              requestedAt: "2024-12-25T00:00:00.000Z",
-              requesterId: "user-1",
-              updatedAt: "2024-12-25T00:00:00.000Z",
-              createdAt: "2024-12-25T00:00:00.000Z",
             },
           ],
         }),
@@ -667,9 +651,9 @@ describe("TimeRecorder", () => {
       renderTimeRecorder();
 
       await waitFor(() => {
-        expect(
-          screen.getByTestId("ctx-has-change-request"),
-        ).toHaveTextContent("false");
+        expect(screen.getByTestId("ctx-has-change-request")).toHaveTextContent(
+          "false",
+        );
       });
     });
   });

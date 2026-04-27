@@ -1,3 +1,4 @@
+import type { AdminStaffAttendanceListViewModel } from "@features/admin/staffAttendanceList/model/useAdminStaffAttendanceListViewModel";
 import { createMockAttendance } from "@shared/test-utils";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -71,20 +72,18 @@ const mockViewModel = {
   },
   getTableRowVariant: jest.fn(() => "default" as const),
   getBadgeContent: jest.fn(() => 0),
-};
+} as unknown as AdminStaffAttendanceListViewModel;
 
-jest.mock(
-  "@features/admin/staffAttendanceList/model",
-  () => ({
-    useAdminStaffAttendanceListViewModel: jest.fn(() => mockViewModel),
-  }),
-);
+jest.mock("@features/admin/staffAttendanceList/model", () => ({
+  useAdminStaffAttendanceListViewModel: jest.fn(() => mockViewModel),
+}));
 
 // ─── Mock: MUI useMediaQuery / useTheme ───────────────────────────────────────
 let mockIsMobile = false;
 
 jest.mock("@mui/material", () => {
-  const actual = jest.requireActual<typeof import("@mui/material")>("@mui/material");
+  const actual =
+    jest.requireActual<typeof import("@mui/material")>("@mui/material");
   return {
     ...actual,
     useMediaQuery: jest.fn(() => mockIsMobile),
@@ -123,37 +122,38 @@ jest.mock(
 );
 
 // ─── Mock: PendingAttendanceSection ───────────────────────────────────────────
-let capturedOnEdit: ((attendance: ReturnType<typeof createMockAttendance>) => void) | null = null;
+let capturedOnEdit:
+  | ((attendance: ReturnType<typeof createMockAttendance>) => void)
+  | null = null;
 
-jest.mock(
-  "@features/admin/staffAttendanceList/ui/components",
-  () => ({
-    PendingAttendanceSection: ({
-      onEdit,
-    }: {
-      onEdit: (attendance: ReturnType<typeof createMockAttendance>) => void;
-    }) => {
-      capturedOnEdit = onEdit;
-      return (
-        <div data-testid="pending-attendance-section">PendingAttendanceSection</div>
-      );
-    },
-    ChangeRequestQuickViewDialog: ({
-      open,
-      onClose,
-    }: {
-      open: boolean;
-      onClose: () => void;
-    }) => (
-      <div data-testid="quick-view-dialog" data-open={String(open)}>
-        <button onClick={onClose} data-testid="close-quick-view">
-          閉じる
-        </button>
+jest.mock("@features/admin/staffAttendanceList/ui/components", () => ({
+  PendingAttendanceSection: ({
+    onEdit,
+  }: {
+    onEdit: (attendance: ReturnType<typeof createMockAttendance>) => void;
+  }) => {
+    capturedOnEdit = onEdit;
+    return (
+      <div data-testid="pending-attendance-section">
+        PendingAttendanceSection
       </div>
-    ),
-    pendingAttendanceContainerSx: {},
-  }),
-);
+    );
+  },
+  ChangeRequestQuickViewDialog: ({
+    open,
+    onClose,
+  }: {
+    open: boolean;
+    onClose: () => void;
+  }) => (
+    <div data-testid="quick-view-dialog" data-open={String(open)}>
+      <button onClick={onClose} data-testid="close-quick-view">
+        閉じる
+      </button>
+    </div>
+  ),
+  pendingAttendanceContainerSx: {},
+}));
 
 // ─── Mock: PageSection ────────────────────────────────────────────────────────
 jest.mock("@shared/ui/layout", () => ({
@@ -200,9 +200,14 @@ function resetMockViewModel() {
   mockViewModel.attendanceLoading = false;
   mockViewModel.attendancesError = undefined;
   mockViewModel.pendingAttendances = [];
-  mockViewModel.changeRequestControls.quickViewOpen = false;
-  mockViewModel.changeRequestControls.quickViewAttendance = null;
-  mockViewModel.changeRequestControls.quickViewChangeRequest = null;
+  Object.assign(
+    mockViewModel.changeRequestControls as Record<string, unknown>,
+    {
+      quickViewOpen: false,
+      quickViewAttendance: null,
+      quickViewChangeRequest: null,
+    },
+  );
   capturedOnEdit = null;
 }
 
@@ -441,7 +446,12 @@ describe("AdminStaffAttendanceList", () => {
 
   describe("ChangeRequestQuickViewDialog", () => {
     it("quickViewOpen=true の場合、ダイアログが開いていること", () => {
-      mockViewModel.changeRequestControls.quickViewOpen = true;
+      Object.assign(
+        mockViewModel.changeRequestControls as Record<string, unknown>,
+        {
+          quickViewOpen: true,
+        },
+      );
 
       renderComponent();
 
@@ -451,7 +461,12 @@ describe("AdminStaffAttendanceList", () => {
 
     it("閉じるボタンをクリックすると handleCloseQuickView が呼ばれること", async () => {
       const user = userEvent.setup();
-      mockViewModel.changeRequestControls.quickViewOpen = true;
+      Object.assign(
+        mockViewModel.changeRequestControls as Record<string, unknown>,
+        {
+          quickViewOpen: true,
+        },
+      );
 
       renderComponent();
 

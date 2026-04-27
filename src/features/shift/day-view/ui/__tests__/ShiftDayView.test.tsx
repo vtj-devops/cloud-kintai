@@ -94,16 +94,15 @@ function renderShiftDayView({
   );
 }
 
-// Give the wrapper a displayName so ESLint / React DevTools are happy
-AuthContext.Provider.displayName = "TestWrapper";
-
 /** Factory for a shift-type staff member */
-function makeShiftStaff(overrides: Partial<{
-  id: string;
-  familyName: string;
-  givenName: string;
-  workType: string;
-}> = {}) {
+function makeShiftStaff(
+  overrides: Partial<{
+    id: string;
+    familyName: string;
+    givenName: string;
+    workType: string;
+  }> = {},
+) {
   return {
     id: overrides.id ?? "staff-1",
     familyName: overrides.familyName ?? "山田",
@@ -222,9 +221,7 @@ describe("ShiftDayView", () => {
       const dd = String(today.getDate()).padStart(2, "0");
       const yyyy = today.getFullYear();
       renderShiftDayView(); // no date
-      expect(
-        screen.getByText(`${yyyy}/${mm}/${dd}`),
-      ).toBeInTheDocument();
+      expect(screen.getByText(`${yyyy}/${mm}/${dd}`)).toBeInTheDocument();
     });
   });
 
@@ -348,14 +345,26 @@ describe("ShiftDayView", () => {
         loading: false,
         error: null,
         staffs: [
-          makeShiftStaff({ id: "s1", familyName: "シフト", givenName: "スタッフ", workType: "shift" }),
-          makeShiftStaff({ id: "s2", familyName: "フレックス", givenName: "スタッフ", workType: "flex" }),
+          makeShiftStaff({
+            id: "s1",
+            familyName: "シフト",
+            givenName: "スタッフ",
+            workType: "shift",
+          }),
+          makeShiftStaff({
+            id: "s2",
+            familyName: "フレックス",
+            givenName: "スタッフ",
+            workType: "flex",
+          }),
         ],
       });
       renderShiftDayView({ date: "2024-07-15" });
       await waitFor(() => {
         expect(screen.getByText("シフト スタッフ")).toBeInTheDocument();
-        expect(screen.queryByText("フレックス スタッフ")).not.toBeInTheDocument();
+        expect(
+          screen.queryByText("フレックス スタッフ"),
+        ).not.toBeInTheDocument();
       });
     });
   });
@@ -514,7 +523,10 @@ describe("ShiftDayView", () => {
 
   describe("認証状態との連携", () => {
     it("authenticated 状態で useStaffs に isAuthenticated=true を渡す", () => {
-      renderShiftDayView({ date: "2024-07-15", authContext: authenticatedContext });
+      renderShiftDayView({
+        date: "2024-07-15",
+        authContext: authenticatedContext,
+      });
       expect(useStaffsMock).toHaveBeenCalledWith(
         expect.objectContaining({ isAuthenticated: true }),
       );

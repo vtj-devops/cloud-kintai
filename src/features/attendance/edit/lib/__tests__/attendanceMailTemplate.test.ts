@@ -20,7 +20,7 @@ const makeStaff = (overrides: Partial<StaffType> = {}): StaffType =>
     createdAt: "2024-01-01T00:00:00Z",
     updatedAt: "2024-01-01T00:00:00Z",
     ...overrides,
-  } as StaffType);
+  }) as StaffType;
 
 const makeAttendance = (overrides: Partial<Attendance> = {}): Attendance => ({
   __typename: "Attendance",
@@ -33,7 +33,7 @@ const makeAttendance = (overrides: Partial<Attendance> = {}): Attendance => ({
 });
 
 const makeHistory = (
-  overrides: Partial<AttendanceHistory> = {}
+  overrides: Partial<AttendanceHistory> = {},
 ): AttendanceHistory => ({
   __typename: "AttendanceHistory",
   staffId: "staff001",
@@ -74,7 +74,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff({ familyName: "山田", givenName: "太郎" }),
         makeAttendance(),
-        null
+        null,
       );
       expect(lines[IDX.greeting]).toBe("こんにちは、山田 太郎 さん");
     });
@@ -83,7 +83,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff({ familyName: "山田", givenName: null }),
         makeAttendance(),
-        null
+        null,
       );
       expect(lines[IDX.greeting]).toBe("こんにちは、山田 さん");
     });
@@ -92,7 +92,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff({ familyName: null, givenName: "太郎" }),
         makeAttendance(),
-        null
+        null,
       );
       expect(lines[IDX.greeting]).toBe("こんにちは、太郎 さん");
     });
@@ -101,7 +101,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff({ familyName: null, givenName: null }),
         makeAttendance(),
-        null
+        null,
       );
       expect(lines[IDX.greeting]).toBe("こんにちは。");
     });
@@ -115,7 +115,7 @@ describe("getAttendanceMailBody", () => {
       expect(lines[IDX.separator1]).toBe("----");
       expect(lines[IDX.separator2]).toBe("----");
       expect(lines[IDX.lastMessage]).toBe(
-        "不明な点がある場合は、管理者にお問い合わせください。"
+        "不明な点がある場合は、管理者にお問い合わせください。",
       );
     });
 
@@ -131,7 +131,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff(),
         makeAttendance({ paidHolidayFlag: true }),
-        null
+        null,
       );
       expect(lines[IDX.paidHoliday]).toBe("有給休暇：*** → 有");
     });
@@ -140,7 +140,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff(),
         makeAttendance({ goDirectlyFlag: false }),
-        null
+        null,
       );
       expect(lines[IDX.goDirectly]).toBe("直行：*** → 無");
     });
@@ -149,7 +149,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff(),
         makeAttendance({ remarks: null }),
-        null
+        null,
       );
       expect(lines[IDX.remarks]).toBe("備考：変更なし");
     });
@@ -161,7 +161,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff(),
         makeAttendance({ paidHolidayFlag: false }),
-        makeHistory({ paidHolidayFlag: false })
+        makeHistory({ paidHolidayFlag: false }),
       );
       expect(lines[IDX.paidHoliday]).toBe("有給休暇：変更なし");
     });
@@ -170,7 +170,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff(),
         makeAttendance({ paidHolidayFlag: true }),
-        makeHistory({ paidHolidayFlag: false })
+        makeHistory({ paidHolidayFlag: false }),
       );
       expect(lines[IDX.paidHoliday]).toBe("有給休暇：無 → 有");
     });
@@ -179,7 +179,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff(),
         makeAttendance({ returnDirectlyFlag: true }),
-        makeHistory({ returnDirectlyFlag: false })
+        makeHistory({ returnDirectlyFlag: false }),
       );
       expect(lines[IDX.returnDirectly]).toBe("直帰：無 → 有");
     });
@@ -188,7 +188,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff(),
         makeAttendance({ remarks: "新しい備考" }),
-        makeHistory({ remarks: "古い備考" })
+        makeHistory({ remarks: "古い備考" }),
       );
       expect(lines[IDX.remarks]).toBe("備考：古い備考 → 新しい備考");
     });
@@ -197,7 +197,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff(),
         makeAttendance({ remarks: "追加された備考" }),
-        makeHistory({ remarks: null })
+        makeHistory({ remarks: null }),
       );
       expect(lines[IDX.remarks]).toBe("備考：(なし) → 追加された備考");
     });
@@ -206,7 +206,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff(),
         makeAttendance({ rests: [] }),
-        makeHistory({ rests: [] })
+        makeHistory({ rests: [] }),
       );
       expect(lines[IDX.restTime]).toBe("休憩時間：変更なし");
     });
@@ -216,7 +216,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff(),
         makeAttendance({ goDirectlyFlag: true }),
-        makeHistory({ goDirectlyFlag: true })
+        makeHistory({ goDirectlyFlag: true }),
       );
       expect(lines[IDX.goDirectly]).toBe("直行：変更なし");
     });
@@ -225,7 +225,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff(),
         makeAttendance({ goDirectlyFlag: false }),
-        makeHistory({ goDirectlyFlag: true })
+        makeHistory({ goDirectlyFlag: true }),
       );
       expect(lines[IDX.goDirectly]).toBe("直行：有 → 無");
     });
@@ -235,7 +235,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff(),
         makeAttendance({ returnDirectlyFlag: false }),
-        makeHistory({ returnDirectlyFlag: false })
+        makeHistory({ returnDirectlyFlag: false }),
       );
       expect(lines[IDX.returnDirectly]).toBe("直帰：変更なし");
     });
@@ -245,7 +245,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff(),
         makeAttendance({ substituteHolidayDate: "2024-12-26" }),
-        null
+        null,
       );
       expect(lines[IDX.substituteHoliday]).toBe("振替休日：2024/12/26");
     });
@@ -254,7 +254,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff(),
         makeAttendance({ substituteHolidayDate: null }),
-        makeHistory({ substituteHolidayDate: null })
+        makeHistory({ substituteHolidayDate: null }),
       );
       expect(lines[IDX.substituteHoliday]).toBe("振替休日：変更なし");
     });
@@ -263,10 +263,10 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff(),
         makeAttendance({ substituteHolidayDate: "2024-12-26" }),
-        makeHistory({ substituteHolidayDate: null })
+        makeHistory({ substituteHolidayDate: null }),
       );
       expect(lines[IDX.substituteHoliday]).toBe(
-        "振替休日：(なし) → 2024/12/26"
+        "振替休日：(なし) → 2024/12/26",
       );
     });
 
@@ -274,10 +274,10 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff(),
         makeAttendance({ substituteHolidayDate: null }),
-        makeHistory({ substituteHolidayDate: "2024-12-26" })
+        makeHistory({ substituteHolidayDate: "2024-12-26" }),
       );
       expect(lines[IDX.substituteHoliday]).toBe(
-        "振替休日：2024/12/26 → (なし)"
+        "振替休日：2024/12/26 → (なし)",
       );
     });
 
@@ -289,7 +289,7 @@ describe("getAttendanceMailBody", () => {
           startTime: "2024-12-25T09:00:00Z",
           endTime: "2024-12-25T18:00:00Z",
         }),
-        null
+        null,
       );
       expect(lines[IDX.workTime]).toContain("勤務時間：");
       expect(lines[IDX.workTime]).toContain("→");
@@ -299,7 +299,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff(),
         makeAttendance({ startTime: null, endTime: null }),
-        null
+        null,
       );
       expect(lines[IDX.workTime]).toContain("--:--");
     });
@@ -309,7 +309,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff(),
         makeAttendance({ startTime: time, endTime: time }),
-        makeHistory({ startTime: time, endTime: time })
+        makeHistory({ startTime: time, endTime: time }),
       );
       expect(lines[IDX.workTime]).toBe("勤務時間：変更なし");
     });
@@ -324,7 +324,7 @@ describe("getAttendanceMailBody", () => {
         makeHistory({
           startTime: "2024-12-25T09:00:00Z",
           endTime: "2024-12-25T18:00:00Z",
-        })
+        }),
       );
       expect(lines[IDX.workTime]).toContain("→");
       expect(lines[IDX.workTime]).toContain("勤務時間：");
@@ -337,7 +337,7 @@ describe("getAttendanceMailBody", () => {
           startTime: "2024-12-25T09:00:00Z",
           endTime: "2024-12-25T18:00:00Z",
         }),
-        makeHistory({ startTime: null, endTime: null })
+        makeHistory({ startTime: null, endTime: null }),
       );
       expect(lines[IDX.workTime]).toContain("--:--");
     });
@@ -349,13 +349,13 @@ describe("getAttendanceMailBody", () => {
         makeAttendance({
           rests: [
             {
-              __typename: "AttendanceRest",
+              __typename: "Rest",
               startTime: "2024-12-25T12:00:00Z",
               endTime: "2024-12-25T13:00:00Z",
             },
           ],
         }),
-        null
+        null,
       );
       expect(lines[IDX.restTime]).toContain("~");
     });
@@ -366,13 +366,13 @@ describe("getAttendanceMailBody", () => {
         makeAttendance({
           rests: [
             {
-              __typename: "AttendanceRest",
+              __typename: "Rest",
               startTime: null,
               endTime: null,
             },
           ],
         }),
-        null
+        null,
       );
       expect(lines[IDX.restTime]).toContain("--:--");
     });
@@ -383,13 +383,13 @@ describe("getAttendanceMailBody", () => {
         makeAttendance({
           rests: [
             {
-              __typename: "AttendanceRest",
+              __typename: "Rest",
               startTime: "2024-12-25T12:00:00Z",
               endTime: "2024-12-25T13:00:00Z",
             },
           ],
         }),
-        makeHistory({ rests: [] })
+        makeHistory({ rests: [] }),
       );
       expect(lines[IDX.restTime]).toContain("[追加]");
     });
@@ -406,7 +406,7 @@ describe("getAttendanceMailBody", () => {
               endTime: "2024-12-25T13:00:00Z",
             } as never,
           ],
-        })
+        }),
       );
       expect(lines[IDX.restTime]).toContain("[削除]");
     });
@@ -417,7 +417,7 @@ describe("getAttendanceMailBody", () => {
         makeAttendance({
           rests: [
             {
-              __typename: "AttendanceRest",
+              __typename: "Rest",
               startTime: "2024-12-25T12:30:00Z",
               endTime: "2024-12-25T13:30:00Z",
             },
@@ -431,7 +431,7 @@ describe("getAttendanceMailBody", () => {
               endTime: "2024-12-25T13:00:00Z",
             } as never,
           ],
-        })
+        }),
       );
       expect(lines[IDX.restTime]).toContain("→");
     });
@@ -443,7 +443,7 @@ describe("getAttendanceMailBody", () => {
         makeAttendance({
           rests: [
             {
-              __typename: "AttendanceRest",
+              __typename: "Rest",
               startTime: restTime,
               endTime: restTime,
             },
@@ -457,7 +457,7 @@ describe("getAttendanceMailBody", () => {
               endTime: restTime,
             } as never,
           ],
-        })
+        }),
       );
       expect(lines[IDX.restTime]).toContain("[なし]");
     });
@@ -474,7 +474,7 @@ describe("getAttendanceMailBody", () => {
               endTime: null,
             } as never,
           ],
-        })
+        }),
       );
       expect(lines[IDX.restTime]).toContain("--:--");
     });
@@ -484,7 +484,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff(),
         makeAttendance({ paidHolidayFlag: null }),
-        makeHistory({ paidHolidayFlag: null })
+        makeHistory({ paidHolidayFlag: null }),
       );
       expect(lines[IDX.paidHoliday]).toBe("有給休暇：変更なし");
     });
@@ -494,7 +494,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff(),
         makeAttendance({ remarks: null }),
-        makeHistory({ remarks: "元の備考" })
+        makeHistory({ remarks: "元の備考" }),
       );
       expect(lines[IDX.remarks]).toBe("備考：元の備考 → (なし)");
     });
@@ -503,7 +503,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff(),
         makeAttendance({ remarks: "" }),
-        makeHistory({ remarks: "" })
+        makeHistory({ remarks: "" }),
       );
       expect(lines[IDX.remarks]).toBe("備考：変更なし");
     });
@@ -512,7 +512,7 @@ describe("getAttendanceMailBody", () => {
       const lines = getAttendanceMailBody(
         makeStaff(),
         makeAttendance({ remarks: null }),
-        makeHistory({ remarks: null })
+        makeHistory({ remarks: null }),
       );
       expect(lines[IDX.remarks]).toBe("備考：変更なし");
     });

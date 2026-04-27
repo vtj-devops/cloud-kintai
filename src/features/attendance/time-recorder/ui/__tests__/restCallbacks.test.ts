@@ -8,8 +8,13 @@ import { restStartCallback } from "../restStartCallback";
 
 const mockCognitoUser: CognitoUser = {
   id: "user-1",
-  email: "test@example.com",
-} as CognitoUser;
+  givenName: "Test",
+  familyName: "User",
+  mailAddress: "test@example.com",
+  owner: false,
+  roles: [],
+  emailVerified: true,
+};
 
 const mockAttendance = { id: "att-1" } as Attendance;
 const mockDispatch = jest.fn() as unknown as Dispatch;
@@ -27,7 +32,13 @@ beforeEach(() => {
 describe("restStartCallback", () => {
   it("cognitoUser がない場合はスキップする", async () => {
     const restStart = jest.fn();
-    await restStartCallback(null, mockDispatch, restStart, mockLogger, "2024-03-15T09:00:00.000Z");
+    await restStartCallback(
+      null,
+      mockDispatch,
+      restStart,
+      mockLogger,
+      "2024-03-15T09:00:00.000Z",
+    );
     expect(restStart).not.toHaveBeenCalled();
     expect(mockLogger.warn).toHaveBeenCalled();
   });
@@ -41,7 +52,11 @@ describe("restStartCallback", () => {
       mockLogger,
       "2024-03-15T12:00:00.000Z",
     );
-    expect(restStart).toHaveBeenCalledWith("user-1", "2024-03-15", "2024-03-15T12:00:00.000Z");
+    expect(restStart).toHaveBeenCalledWith(
+      "user-1",
+      "2024-03-15",
+      "2024-03-15T12:00:00.000Z",
+    );
     expect(mockDispatch).toHaveBeenCalled();
   });
 
@@ -62,7 +77,13 @@ describe("restStartCallback", () => {
 describe("restEndCallback", () => {
   it("cognitoUser がない場合はスキップする", async () => {
     const restEnd = jest.fn();
-    await restEndCallback(null, restEnd, mockDispatch, mockLogger, "2024-03-15T13:00:00.000Z");
+    await restEndCallback(
+      null,
+      restEnd,
+      mockDispatch,
+      mockLogger,
+      "2024-03-15T13:00:00.000Z",
+    );
     expect(restEnd).not.toHaveBeenCalled();
     expect(mockLogger.warn).toHaveBeenCalled();
   });
@@ -76,7 +97,11 @@ describe("restEndCallback", () => {
       mockLogger,
       "2024-03-15T13:00:00.000Z",
     );
-    expect(restEnd).toHaveBeenCalledWith("user-1", "2024-03-15", "2024-03-15T13:00:00.000Z");
+    expect(restEnd).toHaveBeenCalledWith(
+      "user-1",
+      "2024-03-15",
+      "2024-03-15T13:00:00.000Z",
+    );
     expect(mockDispatch).toHaveBeenCalled();
   });
 

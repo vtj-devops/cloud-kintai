@@ -27,7 +27,7 @@ function makeDateRange(start: string, end: string): DateRange {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockGetStatus.mockReturnValue(AttendanceStatus.Normal);
+  mockGetStatus.mockReturnValue(AttendanceStatus.Ok);
 });
 
 describe("hasErrorOrLateInMonth", () => {
@@ -43,7 +43,7 @@ describe("hasErrorOrLateInMonth", () => {
   });
 
   it("全日 Normal ステータスの場合は false を返す", () => {
-    mockGetStatus.mockReturnValue(AttendanceStatus.Normal);
+    mockGetStatus.mockReturnValue(AttendanceStatus.Ok);
     const result = hasErrorOrLateInMonth({
       attendances: [],
       holidayCalendars: [],
@@ -55,7 +55,9 @@ describe("hasErrorOrLateInMonth", () => {
   });
 
   it("Error ステータスの日付がある場合は true を返す", () => {
-    mockGetStatus.mockReturnValueOnce(AttendanceStatus.Normal).mockReturnValueOnce(AttendanceStatus.Error);
+    mockGetStatus
+      .mockReturnValueOnce(AttendanceStatus.Ok)
+      .mockReturnValueOnce(AttendanceStatus.Error);
     const result = hasErrorOrLateInMonth({
       attendances: [],
       holidayCalendars: [],
@@ -94,7 +96,7 @@ describe("hasErrorOrLateInMonth", () => {
   it("workDate が一致する attendance が見つかる場合、getStatus に渡される", () => {
     const pastDate = "2024-01-15";
     const attendance = makeAttendance(pastDate);
-    mockGetStatus.mockReturnValue(AttendanceStatus.Normal);
+    mockGetStatus.mockReturnValue(AttendanceStatus.Ok);
     hasErrorOrLateInMonth({
       attendances: [attendance],
       holidayCalendars: [],
@@ -102,11 +104,17 @@ describe("hasErrorOrLateInMonth", () => {
       staff: mockStaff,
       effectiveDateRange: makeDateRange(pastDate, pastDate),
     });
-    expect(mockGetStatus).toHaveBeenCalledWith(attendance, mockStaff, [], [], expect.anything());
+    expect(mockGetStatus).toHaveBeenCalledWith(
+      attendance,
+      mockStaff,
+      [],
+      [],
+      expect.anything(),
+    );
   });
 
   it("start と end が同じ日でも動作する", () => {
-    mockGetStatus.mockReturnValue(AttendanceStatus.Normal);
+    mockGetStatus.mockReturnValue(AttendanceStatus.Ok);
     const result = hasErrorOrLateInMonth({
       attendances: [],
       holidayCalendars: [],

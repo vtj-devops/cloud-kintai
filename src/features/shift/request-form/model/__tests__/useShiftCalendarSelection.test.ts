@@ -1,5 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import dayjs, { Dayjs } from "dayjs";
+import type { Dispatch, SetStateAction } from "react";
 
 import { SelectedDateMap } from "../statusMapping";
 import { useShiftCalendarSelection } from "../useShiftCalendarSelection";
@@ -19,13 +20,17 @@ function buildDayKeyList(days: Dayjs[]): string[] {
   return days.map((d) => d.format("YYYY-MM-DD"));
 }
 
-function buildDefaultParams(overrides: Partial<{
-  isMobile: boolean;
-  setSelectedDates: (fn: (prev: SelectedDateMap) => SelectedDateMap) => void;
-}> = {}) {
+function buildDefaultParams(
+  overrides: Partial<{
+    isMobile: boolean;
+    setSelectedDates: Dispatch<SetStateAction<SelectedDateMap>>;
+  }> = {},
+) {
   const days = buildDays(MONTH_START);
   const dayKeyList = buildDayKeyList(days);
-  const setSelectedDates = jest.fn((fn: (prev: SelectedDateMap) => SelectedDateMap) => fn({}));
+  const setSelectedDates = jest.fn((value: SetStateAction<SelectedDateMap>) =>
+    typeof value === "function" ? value({}) : value,
+  ) as unknown as Dispatch<SetStateAction<SelectedDateMap>>;
   return {
     dayKeyList,
     days,
@@ -144,7 +149,9 @@ describe("useShiftCalendarSelection", () => {
         result.current.handleCalendarDayClick(targetDay);
       });
 
-      expect(result.current.focusedDateKey).toBe(targetDay.format("YYYY-MM-DD"));
+      expect(result.current.focusedDateKey).toBe(
+        targetDay.format("YYYY-MM-DD"),
+      );
     });
 
     it("outside current month - does nothing", () => {
@@ -211,7 +218,9 @@ describe("useShiftCalendarSelection", () => {
 
       const lastDay = MONTH_START.add(4, "day");
       act(() => {
-        result.current.handleCalendarDayClick(lastDay, { shiftKey: true } as React.MouseEvent<HTMLDivElement>);
+        result.current.handleCalendarDayClick(lastDay, {
+          shiftKey: true,
+        } as React.MouseEvent<HTMLDivElement>);
       });
 
       expect(result.current.selectedRowKeys.length).toBe(5);
@@ -232,7 +241,9 @@ describe("useShiftCalendarSelection", () => {
 
       const lastDay = MONTH_START.add(4, "day");
       act(() => {
-        result.current.handleCalendarDayClick(lastDay, { shiftKey: true } as React.MouseEvent<HTMLDivElement>);
+        result.current.handleCalendarDayClick(lastDay, {
+          shiftKey: true,
+        } as React.MouseEvent<HTMLDivElement>);
       });
 
       // On mobile, shift is ignored so only second click's key is toggled individually
@@ -321,9 +332,13 @@ describe("useShiftCalendarSelection", () => {
   describe("applyStatusToSelection", () => {
     it("applies status to all selected rows", () => {
       let capturedDates: SelectedDateMap = {};
-      const setSelectedDates = jest.fn((fn: (prev: SelectedDateMap) => SelectedDateMap) => {
-        capturedDates = fn(capturedDates);
-      });
+      const setSelectedDates = jest.fn(
+        (value: SetStateAction<SelectedDateMap>) => {
+          if (typeof value === "function") {
+            capturedDates = value(capturedDates);
+          }
+        },
+      ) as unknown as Dispatch<SetStateAction<SelectedDateMap>>;
       const params = buildDefaultParams({ setSelectedDates });
       const { result } = renderHook(() => useShiftCalendarSelection(params));
 
@@ -361,9 +376,13 @@ describe("useShiftCalendarSelection", () => {
   describe("setStatusForDate", () => {
     it("sets status for single date", () => {
       let capturedDates: SelectedDateMap = {};
-      const setSelectedDates = jest.fn((fn: (prev: SelectedDateMap) => SelectedDateMap) => {
-        capturedDates = fn(capturedDates);
-      });
+      const setSelectedDates = jest.fn(
+        (value: SetStateAction<SelectedDateMap>) => {
+          if (typeof value === "function") {
+            capturedDates = value(capturedDates);
+          }
+        },
+      ) as unknown as Dispatch<SetStateAction<SelectedDateMap>>;
       const params = buildDefaultParams({ setSelectedDates });
       const { result } = renderHook(() => useShiftCalendarSelection(params));
 
@@ -379,9 +398,13 @@ describe("useShiftCalendarSelection", () => {
   describe("clearDateSelection", () => {
     it("removes date from selectedDates", () => {
       let capturedDates: SelectedDateMap = { "2025-06-01": { status: "work" } };
-      const setSelectedDates = jest.fn((fn: (prev: SelectedDateMap) => SelectedDateMap) => {
-        capturedDates = fn(capturedDates);
-      });
+      const setSelectedDates = jest.fn(
+        (value: SetStateAction<SelectedDateMap>) => {
+          if (typeof value === "function") {
+            capturedDates = value(capturedDates);
+          }
+        },
+      ) as unknown as Dispatch<SetStateAction<SelectedDateMap>>;
       const params = buildDefaultParams({ setSelectedDates });
       const { result } = renderHook(() => useShiftCalendarSelection(params));
 
@@ -401,8 +424,14 @@ describe("useShiftCalendarSelection", () => {
       const { result, rerender } = renderHook(
         (props) => useShiftCalendarSelection(props),
         {
-          initialProps: { dayKeyList, days, monthStart: MONTH_START, isMobile: false, setSelectedDates },
-        }
+          initialProps: {
+            dayKeyList,
+            days,
+            monthStart: MONTH_START,
+            isMobile: false,
+            setSelectedDates,
+          },
+        },
       );
 
       act(() => {
@@ -415,7 +444,13 @@ describe("useShiftCalendarSelection", () => {
       // Rerender with narrower dayKeyList
       const narrowKeys = [dayKeyList[0], dayKeyList[1]];
       const narrowDays = [days[0], days[1]];
-      rerender({ dayKeyList: narrowKeys, days: narrowDays, monthStart: MONTH_START, isMobile: false, setSelectedDates });
+      rerender({
+        dayKeyList: narrowKeys,
+        days: narrowDays,
+        monthStart: MONTH_START,
+        isMobile: false,
+        setSelectedDates,
+      });
 
       expect(result.current.selectedRowKeys.length).toBe(2);
     });
@@ -476,7 +511,9 @@ describe("useShiftCalendarSelection", () => {
         result.current.toggleAllRowsSelection();
       });
 
-      expect(result.current.selectedRowKeys.length).toBe(params.dayKeyList.length);
+      expect(result.current.selectedRowKeys.length).toBe(
+        params.dayKeyList.length,
+      );
     });
   });
 });

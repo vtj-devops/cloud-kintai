@@ -589,7 +589,6 @@ export const useCollaborativeShiftData = ({
 
     const handleRealtimeEvent = (
       request: ShiftRequestData,
-      eventLabel: "created" | "updated",
       staffId: string,
     ) => {
       // 自分の更新による無限ループと二重適用を防ぐ
@@ -607,8 +606,6 @@ export const useCollaborativeShiftData = ({
       if (request.comments) {
         onCommentsReceivedRef.current?.(staffId, request.comments);
       }
-
-
     };
 
     // 各スタッフのシフト新規作成・更新をサブスクライブ
@@ -633,7 +630,7 @@ export const useCollaborativeShiftData = ({
             const createdRequest = normalizeShiftRequest(
               data.onCreateShiftRequest,
             );
-            handleRealtimeEvent(createdRequest, "created", staffId);
+            handleRealtimeEvent(createdRequest, staffId);
           },
           error: (error) => {
             console.error(
@@ -656,7 +653,7 @@ export const useCollaborativeShiftData = ({
             const updatedRequest = normalizeShiftRequest(
               data.onUpdateShiftRequest,
             );
-            handleRealtimeEvent(updatedRequest, "updated", staffId);
+            handleRealtimeEvent(updatedRequest, staffId);
           },
           error: (error) => {
             console.error(

@@ -6,13 +6,24 @@ import React from "react";
 
 import QuickInput from "../QuickInput";
 
+type AppConfigContextValue = React.ContextType<typeof AppConfigContext>;
+
 // ─── Mock fn variables ──────────────────────────────────────────────────────────
 const mockDispatch = jest.fn();
 const mockSaveConfig = jest.fn();
 const mockFetchConfig = jest.fn();
-const mockGetQuickInputStartTimes = jest.fn(() => []);
-const mockGetQuickInputEndTimes = jest.fn(() => []);
-const mockGetConfigId = jest.fn(() => "config-id-1");
+const mockGetQuickInputStartTimes = jest.fn<
+  ReturnType<AppConfigContextValue["getQuickInputStartTimes"]>,
+  Parameters<AppConfigContextValue["getQuickInputStartTimes"]>
+>(() => []);
+const mockGetQuickInputEndTimes = jest.fn<
+  ReturnType<AppConfigContextValue["getQuickInputEndTimes"]>,
+  Parameters<AppConfigContextValue["getQuickInputEndTimes"]>
+>(() => []);
+const mockGetConfigId = jest.fn<
+  ReturnType<AppConfigContextValue["getConfigId"]>,
+  Parameters<AppConfigContextValue["getConfigId"]>
+>(() => "config-id-1");
 
 // ─── Module mocks ───────────────────────────────────────────────────────────────
 jest.mock("@app/hooks", () => ({
@@ -61,12 +72,24 @@ jest.mock("../QuickInputSection", () => ({
     mockOnChangeEnd.mockImplementation(props.onQuickInputEndTimeChange);
     return (
       <div data-testid="quick-input-section">
-        <span data-testid="start-times-count">{props.quickInputStartTimes.length}</span>
-        <span data-testid="end-times-count">{props.quickInputEndTimes.length}</span>
-        <button type="button" onClick={props.onAddQuickInputStartTime} data-testid="add-start">
+        <span data-testid="start-times-count">
+          {props.quickInputStartTimes.length}
+        </span>
+        <span data-testid="end-times-count">
+          {props.quickInputEndTimes.length}
+        </span>
+        <button
+          type="button"
+          onClick={props.onAddQuickInputStartTime}
+          data-testid="add-start"
+        >
           + 出勤時間を追加
         </button>
-        <button type="button" onClick={props.onAddQuickInputEndTime} data-testid="add-end">
+        <button
+          type="button"
+          onClick={props.onAddQuickInputEndTime}
+          data-testid="add-end"
+        >
           + 退勤時間を追加
         </button>
         {props.quickInputStartTimes.map((_, i) => (
@@ -165,7 +188,10 @@ function makeContextValue(
     fetchConfig: mockFetchConfig,
     // Minimum required fields for context
     getThemeColor: () => "#26a69a",
-    getThemeTokens: () => ({} as unknown as ReturnType<React.ContextType<typeof AppConfigContext>["getThemeTokens"]>),
+    getThemeTokens: () =>
+      ({}) as unknown as ReturnType<
+        React.ContextType<typeof AppConfigContext>["getThemeTokens"]
+      >,
     ...overrides,
   } as unknown as React.ContextType<typeof AppConfigContext>;
 }
@@ -314,7 +340,9 @@ describe("QuickInput", () => {
   describe("有効/無効の切り替え", () => {
     it("出勤時間の有効/無効を切り替えられる", async () => {
       const user = userEvent.setup();
-      mockGetQuickInputStartTimes.mockReturnValue([{ time: "09:00", enabled: true }]);
+      mockGetQuickInputStartTimes.mockReturnValue([
+        { time: "09:00", enabled: true },
+      ]);
       renderQuickInput();
 
       const toggleButton = screen.getByTestId("toggle-start-0");
@@ -325,7 +353,9 @@ describe("QuickInput", () => {
 
     it("退勤時間の有効/無効を切り替えられる", async () => {
       const user = userEvent.setup();
-      mockGetQuickInputEndTimes.mockReturnValue([{ time: "18:00", enabled: true }]);
+      mockGetQuickInputEndTimes.mockReturnValue([
+        { time: "18:00", enabled: true },
+      ]);
       renderQuickInput();
 
       const toggleButton = screen.getByTestId("toggle-end-0");
@@ -336,7 +366,9 @@ describe("QuickInput", () => {
 
     it("初期が無効の場合、切り替え後は有効になる", async () => {
       const user = userEvent.setup();
-      mockGetQuickInputStartTimes.mockReturnValue([{ time: "09:00", enabled: false }]);
+      mockGetQuickInputStartTimes.mockReturnValue([
+        { time: "09:00", enabled: false },
+      ]);
       renderQuickInput();
 
       const toggleButton = screen.getByTestId("toggle-start-0");
@@ -350,8 +382,12 @@ describe("QuickInput", () => {
     it("保存ボタンをクリックするとsaveConfigがUpdateAppConfigInputで呼ばれる", async () => {
       const user = userEvent.setup();
       mockGetConfigId.mockReturnValue("config-999");
-      mockGetQuickInputStartTimes.mockReturnValue([{ time: "09:00", enabled: true }]);
-      mockGetQuickInputEndTimes.mockReturnValue([{ time: "18:00", enabled: true }]);
+      mockGetQuickInputStartTimes.mockReturnValue([
+        { time: "09:00", enabled: true },
+      ]);
+      mockGetQuickInputEndTimes.mockReturnValue([
+        { time: "18:00", enabled: true },
+      ]);
       renderQuickInput();
 
       await user.click(screen.getByRole("button", { name: "保存" }));
@@ -361,10 +397,16 @@ describe("QuickInput", () => {
           expect.objectContaining({
             id: "config-999",
             quickInputStartTimes: expect.arrayContaining([
-              expect.objectContaining({ enabled: true, time: expect.any(String) }),
+              expect.objectContaining({
+                enabled: true,
+                time: expect.any(String),
+              }),
             ]),
             quickInputEndTimes: expect.arrayContaining([
-              expect.objectContaining({ enabled: true, time: expect.any(String) }),
+              expect.objectContaining({
+                enabled: true,
+                time: expect.any(String),
+              }),
             ]),
           }),
         );
@@ -403,7 +445,9 @@ describe("QuickInput", () => {
     it("configIdがnullの場合はCreateAppConfigInputでsaveConfigが呼ばれる", async () => {
       const user = userEvent.setup();
       mockGetConfigId.mockReturnValue(null);
-      mockGetQuickInputStartTimes.mockReturnValue([{ time: "09:00", enabled: true }]);
+      mockGetQuickInputStartTimes.mockReturnValue([
+        { time: "09:00", enabled: true },
+      ]);
       mockGetQuickInputEndTimes.mockReturnValue([]);
       renderQuickInput();
 
@@ -414,7 +458,10 @@ describe("QuickInput", () => {
           expect.objectContaining({
             name: "default",
             quickInputStartTimes: expect.arrayContaining([
-              expect.objectContaining({ enabled: true, time: expect.any(String) }),
+              expect.objectContaining({
+                enabled: true,
+                time: expect.any(String),
+              }),
             ]),
           }),
         );
@@ -471,7 +518,9 @@ describe("QuickInput", () => {
 
   describe("時間変更ハンドラー（nullチェック）", () => {
     it("出勤時間にnullが渡されても状態が変わらない", () => {
-      mockGetQuickInputStartTimes.mockReturnValue([{ time: "09:00", enabled: true }]);
+      mockGetQuickInputStartTimes.mockReturnValue([
+        { time: "09:00", enabled: true },
+      ]);
       renderQuickInput();
 
       // The handler ignores null - list count should remain the same

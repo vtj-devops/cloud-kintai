@@ -16,6 +16,7 @@ const BASE_INPUT = {
   resourceKey: "2024-03-01",
   action: "CREATE",
   timestamp: "2024-03-01T09:00:00Z",
+  logFormatVersion: 1,
 };
 
 describe("createOperationLogData", () => {
@@ -96,7 +97,12 @@ describe("createOperationLogData", () => {
     const log = { id: "log1", ...BASE_INPUT };
     mockGraphql
       .mockResolvedValueOnce({
-        errors: [{ message: "contains a field not in 'CreateOperationLogInput' clientTimezone" }],
+        errors: [
+          {
+            message:
+              "contains a field not in 'CreateOperationLogInput' clientTimezone",
+          },
+        ],
         data: null,
       })
       .mockResolvedValueOnce({ data: { createOperationLog: log } });

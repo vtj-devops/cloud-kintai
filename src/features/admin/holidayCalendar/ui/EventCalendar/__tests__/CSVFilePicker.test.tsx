@@ -60,7 +60,9 @@ function renderComponent(bulkCreateMock = defaultBulkCreateMock) {
 
 async function openDialog() {
   const user = userEvent.setup();
-  await user.click(screen.getByRole("button", { name: /ファイルからまとめて追加/ }));
+  await user.click(
+    screen.getByRole("button", { name: /ファイルからまとめて追加/ }),
+  );
 }
 
 /**
@@ -70,26 +72,26 @@ async function openDialog() {
  */
 function simulateFileUpload(csvContent: string, fileName = "test.csv") {
   const file = new File([csvContent], fileName, { type: "text/csv" });
+  type FileReaderOnloadHandler = (event: ProgressEvent<FileReader>) => void;
 
   // FileReader をモック
   const mockReadAsText = jest.fn();
-  let onloadCallback: ((e: ProgressEvent<FileReader>) => void) | null = null;
+  const readerCallbacks: { onload?: FileReaderOnloadHandler } = {};
 
   const mockReader = {
     readAsText: mockReadAsText,
     result: csvContent,
-    set onload(cb: (e: ProgressEvent<FileReader>) => void) {
-      onloadCallback = cb;
+    set onload(cb: NonNullable<FileReader["onload"]>) {
+      readerCallbacks.onload = cb as FileReaderOnloadHandler;
     },
-  };
+  } as unknown as FileReader;
 
-  jest
-    .spyOn(window, "FileReader" as never)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .mockImplementation(() => mockReader as any);
+  jest.spyOn(window, "FileReader").mockImplementation(() => mockReader);
 
   // file input に change イベントを発行
-  const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+  const fileInput = document.querySelector(
+    'input[type="file"]',
+  ) as HTMLInputElement;
   const fileList = {
     0: file,
     length: 1,
@@ -105,8 +107,8 @@ function simulateFileUpload(csvContent: string, fileName = "test.csv") {
   fireEvent.change(fileInput);
 
   // onload を手動でトリガー
-  if (onloadCallback) {
-    onloadCallback({} as ProgressEvent<FileReader>);
+  if (readerCallbacks.onload) {
+    readerCallbacks.onload({} as ProgressEvent<FileReader>);
   }
 }
 
@@ -166,9 +168,7 @@ describe("CSVFilePicker", () => {
   it("ダイアログ内に CSV フォーマット説明が表示される", async () => {
     renderComponent();
     await openDialog();
-    expect(
-      screen.getByText(/CSVファイル形式: eventDate/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/CSVファイル形式: eventDate/)).toBeInTheDocument();
   });
 
   it("ダイアログ内に「ファイルを選択」ボタンが表示される", async () => {
@@ -311,9 +311,7 @@ describe("CSVFilePicker", () => {
     await user.click(screen.getByRole("button", { name: "登録" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/登録に失敗しました/),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/登録に失敗しました/)).toBeInTheDocument();
     });
   });
 

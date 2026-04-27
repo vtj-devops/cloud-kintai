@@ -154,6 +154,7 @@ describe("staffApi endpoints", () => {
       owner: false,
       role: "STAFF" as const,
       enabled: true,
+      status: "CONFIRMED",
     };
 
     it("正常にスタッフを作成し操作ログを記録する", async () => {
