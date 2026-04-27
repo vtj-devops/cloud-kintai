@@ -209,9 +209,8 @@ export default function ShiftCollaborativePrototype() {
     };
   }, [days, shiftData]);
 
-  const handleCellClick = (staffId: string, dayKey: string) => {
-    console.log("Cell clicked:", staffId, dayKey);
-    // プロトタイプなので実装はコンソールログのみ
+  const handleCellClick = (_staffId: string, _dayKey: string) => {
+    // プロトタイプなので実装予定
   };
 
   const prevMonth = () => setCurrentMonth((m) => m.subtract(1, "month"));

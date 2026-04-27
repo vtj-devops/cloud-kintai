@@ -1,12 +1,11 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { useWorkflowNotificationInbox } from "@features/workflow/notification/model/useWorkflowNotificationInbox";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
-import { Badge, Tooltip } from "@mui/material";
+import { Badge } from "@mui/material";
 import { AppIconButton } from "@shared/ui/button";
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
-import { AuthContext } from "@/context/AuthContext";
 
 export default function WorkflowNotificationButton() {
   const { authStatus } = useContext(AuthContext);
@@ -21,22 +20,21 @@ export default function WorkflowNotificationButton() {
   }
 
   return (
-    <Tooltip title="通知一覧">
-      <AppIconButton
-        aria-label="通知一覧"
-        onClick={() => navigate("/notifications")}
-        tone="neutral"
+    <AppIconButton
+      aria-label="通知一覧"
+      tooltip="通知一覧"
+      onClick={() => navigate("/notifications")}
+      tone="neutral"
+    >
+      <Badge
+        badgeContent={unreadCount}
+        color="error"
+        max={99}
+        overlap="circular"
+        showZero
       >
-        <Badge
-          badgeContent={unreadCount}
-          color="error"
-          max={99}
-          overlap="circular"
-          showZero
-        >
-          <NotificationsNoneIcon />
-        </Badge>
-      </AppIconButton>
-    </Tooltip>
+        <NotificationsNoneIcon />
+      </Badge>
+    </AppIconButton>
   );
 }

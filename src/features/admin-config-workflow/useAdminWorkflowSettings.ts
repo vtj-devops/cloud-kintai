@@ -1,4 +1,6 @@
 import { useAppDispatchV2 } from "@app/hooks";
+import { AuthContext } from "@app/providers/auth/AuthContext";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import {
   getDefaultWorkflowCategoryOrder,
   type WorkflowCategoryOrderItem,
@@ -10,9 +12,6 @@ import {
 } from "@shared/api/graphql/types";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
-import { AuthContext } from "@/context/AuthContext";
 
 const WORKFLOW_TEMPLATE_ORGANIZATION_ID = "default";
 const CATEGORY_AUTO_SAVE_DELAY = 600;

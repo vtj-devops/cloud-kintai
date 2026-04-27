@@ -1,3 +1,4 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import {
   StaffRole,
   useStaffs,
@@ -23,8 +24,6 @@ import {
 import { createLogger } from "@shared/lib/logger";
 import { GraphQLResult } from "aws-amplify/api";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-
-import { AuthContext } from "@/context/AuthContext";
 
 const logger = createLogger("useWorkflowNotificationInbox");
 const NOTIFICATION_PAGE_SIZE = 10;

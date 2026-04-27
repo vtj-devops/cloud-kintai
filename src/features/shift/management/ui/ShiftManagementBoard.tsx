@@ -1,15 +1,15 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import { useCalendars } from "@entities/calendar/model/useCalendars";
+import useCognitoUser from "@entities/staff/model/useCognitoUser";
 import useShiftPlanYear from "@features/shift/management/model/useShiftPlanYear";
+import { useAppNotification } from "@shared/lib/useAppNotification";
+import { useAutoSave } from "@shared/lib/useAutoSave";
 import dayjs from "dayjs";
 import { Loader2 } from "lucide-react";
 import React, { useContext, useMemo, useState } from "react";
 
-import { AuthContext } from "@/context/AuthContext";
 import * as MESSAGE_CODE from "@/errors";
 import AdminShiftSettingsDialog from "@/features/admin-config-shift/AdminShiftSettingsDialog";
-import { useAppNotification } from "@/hooks/useAppNotification";
-import { useAutoSave } from "@/hooks/useAutoSave";
-import useCognitoUser from "@/hooks/useCognitoUser";
 
 import { ShiftState } from "../lib/generateMockShifts";
 import { useShiftDisplayData } from "../model/useShiftDisplayData";
@@ -310,7 +310,13 @@ export default function ShiftManagementBoard() {
       {!loading && !shiftRequestsLoading && (
         <ShiftManagementTable
           days={days}
-          groupedShiftStaffs={groupedShiftStaffs}
+          groupedShiftStaffs={groupedShiftStaffs.map((group) => ({
+            groupName: group.groupName,
+            staffs: group.members.map((staff) => ({
+              id: staff.id,
+              name: `${staff.familyName}${staff.givenName}`,
+            })),
+          }))}
           holidaySet={holidaySet}
           companyHolidaySet={companyHolidaySet}
           holidayNameMap={holidayNameMap}

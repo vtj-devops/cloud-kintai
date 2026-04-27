@@ -4,6 +4,7 @@
  */
 
 import { useSession } from "@app/providers/session/useSession";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import useCloseDates from "@entities/attendance/model/useCloseDates";
 import { StaffRole } from "@entities/staff/model/useStaffs/useStaffs";
 import { createLogger } from "@shared/lib/logger";
@@ -16,7 +17,6 @@ import dayjs from "dayjs";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
-import { AppConfigContext } from "@/context/AppConfigContext";
 import { scheduleIdleRoutePreload } from "@/router/routePreloaders";
 import NotificationViewport from "@/widgets/feedback/notification/NotificationViewport";
 import Footer from "@/widgets/layout/footer/Footer";

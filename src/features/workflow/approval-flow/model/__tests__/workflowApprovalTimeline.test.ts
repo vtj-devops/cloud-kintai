@@ -180,3 +180,268 @@ describe("buildWorkflowApprovalTimeline", () => {
     expect(result[2].name).toBe("佐藤 太郎");
   });
 });
+
+describe("mapApprovalStatus coverage (via normalizeApprovalSteps)", () => {
+  const staffs: StaffType[] = [];
+  const applicantName = "申請者";
+  const applicationDate = "2024-01-01";
+
+  const makeWorkflowWithStep = (
+    decisionStatus: ApprovalStatus | null
+  ): NonNullable<GetWorkflowQuery["getWorkflow"]> => ({
+    __typename: "Workflow",
+    id: "wf-x",
+    staffId: "staff-1",
+    status: WorkflowStatus.SUBMITTED,
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z",
+    category: null,
+    overTimeDetails: null,
+    comments: [],
+    approvalSteps: [
+      {
+        __typename: "ApprovalStep",
+        id: "step-x",
+        stepOrder: 1,
+        approverStaffId: "ADMINS",
+        decisionStatus: decisionStatus as ApprovalStatus,
+        decisionTimestamp: null,
+        approverComment: null,
+      },
+    ],
+  });
+
+  it("maps SKIPPED status to スキップ", () => {
+    const result = buildWorkflowApprovalTimeline({
+      workflow: makeWorkflowWithStep(ApprovalStatus.SKIPPED),
+      staffs,
+      applicantName,
+      applicationDate,
+    });
+    expect(result[1].state).toBe("スキップ");
+  });
+
+  it("maps PENDING status to 未承認", () => {
+    const result = buildWorkflowApprovalTimeline({
+      workflow: makeWorkflowWithStep(ApprovalStatus.PENDING),
+      staffs,
+      applicantName,
+      applicationDate,
+    });
+    expect(result[1].state).toBe("未承認");
+  });
+
+  it("maps null status to 未承認", () => {
+    const result = buildWorkflowApprovalTimeline({
+      workflow: makeWorkflowWithStep(null),
+      staffs,
+      applicantName,
+      applicationDate,
+    });
+    expect(result[1].state).toBe("未承認");
+  });
+});
+
+describe("deriveWorkflowApproverInfo — additional branches", () => {
+  const staffFixture2 = (overrides: Partial<StaffType> = {}): StaffType =>
+    ({
+      id: "staff-a",
+      cognitoUserId: "cognito-a",
+      familyName: "田中",
+      givenName: "一郎",
+      mailAddress: "",
+      owner: false,
+      role: StaffRole.STAFF,
+      enabled: true,
+      status: "active" as StaffType["status"],
+      createdAt: "",
+      updatedAt: "",
+      ...overrides,
+    } as StaffType);
+
+  it("returns 未設定 for SINGLE setting with no approverSingle", () => {
+    const wf: NonNullable<GetWorkflowQuery["getWorkflow"]> = {
+      __typename: "Workflow",
+      id: "wf-y",
+      staffId: "staff-a",
+      status: WorkflowStatus.SUBMITTED,
+      createdAt: "2024-01-01T00:00:00Z",
+      updatedAt: "2024-01-01T00:00:00Z",
+      category: null,
+      overTimeDetails: null,
+      comments: [],
+      approvalSteps: [],
+    };
+    const staffs = [
+      staffFixture2({
+        approverSetting: ApproverSettingMode.SINGLE,
+        approverSingle: null,
+      }),
+    ];
+    const result = deriveWorkflowApproverInfo(wf, staffs);
+    expect(result).toEqual({ mode: "single", items: ["未設定"] });
+  });
+
+  it("returns 未設定 for MULTIPLE setting with empty list", () => {
+    const wf: NonNullable<GetWorkflowQuery["getWorkflow"]> = {
+      __typename: "Workflow",
+      id: "wf-z",
+      staffId: "staff-a",
+      status: WorkflowStatus.SUBMITTED,
+      createdAt: "2024-01-01T00:00:00Z",
+      updatedAt: "2024-01-01T00:00:00Z",
+      category: null,
+      overTimeDetails: null,
+      comments: [],
+      approvalSteps: [],
+    };
+    const staffs = [
+      staffFixture2({
+        approverSetting: ApproverSettingMode.MULTIPLE,
+        approverMultiple: [],
+      }),
+    ];
+    const result = deriveWorkflowApproverInfo(wf, staffs);
+    expect(result).toEqual({ mode: "any", items: ["未設定"] });
+  });
+
+  it("returns mode=any for MULTIPLE without ORDER mode", () => {
+    const wf: NonNullable<GetWorkflowQuery["getWorkflow"]> = {
+      __typename: "Workflow",
+      id: "wf-m",
+      staffId: "staff-a",
+      status: WorkflowStatus.SUBMITTED,
+      createdAt: "2024-01-01T00:00:00Z",
+      updatedAt: "2024-01-01T00:00:00Z",
+      category: null,
+      overTimeDetails: null,
+      comments: [],
+      approvalSteps: [],
+    };
+    const staffs = [
+      staffFixture2({
+        approverSetting: ApproverSettingMode.MULTIPLE,
+        approverMultiple: ["staff-b", "staff-c"],
+        approverMultipleMode: ApproverMultipleMode.ANY,
+      }),
+    ];
+    const result = deriveWorkflowApproverInfo(wf, staffs);
+    expect(result.mode).toBe("any");
+    expect(result.items).toHaveLength(2);
+  });
+});
+
+describe("buildWorkflowApprovalTimeline — fallback mode branches", () => {
+  const staffFixture3 = (overrides: Partial<StaffType> = {}): StaffType =>
+    ({
+      id: "staff-b",
+      cognitoUserId: "cognito-b",
+      familyName: "鈴木",
+      givenName: "次郎",
+      mailAddress: "",
+      owner: false,
+      role: StaffRole.STAFF,
+      enabled: true,
+      status: "active" as StaffType["status"],
+      createdAt: "",
+      updatedAt: "",
+      ...overrides,
+    } as StaffType);
+
+  const applicantName = "申請者";
+  const applicationDate = "2024-01-01";
+
+  it("uses single-mode fallback approver", () => {
+    const wf: NonNullable<GetWorkflowQuery["getWorkflow"]> = {
+      __typename: "Workflow",
+      id: "wf-single",
+      staffId: "staff-b",
+      status: WorkflowStatus.SUBMITTED,
+      createdAt: "2024-01-01T00:00:00Z",
+      updatedAt: "2024-01-01T00:00:00Z",
+      category: null,
+      overTimeDetails: null,
+      comments: [],
+      approvalSteps: [],
+    };
+    const staffs = [
+      staffFixture3({
+        approverSetting: ApproverSettingMode.SINGLE,
+        approverSingle: null,
+      }),
+    ];
+    const result = buildWorkflowApprovalTimeline({
+      workflow: wf,
+      staffs,
+      applicantName,
+      applicationDate,
+    });
+    expect(result).toHaveLength(2);
+    expect(result[1].name).toBe("未設定");
+    expect(result[1].role).toBe("承認者");
+  });
+
+  it("uses order-mode fallback with multiple approvers", () => {
+    const wf: NonNullable<GetWorkflowQuery["getWorkflow"]> = {
+      __typename: "Workflow",
+      id: "wf-order",
+      staffId: "staff-b",
+      status: WorkflowStatus.SUBMITTED,
+      createdAt: "2024-01-01T00:00:00Z",
+      updatedAt: "2024-01-01T00:00:00Z",
+      category: null,
+      overTimeDetails: null,
+      comments: [],
+      approvalSteps: [],
+    };
+    const staffs = [
+      staffFixture3({
+        approverSetting: ApproverSettingMode.MULTIPLE,
+        approverMultiple: ["staff-x", "staff-y"],
+        approverMultipleMode: ApproverMultipleMode.ORDER,
+      }),
+    ];
+    const result = buildWorkflowApprovalTimeline({
+      workflow: wf,
+      staffs,
+      applicantName,
+      applicationDate,
+    });
+    expect(result).toHaveLength(3);
+    expect(result[1].id).toBe("s1");
+    expect(result[2].id).toBe("s2");
+  });
+
+  it("uses any-mode fallback with specific approver names", () => {
+    const wf: NonNullable<GetWorkflowQuery["getWorkflow"]> = {
+      __typename: "Workflow",
+      id: "wf-any",
+      staffId: "staff-b",
+      status: WorkflowStatus.SUBMITTED,
+      createdAt: "2024-01-01T00:00:00Z",
+      updatedAt: "2024-01-01T00:00:00Z",
+      category: null,
+      overTimeDetails: null,
+      comments: [],
+      approvalSteps: [],
+    };
+    const approverStaff = staffFixture3({ id: "staff-approver", familyName: "承認", givenName: "者A" });
+    const staffs = [
+      staffFixture3({
+        approverSetting: ApproverSettingMode.MULTIPLE,
+        approverMultiple: ["staff-approver"],
+        approverMultipleMode: ApproverMultipleMode.ANY,
+      }),
+      approverStaff,
+    ];
+    const result = buildWorkflowApprovalTimeline({
+      workflow: wf,
+      staffs,
+      applicantName,
+      applicationDate,
+    });
+    expect(result).toHaveLength(2);
+    expect(result[1].name).toContain("承認");
+    expect(result[1].role).toBe("承認者（複数）");
+  });
+});

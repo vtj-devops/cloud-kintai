@@ -1,3 +1,4 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import { useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import { useSplitView } from "@features/splitView";
 import { graphqlClient } from "@shared/api/amplify/graphqlClient";
@@ -10,8 +11,6 @@ import dayjs, { type Dayjs } from "dayjs";
 import { Download } from "lucide-react";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-import { AuthContext } from "@/context/AuthContext";
 
 import DailyReportCarouselDialog from "./DailyReportCarouselDialog";
 import DailyReportDetailPanel from "./DailyReportDetailPanel";
@@ -366,6 +365,7 @@ export default function AdminDailyReport() {
             type="button"
             onClick={handleOpenCarousel}
             disabled={filteredReports.length === 0}
+            data-testid="admin-daily-report-carousel-button"
             className="inline-flex h-9 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-xs font-semibold tracking-wide text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             まとめて確認

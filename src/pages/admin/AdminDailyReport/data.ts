@@ -6,6 +6,16 @@ import {
   DailyReportStatus,
 } from "@shared/api/graphql/types";
 
+export const normalizeReactions = (
+  entries?: (DailyReportReaction | null)[] | null,
+): DailyReportReaction[] =>
+  entries?.filter((entry): entry is DailyReportReaction => Boolean(entry)) ?? [];
+
+export const normalizeComments = (
+  entries?: (DailyReportComment | null)[] | null,
+): DailyReportComment[] =>
+  entries?.filter((entry): entry is DailyReportComment => Boolean(entry)) ?? [];
+
 export type ReportStatus = DailyReportStatus;
 export type DisplayStatus = Exclude<ReportStatus, DailyReportStatus.DRAFT>;
 

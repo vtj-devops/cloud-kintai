@@ -1,3 +1,4 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import { StaffRole } from "@entities/staff/model/useStaffs/useStaffs";
 import { graphqlClient } from "@shared/api/amplify/graphqlClient";
 import {
@@ -6,8 +7,6 @@ import {
 } from "@shared/api/graphql/types";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-
-import { AuthContext } from "@/context/AuthContext";
 
 import AdminDailyReportDetail from "./AdminDailyReportDetail";
 
@@ -31,7 +30,7 @@ jest.mock("@entities/staff/model/useStaffs/useStaffs", () => ({
   useStaffs: (...args: unknown[]) => staffsHookMock(...args),
 }));
 
-jest.mock("@/hooks/useCognitoUser", () => ({
+jest.mock("@entities/staff/model/useCognitoUser", () => ({
   __esModule: true,
   default: (...args: unknown[]) => cognitoUserHookMock(...args),
 }));

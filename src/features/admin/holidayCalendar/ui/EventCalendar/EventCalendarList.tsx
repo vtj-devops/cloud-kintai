@@ -5,10 +5,11 @@ import CreatedAtTableCell from "@features/admin/holidayCalendar/ui/components/Cr
 import EventCalendarDelete from "@features/admin/holidayCalendar/ui/components/EventCalendarDelete";
 import EventDateTableCell from "@features/admin/holidayCalendar/ui/components/EventDateTableCell";
 import EventNameTableCell from "@features/admin/holidayCalendar/ui/components/EventNameTableCell";
-import { Button, FormControl, InputLabel, LinearProgress, MenuItem, Paper, Select, Stack, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, TextField, Typography, } from "@mui/material";
+import { FormControl, InputLabel, LinearProgress, MenuItem, Paper, Select, Stack, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, TextField, Typography, } from "@mui/material";
 import { buildVersionOrUpdatedAtCondition, getNextVersion, } from "@shared/api/graphql/concurrency";
 import { EventCalendar } from "@shared/api/graphql/types";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { AppButton } from "@shared/ui/button";
 import { useCallback, useEffect } from "react";
 
 import * as MESSAGE_CODE from "@/errors";
@@ -100,11 +101,11 @@ export default function EventCalendarList() {
             <TextField label="イベント名で検索" size="small" value={nameFilter} onChange={(e) => {
             setNameFilter(e.target.value);
         }} sx={{ minWidth: 200 }}/>
-            <Button size="small" onClick={() => {
+            <AppButton size="sm" variant="ghost" onClick={() => {
             clearFilters();
         }}>
               クリア
-            </Button>
+            </AppButton>
           </Stack>
         </Paper>
       </Stack>

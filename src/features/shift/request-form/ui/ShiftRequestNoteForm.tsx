@@ -1,4 +1,5 @@
-import { Box, Button, CircularProgress, Paper, Stack, TextField } from "@mui/material";
+import { Box, CircularProgress, Paper, Stack, TextField } from "@mui/material";
+import { AppButton } from "@shared/ui/button";
 
 import { ShiftRequestSummary } from "../model/shiftRequestSummary";
 
@@ -53,24 +54,23 @@ export function ShiftRequestNoteForm({
               flexWrap: "wrap",
             }}
           >
-            <Button
-              variant="contained"
+            <AppButton
               onClick={() => onSave(summary)}
               disabled={!hasSelection || interactionDisabled}
               fullWidth={isMobile}
-              sx={{
-                minWidth: 160,
-                borderRadius: "9999px",
-                border: "1px solid rgba(6,95,70,0.35)",
-                backgroundColor: "#19b985",
-                color: "#ffffff",
-                boxShadow:
-                  "inset 0 -2px 0 rgba(0,0,0,0.12), 0 12px 24px -18px rgba(5,150,105,0.55)",
-                "&:hover": { backgroundColor: "#17ab7b" },
-              }}
+              style={
+                {
+                  "--app-button-bg": "#19b985",
+                  "--app-button-hover-bg": "#17ab7b",
+                  "--app-button-border": "rgba(6,95,70,0.35)",
+                  "--app-button-hover-border": "rgba(6,95,70,0.35)",
+                  "--app-button-shadow":
+                    "inset 0 -2px 0 rgba(0,0,0,0.12), 0 12px 24px -18px rgba(5,150,105,0.55)",
+                } as React.CSSProperties
+              }
             >
               保存
-            </Button>
+            </AppButton>
             {isSaving && <CircularProgress size={20} />}
           </Box>
         </Stack>

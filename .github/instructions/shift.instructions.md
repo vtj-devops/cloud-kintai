@@ -1,46 +1,84 @@
 ---
-applyTo: "src/pages/shift/request/index.tsx,src/pages/shift/management/index.tsx,src/pages/admin/ShiftPlanManagement/ShiftPlanManagement.tsx,src/pages/admin/AdminShiftSettings/AdminShiftSettings.tsx"
+applyTo: "src/pages/shift/**,src/features/shift/**"
 ---
 
 # シフト機能
 
-シフト機能は、従業員の勤務時間や勤務日を柔軟に管理・調整するための機能です。 シフト機能を利用することで、企業は従業員の勤務スケジュールを効率的に作成・管理でき、従業員は自身の勤務予定を簡単に確認・変更できます。
+従業員の勤務スケジュールを管理する機能群。管理者・スタッフそれぞれに画面があり、AppConfig の設定値によって「通常モード」と「共同編集モード」が切り替わる。
 
-## シフトとは
+## モード切り替えアーキテクチャ
 
-シフトとは、従業員の勤務時間・勤務日を固定せず、あらかじめ定義された複数の勤務パターン（シフト）を、日別または期間単位で割り当てる勤務形態を指す。
+シフト管理・申請の両ページは、AppConfig の 2 つのフラグによって表示する画面が変わる。
 
-## 基本構成要素
+| フラグ | デフォルト | 役割 |
+|--------|-----------|------|
+| `shiftDefaultMode` | `"normal"` | `"collaborative"` にすると共同編集モードに切り替わる |
+| `shiftCollaborativeEnabled` | `false` | スタッフ向け申請ページで共同編集を有効にする追加スイッチ |
 
-- スタッフ側からシフトを確認・申請する画面('src/pages/shift/request/index.tsx')
-  - 従業員が自身のシフトスケジュールを確認できる画面。
-  - 希望シフトの提出が可能。(未対応)
-- 管理者側からシフトを管理する画面('src/pages/shift/management/index.tsx')
-  - 管理者が従業員のシフトスケジュールを作成・編集できる画面。
-- シフト計画管理画面('src/pages/admin/ShiftPlanManagement/ShiftPlanManagement.tsx')
-  - 月や日単位で必要な人数を設定し、人員計画を立てるための画面。
+```
+pages/shift/management/index.tsx
+  getShiftDefaultMode() === "collaborative"
+    → ShiftCollaborativePage（共同編集）
+    → ShiftManagementBoard（通常管理）
 
-## シフト勤務対象者
+pages/shift/request/index.tsx
+  getShiftDefaultMode() === "collaborative" && getShiftCollaborativeEnabled()
+    → ShiftCollaborativePage（共同編集）
+    → ShiftRequestForm（通常申請）
+```
 
-シフト勤務の対象者は、管理者画面の「スタッフ管理」セクションで各従業員の勤務形態を「シフト勤務」に設定することで指定できます。
+両ページとも「どちらのモードで動くか」が実行時に決まるため、**どちらかの実装を変更するときはもう一方への影響も確認すること**。
 
-## シフトグループとは
+## 画面・機能一覧
 
-シフトグループは、管理者向けのシフト管理ページで特定のグループに属するスタッフを可視化するための機能です。シフトグループを設定することで、管理者はグループごとにシフトスケジュールを効率的に管理できます。
+### 管理者向け
 
-シフトグループの作成は、管理者向けの設定画面のシフト設定セクション(`src/pages/admin/AdminShiftSettings/AdminShiftSettings.tsx`)でグループの作成・編集が可能です。
+| 画面 | ページ | Feature |
+|------|--------|---------|
+| シフト管理（通常） | `pages/shift/management/` | `features/shift/management/` |
+| シフト共同編集 | `pages/shift/collaborative/` | `features/shift/collaborative/` |
+| シフト計画管理 | `pages/admin/ShiftPlanManagement/` | — |
+| シフト設定 | `pages/admin/AdminShiftSettings/` | — |
 
-また、スタッフにシフトグループを割り当てる場合は、スタッフ管理画面で各スタッフのシフトグループを選択することで行えます。
+### スタッフ向け
 
-### 主な機能:
+| 画面 | ページ | Feature |
+|------|--------|---------|
+| 希望シフト申請（通常） | `pages/shift/request/` | `features/shift/request-form/` |
+| 希望シフト申請（共同編集） | `pages/shift/request/` | `features/shift/collaborative/` |
+| スタッフシフト一覧 | `pages/shift/staff/` | `features/shift/staff-shift-list/` |
+| 日次ビュー | `pages/shift/day-view/` | `features/shift/day-view/` |
 
-- 最小人数・最大人数の設定:
-  - 各シフトグループに対して、必要なスタッフの最小人数と最大人数を設定可能
-    - 最小と最大をそれぞれ設定可能
-    - 両方設定: 2〜4 名などの特定の範囲内を指定可能
-- 固定人数の設定:
-  - シフトグループに対して、特定のシフトに必要な固定人数を設定可能
+## アクセス制御
 
-## マイパターン機能(スタッフ向け)
+- `ShiftAccessGuard`（`pages/shift/ShiftAccessGuard.tsx`）がスタッフページを保護する。勤務形態が「シフト勤務」でないスタッフはシフト画面にアクセスできない。
+- 確定（ロック）・確定解除・強制ロック解放は `ADMIN` / `STAFF_ADMIN` / `OWNER` のみ実行可能。スタッフロールにはボタンを表示しない。
 
-スタッフ画面には「マイパターン」機能があり、従業員は自身の勤務パターンを事前に登録できます。これにより、シフト希望の提出が迅速かつ効率的になります。
+## 通常モード（`management/` / `request-form/`）の概要
+
+通常モードは GraphQL Subscription を使わず、画面操作ごとに AppSync へ単発 Mutation を発行してデータを更新する。リアルタイム同期・Undo/Redo・編集ロック・変更履歴などの機能はない。
+
+- `ShiftManagementBoard`：管理者が月単位でスタッフのシフトを閲覧・編集するテーブル UI。
+- `ShiftRequestForm`：スタッフが当月の希望シフトをカレンダー形式で入力・提出するフォーム。マイパターン（`shiftPatternStorage`）登録機能を持つ。
+
+## 共同編集モードの概要
+
+→ 詳細は `shiftCollaborative.instructions.md` を参照。
+
+- 複数ユーザーが同じシフト表を同時編集できるリアルタイム協調編集機能。
+- AppSync GraphQL Subscription によるリアルタイム同期、楽観的更新、Undo/Redo、編集ロック、変更履歴、在席表示（プレゼンス）などを含む。
+
+## シフトグループ
+
+管理者がスタッフをグループ単位で管理するための設定。`AdminShiftSettings` で作成・編集し、スタッフ管理画面で各スタッフに割り当てる。
+
+- 最小・最大人数の範囲指定や固定人数の設定が可能。
+- 設定は `AppConfig` ではなく DynamoDB に独立して保存される。
+
+## `ShiftRequestData` と DB の関係
+
+スタッフごとの月次シフトデータは `ShiftRequest` として DynamoDB に保存される。
+
+- `entries`：日付ごとの状態（`status` / `isLocked`）の配列。
+- `histories`：変更のたびに追記されるスナップショット配列（全セルの状態を全件保持）。共同編集モードでの変更履歴表示に使用する。
+- `comments`：セル単位のコメント（共同編集モードのみ利用）。

@@ -1,8 +1,8 @@
+import fetchCognitoUsers from "@entities/staff/model/cognito/fetchCognitoUsers";
 import { StaffType } from "@entities/staff/model/useStaffs/useStaffs";
 import { CreateStaffInput, UpdateStaffInput } from "@shared/api/graphql/types";
 
 import * as MESSAGE_CODE from "@/errors";
-import fetchCognitoUsers from "@/hooks/common/fetchCognitoUsers";
 
 export async function handleSyncCognitoUser(
   staffs: StaffType[],

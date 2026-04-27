@@ -5,12 +5,12 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-  IconButton,
   List,
   ListItem,
   ListItemText,
   Typography,
 } from "@mui/material";
+import { AppIconButton } from "@shared/ui/button";
 import { memo } from "react";
 
 interface KeyboardShortcutsHelpProps {
@@ -70,14 +70,13 @@ export const KeyboardShortcutsHelpBase = ({
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h6">キーボードショートカット</Typography>
-          <IconButton
-            edge="end"
+          <AppIconButton
             onClick={onClose}
             aria-label="close"
-            size="small"
+            size="sm"
           >
             <CloseIcon />
-          </IconButton>
+          </AppIconButton>
         </Box>
       </DialogTitle>
       <DialogContent>

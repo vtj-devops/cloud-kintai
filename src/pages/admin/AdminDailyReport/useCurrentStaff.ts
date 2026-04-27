@@ -1,7 +1,6 @@
+import type { CognitoUser } from "@entities/staff/model/useCognitoUser";
 import fetchStaff from "@entities/staff/model/useStaff/fetchStaff";
 import { useEffect, useState } from "react";
-
-import type { CognitoUser } from "@/hooks/useCognitoUser";
 
 type CurrentStaff = {
   currentStaffId: string | null;

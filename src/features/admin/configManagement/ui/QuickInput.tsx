@@ -1,4 +1,5 @@
 import { useAppDispatchV2 } from "@app/hooks";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { appendItem, removeItemAt, toggleEnabledAt, updateItem, } from "@features/admin/configManagement/lib/arrayHelpers";
 import { TIME_FORMAT } from "@features/admin/configManagement/lib/constants";
 import AdminSettingsLayout from "@features/admin/layout/ui/AdminSettingsLayout";
@@ -9,7 +10,6 @@ import { pushNotification } from "@shared/lib/store/notificationSlice";
 import dayjs, { Dayjs } from "dayjs";
 import { useContext, useEffect, useState } from "react";
 
-import { AppConfigContext } from "@/context/AppConfigContext";
 import { E14001, S14001, S14002 } from "@/errors";
 
 import QuickInputSection from "./QuickInputSection";

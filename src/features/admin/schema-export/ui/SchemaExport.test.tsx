@@ -1,7 +1,6 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-
-import { AuthContext } from "@/context/AuthContext";
 
 import SchemaExport from "./SchemaExport";
 

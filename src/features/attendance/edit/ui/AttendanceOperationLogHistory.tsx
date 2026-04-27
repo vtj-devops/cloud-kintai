@@ -174,6 +174,7 @@ export default function AttendanceOperationLogHistory({
         {canonicalLogs.map((log) => (
           <article
             key={log.id}
+            data-testid="attendance-operation-log-item"
             className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm"
           >
             <div className="flex flex-wrap items-center gap-2">

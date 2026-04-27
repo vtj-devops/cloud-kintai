@@ -16,7 +16,6 @@ import {
   Collapse,
   Divider,
   Drawer,
-  IconButton,
   List,
   ListItemButton,
   ListItemText,
@@ -24,6 +23,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import { AppIconButton } from "@shared/ui/button";
 import { memo, type UIEvent, useEffect, useRef, useState } from "react";
 
 import { RuleViolation, SuggestedAction } from "../rules/shiftRules";
@@ -186,18 +186,18 @@ export const ShiftSuggestionsPanelBase = ({
         </Stack>
         <Stack direction="row" spacing={0.5} alignItems="center">
           <Tooltip title="再分析">
-            <IconButton
-              size="small"
+            <AppIconButton
+              size="sm"
               onClick={onRefresh}
               disabled={isAnalyzing}
               aria-label="提案を再分析"
             >
               <RefreshIcon />
-            </IconButton>
+            </AppIconButton>
           </Tooltip>
-          <IconButton size="small" onClick={onClose} aria-label="close">
+          <AppIconButton size="sm" onClick={onClose} aria-label="close">
             <CloseIcon fontSize="small" />
-          </IconButton>
+          </AppIconButton>
         </Stack>
       </Stack>
 

@@ -55,7 +55,21 @@ export default function PaidHolidayFlagInputMobile({
     setValue("paidHolidayFlag", checked);
     field.onChange(checked);
 
-    if (!checked || !setPaidHolidayTimes || !workDate) return;
+    if (!checked) {
+      try {
+        if (getValues) {
+          const tags: string[] = (getValues("remarkTags") as string[]) || [];
+          if (tags.includes("有給休暇")) {
+            setValue("remarkTags", tags.filter((t) => t !== "有給休暇"));
+          }
+        }
+      } catch {
+        // noop
+      }
+      return;
+    }
+
+    if (!setPaidHolidayTimes || !workDate) return;
 
     const workDayjs = dayjs(workDate);
     const cfgStart = getStartTime();

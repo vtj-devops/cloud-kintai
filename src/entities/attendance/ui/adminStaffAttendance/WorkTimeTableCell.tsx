@@ -1,9 +1,8 @@
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { TableCell } from "@mui/material";
 import { Attendance } from "@shared/api/graphql/types";
 import dayjs from "dayjs";
 import { useContext } from "react";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
 
 export function WorkTimeTableCell({ attendance }: { attendance: Attendance }) {
   const { getStartTime, getEndTime } = useContext(AppConfigContext);

@@ -1,3 +1,4 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import {
   StaffRole,
   useStaffs,
@@ -10,8 +11,6 @@ import {
 } from "@shared/api/graphql/types";
 import { render, screen, waitFor } from "@testing-library/react";
 import type { GraphQLResult } from "aws-amplify/api";
-
-import { AuthContext } from "@/context/AuthContext";
 
 import AdminDailyReport from "./AdminDailyReport";
 

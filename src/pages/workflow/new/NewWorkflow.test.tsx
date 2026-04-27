@@ -1,9 +1,8 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import { render, screen } from "@testing-library/react";
 import dayjs from "dayjs";
 import type { ReactNode } from "react";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
-
-import { AuthContext } from "@/context/AuthContext";
 
 import NewWorkflow from "./NewWorkflow";
 
@@ -37,7 +36,7 @@ jest.mock("@entities/workflow/model/useWorkflows", () => ({
   }),
 }));
 
-jest.mock("@/hooks/useAppNotification", () => ({
+jest.mock("@shared/lib/useAppNotification", () => ({
   useAppNotification: () => ({
     notify: jest.fn(),
   }),

@@ -1,8 +1,7 @@
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { getDesignTokens } from "@shared/designSystem";
 import { SubsectionTitle } from "@shared/ui/typography";
 import { type ReactNode, useContext, useMemo } from "react";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
 
 type Props = {
   title: string;

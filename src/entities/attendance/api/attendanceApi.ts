@@ -16,6 +16,8 @@ import {
   getAttendance,
 } from "@shared/api/graphql/documents/queries";
 import { graphqlBaseQuery } from "@shared/api/graphql/graphqlBaseQuery";
+import { executePaginatedQuery } from "@shared/api/graphql/paginatedQuery";
+import { buildListAndItemTags } from "@shared/api/graphql/tagBuilder";
 import type {
   Attendance,
   AttendanceHistoryInput,
@@ -426,42 +428,20 @@ const fetchAttendancesByStaffDate = async (
   staffId: string,
   workDate: string,
 ) => {
-  const attendances: Attendance[] = [];
-  let nextToken: string | null = null;
+  const result = await executePaginatedQuery<Attendance>({
+    baseQuery,
+    document: attendancesByStaffId,
+    variables: { staffId, workDate: { eq: workDate } },
+    connectionExtractor: (data) =>
+      (data as AttendancesByStaffIdQuery | null)?.attendancesByStaffId,
+    errorMessage: "Failed to fetch attendance",
+  });
 
-  do {
-    const result = await baseQuery({
-      document: attendancesByStaffId,
-      variables: {
-        staffId,
-        workDate: {
-          eq: workDate,
-        },
-        nextToken,
-      },
-    });
+  if (result.error) {
+    return { error: result.error as AttendanceQueryError, attendances: [] as Attendance[] };
+  }
 
-    if (result.error) {
-      return {
-        error: result.error as AttendanceQueryError,
-        attendances: [] as Attendance[],
-      };
-    }
-
-    const data = result.data as AttendancesByStaffIdQuery | null;
-    const connection = data?.attendancesByStaffId;
-    if (!connection) {
-      return {
-        error: { message: "Failed to fetch attendance" },
-        attendances: [] as Attendance[],
-      };
-    }
-
-    attendances.push(...connection.items.filter(nonNullable));
-    nextToken = connection.nextToken ?? null;
-  } while (nextToken);
-
-  return { attendances };
+  return { attendances: result.data };
 };
 
 const resolveAttendanceLogAction = (defaultAction: string, override?: string) =>
@@ -740,23 +720,12 @@ export const attendanceApi = createApi({
           },
         };
       },
-      providesTags: (result) => {
-        const listTag = { type: "Attendance" as const, id: "LIST" };
-        const attendances = result?.attendances ?? [];
-        if (!attendances.length) {
-          return [listTag];
-        }
-
-        return [
-          listTag,
-          ...attendances.map((attendance) => ({
-            type: "Attendance" as const,
-            id:
-              attendance.id ||
-              buildAttendanceCacheId(attendance.staffId, attendance.workDate),
-          })),
-        ];
-      },
+      providesTags: (result) =>
+        buildListAndItemTags(
+          "Attendance",
+          result?.attendances,
+          (a) => a.id || buildAttendanceCacheId(a.staffId, a.workDate),
+        ),
     }),
     listRecentAttendancesWithWarnings: builder.query<
       AttendanceListResponse,
@@ -850,22 +819,12 @@ export const attendanceApi = createApi({
           },
         };
       },
-      providesTags: (result) => {
-        const listTag = { type: "Attendance" as const, id: "LIST" };
-        if (!result || !result.attendances) {
-          return [listTag];
-        }
-
-        return [
-          listTag,
-          ...result.attendances.map((attendance) => ({
-            type: "Attendance" as const,
-            id:
-              attendance.id ||
-              buildAttendanceCacheId(attendance.staffId, attendance.workDate),
-          })),
-        ];
-      },
+      providesTags: (result) =>
+        buildListAndItemTags(
+          "Attendance",
+          result?.attendances,
+          (a) => a.id || buildAttendanceCacheId(a.staffId, a.workDate),
+        ),
     }),
     listAttendancesByDateRange: builder.query<
       Attendance[],
@@ -877,38 +836,24 @@ export const attendanceApi = createApi({
         _extraOptions,
         baseQuery,
       ) {
-        const attendances: Attendance[] = [];
-        let nextToken: string | null = null;
+        const paginatedResult = await executePaginatedQuery<Attendance>({
+          baseQuery,
+          document: attendancesByStaffId,
+          variables: {
+            staffId,
+            workDate: { between: [startDate, endDate] },
+            sortDirection: "ASC",
+          },
+          connectionExtractor: (data) =>
+            (data as AttendancesByStaffIdQuery | null)?.attendancesByStaffId,
+          errorMessage: "Failed to fetch attendance",
+        });
 
-        do {
-          const result = await baseQuery({
-            document: attendancesByStaffId,
-            variables: {
-              staffId,
-              workDate: {
-                between: [startDate, endDate],
-              },
-              sortDirection: "ASC",
-              nextToken,
-            },
-          });
+        if (paginatedResult.error) {
+          return { error: paginatedResult.error };
+        }
 
-          if (result.error) {
-            return { error: result.error };
-          }
-
-          const data = result.data as AttendancesByStaffIdQuery | null;
-          const connection = data?.attendancesByStaffId;
-
-          if (!connection) {
-            return { error: { message: "Failed to fetch attendance" } };
-          }
-
-          attendances.push(...connection.items.filter(nonNullable));
-          nextToken = connection.nextToken ?? null;
-        } while (nextToken);
-
-        // 重複チェック: 同一日付に複数のレコードがないか確認
+        const attendances = paginatedResult.data;
         const duplicateCheck = new Map<string, Attendance[]>();
         const duplicateDetails: DuplicateAttendanceInfo[] = [];
         attendances.forEach((attendance) => {
@@ -1147,22 +1092,12 @@ export const attendanceApi = createApi({
 
           return { data: createdAttendance };
         },
-        invalidatesTags: (result) => {
-          const listTag = { type: "Attendance" as const, id: "LIST" };
-          if (!result) {
-            return [listTag];
-          }
-
-          return [
-            listTag,
-            {
-              type: "Attendance" as const,
-              id:
-                result.id ||
-                buildAttendanceCacheId(result.staffId, result.workDate),
-            },
-          ];
-        },
+        invalidatesTags: (result) =>
+          buildListAndItemTags(
+            "Attendance",
+            result ? [result] : undefined,
+            (r) => r.id || buildAttendanceCacheId(r.staffId, r.workDate),
+          ),
       },
     ),
     upsertAttendanceByStaffAndDate: builder.mutation<

@@ -1,3 +1,4 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import { useGetAttendanceStatisticsSnapshotQuery } from "@entities/attendance-statistics/api/attendanceStatisticsApi";
 import { rebuildAttendanceStatistics } from "@entities/attendance-statistics/model/attendanceStatisticsService";
 import type {
@@ -16,8 +17,6 @@ import {
 import { PageTitle } from "@shared/ui/typography";
 import dayjs from "dayjs";
 import { useContext, useMemo, useState } from "react";
-
-import { AuthContext } from "@/context/AuthContext";
 
 function StatItem({ label, value }: { label: string; value: string }) {
   return (

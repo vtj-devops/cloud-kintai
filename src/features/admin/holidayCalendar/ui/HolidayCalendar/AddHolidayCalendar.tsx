@@ -2,17 +2,18 @@ import { useAppDispatchV2 } from "@app/hooks";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import { buildHolidayDateRange, HolidayDateRangeError, MAX_HOLIDAY_RANGE_DAYS, } from "@features/admin/holidayCalendar/lib/buildHolidayDateRange";
 import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOutlined";
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Stack, TextField, } from "@mui/material";
+import { Stack, TextField, } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { CreateHolidayCalendarInput, HolidayCalendar, } from "@shared/api/graphql/types";
 import { HolidayCalendarMessage } from "@shared/lib/message/HolidayCalendarMessage";
 import { MessageStatus } from "@shared/lib/message/Message";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { AppButton } from "@shared/ui/button";
+import AppDialog from "@shared/ui/feedback/AppDialog";
+import { useDialogCloseGuard } from "@shared/ui/feedback/useDialogCloseGuard";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-
-import { useDialogCloseGuard } from "@/hooks/useDialogCloseGuard";
 /**
  * AddHolidayCalendar コンポーネントのフォーム入力型
  *
@@ -110,20 +111,15 @@ export function AddHolidayCalendar({ createHolidayCalendar, bulkCreateHolidayCal
         }
     };
     return (<>
-      <Button variant="outlined" size="medium" startIcon={<AddCircleOutlineOutlinedIcon />} onClick={() => setOpen(true)}>
+      <AppButton variant="outline" startIcon={<AddCircleOutlineOutlinedIcon />} onClick={() => setOpen(true)}>
         休日を追加
-      </Button>
+      </AppButton>
       {dialog}
-      <Dialog open={open} onClose={requestClose}>
-        <DialogTitle>休日を追加</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2}>
-            <DialogContentText>
-              休日としたい日付と休日名を入力してください。
-            </DialogContentText>
-            <DialogContentText>
-              {`開始日のみ入力した場合は単日登録、終了日を指定すると開始日から終了日までをまとめて登録します（最大${MAX_HOLIDAY_RANGE_DAYS}日）。`}
-            </DialogContentText>
+      <AppDialog open={open} onClose={requestClose} title="休日を追加" description={<>休日としたい日付と休日名を入力してください。<br/><br/>{`開始日のみ入力した場合は単日登録、終了日を指定すると開始日から終了日までをまとめて登録します（最大${MAX_HOLIDAY_RANGE_DAYS}日）。`}</>} actions={<>
+          <AppButton variant="outline" tone="neutral" onClick={requestClose}>キャンセル</AppButton>
+          <AppButton disabled={!isValid || !isDirty || isSubmitting} onClick={handleSubmit(onSubmit)}>登録</AppButton>
+        </>}>
+      <Stack spacing={2}>
             <Controller name="startDate" control={control} rules={{ required: "開始日は必須項目です。" }} render={({ field, fieldState }) => {
             const { ref, value, onChange, name, onBlur, ...rest } = field;
             return (<DatePicker {...rest} label="開始日" format={AttendanceDate.DisplayFormat} value={value ? dayjs(value) : null} onChange={(date) => onChange(date ? date.format(AttendanceDate.DataFormat) : "")} slotProps={{
@@ -173,16 +169,7 @@ export function AddHolidayCalendar({ createHolidayCalendar, bulkCreateHolidayCal
             <TextField label="休日名" required {...register("name", {
         required: true,
     })}/>
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={requestClose}>
-            キャンセル
-          </Button>
-          <Button disabled={!isValid || !isDirty || isSubmitting} onClick={handleSubmit(onSubmit)}>
-            登録
-          </Button>
-        </DialogActions>
-      </Dialog>
+      </Stack>
+    </AppDialog>
     </>);
 }

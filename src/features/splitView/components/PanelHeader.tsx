@@ -2,11 +2,11 @@ import CloseIcon from "@mui/icons-material/Close";
 import {
   Box,
   FormControl,
-  IconButton,
   MenuItem,
   Select,
   SelectChangeEvent,
 } from "@mui/material";
+import { AppIconButton } from "@shared/ui/button";
 import { Heading } from "@shared/ui/typography";
 import React from "react";
 
@@ -83,14 +83,14 @@ export const PanelHeader: React.FC<PanelHeaderProps> = ({
         )}
       </Box>
       {onClose && (
-        <IconButton
+        <AppIconButton
           onClick={onClose}
-          size="small"
+          size="sm"
           aria-label="パネルを閉じる"
-          sx={{ marginLeft: 2 }}
+          style={{ marginLeft: 16 }}
         >
           <CloseIcon />
-        </IconButton>
+        </AppIconButton>
       )}
     </Box>
   );

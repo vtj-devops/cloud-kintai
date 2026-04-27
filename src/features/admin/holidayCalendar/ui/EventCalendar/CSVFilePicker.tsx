@@ -1,11 +1,12 @@
 import { useAppDispatchV2 } from "@app/hooks";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography, } from "@mui/material";
+import { Box, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography, } from "@mui/material";
 import { CreateEventCalendarInput, EventCalendar, } from "@shared/api/graphql/types";
 import { EventCalendarMessage } from "@shared/lib/message/EventCalendarMessage";
 import { MessageStatus } from "@shared/lib/message/Message";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { AppButton } from "@shared/ui/button";
 import dayjs from "dayjs";
 import { useState } from "react";
 
@@ -66,9 +67,9 @@ export function CSVFilePicker({ bulkCreateEventCalendar, }: {
         }
     };
     return (<>
-      <Button variant="outlined" startIcon={<FileUploadIcon />} onClick={handleClickOpen}>
+      <AppButton variant="outline" startIcon={<FileUploadIcon />} onClick={handleClickOpen}>
         ファイルからまとめて追加
-      </Button>
+      </AppButton>
       <Dialog open={open} onClose={handleClose} PaperProps={{
             component: "form",
             onSubmit: async (event: React.FormEvent<HTMLFormElement>) => {
@@ -107,12 +108,12 @@ export function CSVFilePicker({ bulkCreateEventCalendar, }: {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} disabled={isSubmitting}>
+          <AppButton variant="ghost" onClick={handleClose} disabled={isSubmitting}>
             キャンセル
-          </Button>
-          <Button type="submit" disabled={isSubmitting || uploadedData.length === 0}>
+          </AppButton>
+          <AppButton type="submit" disabled={isSubmitting || uploadedData.length === 0}>
             {isSubmitting ? "登録中..." : "登録"}
-          </Button>
+          </AppButton>
         </DialogActions>
       </Dialog>
     </>);
@@ -128,7 +129,7 @@ function FileInput({ setUploadedData, onFileSelected, onParsed, }: {
 }) {
     const [name, setName] = useState<string | undefined>();
     return (<Box>
-      <Button component="label" variant="outlined">
+      <AppButton as="label" variant="outline">
         ファイルを選択
         <input type="file" hidden accept=".csv" onChange={(event) => {
             // ファイル名を設定
@@ -167,7 +168,7 @@ function FileInput({ setUploadedData, onFileSelected, onParsed, }: {
                 });
             };
         }}/>
-      </Button>
+      </AppButton>
       <Typography>{name}</Typography>
     </Box>);
 }

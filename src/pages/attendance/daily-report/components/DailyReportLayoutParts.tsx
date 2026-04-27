@@ -106,7 +106,7 @@ export function LoadingSection() {
 
 export function NoReportSection({ onCreate }: { onCreate: () => void }) {
   return (
-    <ActionButton tone="primary" onClick={onCreate}>
+    <ActionButton tone="primary" onClick={onCreate} data-testid="daily-report-create-button">
       日報を作成する
     </ActionButton>
   );

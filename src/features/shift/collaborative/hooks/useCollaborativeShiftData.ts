@@ -10,7 +10,10 @@ import {
   onUpdateShiftRequest,
 } from "@shared/api/graphql/documents/subscriptions";
 import type { GraphQLBaseQueryError } from "@shared/api/graphql/graphqlBaseQuery";
-import type { ShiftRequestDayPreferenceInput } from "@shared/api/graphql/types";
+import type {
+  ShiftRequestDayPreferenceInput,
+  ShiftRequestHistoryInput,
+} from "@shared/api/graphql/types";
 import dayjs from "dayjs";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -46,6 +49,7 @@ interface UseCollaborativeShiftDataProps {
     staffId: string,
     comments: ShiftRequestCommentData[],
   ) => void;
+  onPersistCompleted?: (request: ShiftRequestData) => void;
 }
 
 export const useCollaborativeShiftData = ({
@@ -58,6 +62,7 @@ export const useCollaborativeShiftData = ({
   onSaveFailed,
   onRemoteUpdate,
   onCommentsReceived,
+  onPersistCompleted,
 }: UseCollaborativeShiftDataProps) => {
   const [shiftDataMap, setShiftDataMap] = useState<ShiftDataMap>(new Map());
   const [error, setError] = useState<string | null>(null);
@@ -73,6 +78,7 @@ export const useCollaborativeShiftData = ({
   const onSaveFailedRef = useRef(onSaveFailed);
   const onRemoteUpdateRef = useRef(onRemoteUpdate);
   const onCommentsReceivedRef = useRef(onCommentsReceived);
+  const onPersistCompletedRef = useRef(onPersistCompleted);
 
   useEffect(() => {
     onAutoSyncReceivedRef.current = onAutoSyncReceived;
@@ -81,6 +87,7 @@ export const useCollaborativeShiftData = ({
     onSaveFailedRef.current = onSaveFailed;
     onRemoteUpdateRef.current = onRemoteUpdate;
     onCommentsReceivedRef.current = onCommentsReceived;
+    onPersistCompletedRef.current = onPersistCompleted;
   }, [
     onAutoSyncReceived,
     onSaveStarted,
@@ -88,6 +95,7 @@ export const useCollaborativeShiftData = ({
     onSaveFailed,
     onRemoteUpdate,
     onCommentsReceived,
+    onPersistCompleted,
   ]);
 
   const [updateShiftCell] = useUpdateShiftCellMutation();
@@ -293,6 +301,15 @@ export const useCollaborativeShiftData = ({
             (entry): entry is ShiftRequestDayPreferenceInput => entry !== null,
           )
           .toSorted((a, b) => a.date.localeCompare(b.date));
+        const timestamp = new Date().toISOString();
+        const histories: ShiftRequestHistoryInput[] = [
+          {
+            version: 1,
+            entries,
+            recordedAt: timestamp,
+            recordedByStaffId: currentUserId,
+          },
+        ];
 
         const created = await createShiftRequest({
           input: {
@@ -300,11 +317,14 @@ export const useCollaborativeShiftData = ({
             targetMonth,
             entries,
             updatedBy: currentUserId,
-            updatedAt: new Date().toISOString(),
+            updatedAt: timestamp,
+            histories,
           },
         }).unwrap();
 
-        updateShiftRequestState(normalizeShiftRequest(created));
+        const normalizedCreated = normalizeShiftRequest(created);
+        updateShiftRequestState(normalizedCreated);
+        onPersistCompletedRef.current?.(normalizedCreated);
         return created;
       }
 
@@ -316,7 +336,9 @@ export const useCollaborativeShiftData = ({
       });
 
       const updated = await updateShiftCell(payload).unwrap();
-      updateShiftRequestState(normalizeShiftRequest(updated));
+      const normalizedUpdated = normalizeShiftRequest(updated);
+      updateShiftRequestState(normalizedUpdated);
+      onPersistCompletedRef.current?.(normalizedUpdated);
 
       return updated;
     },
@@ -431,6 +453,15 @@ export const useCollaborativeShiftData = ({
                     entry !== null,
                 )
                 .toSorted((a, b) => a.date.localeCompare(b.date));
+              const timestamp = new Date().toISOString();
+              const histories: ShiftRequestHistoryInput[] = [
+                {
+                  version: 1,
+                  entries,
+                  recordedAt: timestamp,
+                  recordedByStaffId: currentUserId,
+                },
+              ];
 
               const created = await createShiftRequest({
                 input: {
@@ -438,11 +469,14 @@ export const useCollaborativeShiftData = ({
                   targetMonth,
                   entries,
                   updatedBy: currentUserId,
-                  updatedAt: new Date().toISOString(),
+                  updatedAt: timestamp,
+                  histories,
                 },
               }).unwrap();
 
-              updateShiftRequestState(normalizeShiftRequest(created));
+              const normalizedCreated = normalizeShiftRequest(created);
+              updateShiftRequestState(normalizedCreated);
+              onPersistCompletedRef.current?.(normalizedCreated);
 
               const staffUpdates = updatesByStaff.get(staffId) ?? [];
               staffUpdates.forEach((update) => {
@@ -484,6 +518,7 @@ export const useCollaborativeShiftData = ({
         result.updatedRequests.forEach((request) => {
           const normalized = normalizeShiftRequest(request);
           updateShiftRequestState(normalized);
+          onPersistCompletedRef.current?.(normalized);
         });
 
         updates.forEach((update) => {
@@ -554,7 +589,6 @@ export const useCollaborativeShiftData = ({
 
     const handleRealtimeEvent = (
       request: ShiftRequestData,
-      eventLabel: "created" | "updated",
       staffId: string,
     ) => {
       // 自分の更新による無限ループと二重適用を防ぐ
@@ -572,10 +606,6 @@ export const useCollaborativeShiftData = ({
       if (request.comments) {
         onCommentsReceivedRef.current?.(staffId, request.comments);
       }
-
-      console.log(
-        `[Realtime Update] Shift ${eventLabel} by another user for staff ${staffId}`,
-      );
     };
 
     // 各スタッフのシフト新規作成・更新をサブスクライブ
@@ -600,7 +630,7 @@ export const useCollaborativeShiftData = ({
             const createdRequest = normalizeShiftRequest(
               data.onCreateShiftRequest,
             );
-            handleRealtimeEvent(createdRequest, "created", staffId);
+            handleRealtimeEvent(createdRequest, staffId);
           },
           error: (error) => {
             console.error(
@@ -623,7 +653,7 @@ export const useCollaborativeShiftData = ({
             const updatedRequest = normalizeShiftRequest(
               data.onUpdateShiftRequest,
             );
-            handleRealtimeEvent(updatedRequest, "updated", staffId);
+            handleRealtimeEvent(updatedRequest, staffId);
           },
           error: (error) => {
             console.error(

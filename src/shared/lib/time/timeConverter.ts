@@ -56,3 +56,13 @@ export function formatDateToString(date: Date | dayjs.Dayjs): string {
 export function extractDateFromISO(isoString: string): string {
   return dayjs(isoString).format("YYYY-MM-DD");
 }
+
+export function formatMinutesToHHmm(totalMinutes: number): string {
+  if (!totalMinutes || totalMinutes <= 0) {
+    return "0:00";
+  }
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${hours}:${minutes.toString().padStart(2, "0")}`;
+}

@@ -1,5 +1,6 @@
 import MessageOutlinedIcon from "@mui/icons-material/MessageOutlined";
-import { Badge, Box, IconButton, Tooltip } from "@mui/material";
+import { Badge, Box } from "@mui/material";
+import { AppIconButton } from "@shared/ui/button";
 import React from "react";
 
 interface CellCommentIndicatorProps {
@@ -20,43 +21,34 @@ export const CellCommentIndicator: React.FC<CellCommentIndicatorProps> = ({
   const hasComments = commentCount > 0;
 
   return (
-    <Tooltip
-      title={hasComments ? `${commentCount}件のコメント` : "コメントを追加"}
+    <Box
+      component="span"
+      sx={{
+        display: "inline-flex",
+        alignItems: "center",
+        opacity: hasComments ? 1 : 0.4,
+      }}
     >
-      <Box
-        component="span"
-        sx={{
-          display: "inline-flex",
-          alignItems: "center",
-          opacity: hasComments ? 1 : 0.4,
-        }}
+      <AppIconButton
+        size="sm"
+        aria-label="コメント"
+        tooltip={hasComments ? `${commentCount}件のコメント` : "コメントを追加"}
+        onClick={onClick}
+        disabled={disabled}
       >
-        <IconButton
-          size="small"
-          onClick={onClick}
-          disabled={disabled}
-          sx={{
-            p: 0.5,
-            "&:hover": {
-              bgcolor: "action.hover",
-              opacity: 1,
-            },
-          }}
+        <Badge
+          badgeContent={commentCount}
+          color="primary"
+          overlap="circular"
+          variant="standard"
         >
-          <Badge
-            badgeContent={commentCount}
-            color="primary"
-            overlap="circular"
-            variant="standard"
-          >
-            <MessageOutlinedIcon
-              fontSize="small"
-              sx={{ color: "primary.main" }}
-            />
-          </Badge>
-        </IconButton>
-      </Box>
-    </Tooltip>
+          <MessageOutlinedIcon
+            fontSize="small"
+            sx={{ color: "primary.main" }}
+          />
+        </Badge>
+      </AppIconButton>
+    </Box>
   );
 };
 

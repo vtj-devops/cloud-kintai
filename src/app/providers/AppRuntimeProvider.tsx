@@ -1,12 +1,11 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
+import { useWorkflowNotification } from "@entities/workflow/model/useWorkflowNotification";
 import { useDuplicateAttendanceWarning } from "@features/attendance/model/useDuplicateAttendanceWarning";
 import { useWorkflowCommentNotification } from "@features/workflow/notification/model/useWorkflowCommentNotification";
+import { useNetworkStatusNotification } from "@shared/lib/useNetworkStatusNotification";
 import type { ReactNode } from "react";
 import { useContext } from "react";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
-import { AuthContext } from "@/context/AuthContext";
-import { useNetworkStatusNotification } from "@/hooks/useNetworkStatusNotification";
-import { useWorkflowNotification } from "@/hooks/useWorkflowNotification";
 
 function AppRuntimeEffects() {
   const { authStatus } = useContext(AuthContext);

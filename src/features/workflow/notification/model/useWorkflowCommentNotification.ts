@@ -1,13 +1,12 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import {
   StaffRole,
   useStaffs,
 } from "@entities/staff/model/useStaffs/useStaffs";
 import { subscribeWorkflowCommentNotifications } from "@features/workflow/notification/model/workflowNotificationEventService";
 import { createLogger } from "@shared/lib/logger";
+import { useAppNotification } from "@shared/lib/useAppNotification";
 import { useCallback, useContext, useEffect, useMemo, useRef } from "react";
-
-import { AuthContext } from "@/context/AuthContext";
-import { useAppNotification } from "@/hooks/useAppNotification";
 
 const logger = createLogger("useWorkflowCommentNotification");
 

@@ -1,9 +1,9 @@
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
+import { CognitoUser } from "@entities/staff/model/useCognitoUser";
 import { Attendance, Staff } from "@shared/api/graphql/types";
 import dayjs from "dayjs";
 
 import * as MESSAGE_CODE from "@/errors";
-import { CognitoUser } from "@/hooks/useCognitoUser";
 
 import { MailSender } from "./MailSender";
 

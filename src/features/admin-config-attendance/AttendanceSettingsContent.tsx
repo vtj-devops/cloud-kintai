@@ -1,4 +1,5 @@
 import { useAppDispatchV2 } from "@app/hooks";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import {
   appendItem,
   removeItemAt,
@@ -35,7 +36,6 @@ import {
   useState,
 } from "react";
 
-import { AppConfigContext } from "@/context/AppConfigContext";
 import { E14001, E14002, S14001, S14002 } from "@/errors";
 
 type AttendanceSettingsTabKey = "rules" | "inputs";

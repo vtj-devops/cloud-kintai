@@ -3,8 +3,8 @@ import GroupContainer from "@shared/ui/group-container/GroupContainer";
 import { ReactNode } from "react";
 import { Control } from "react-hook-form";
 
-import RestTimeItem from "../desktopEditor/RestTimeItem/RestTimeItem";
-import { WorkTimeInput } from "../desktopEditor/WorkTimeInput/WorkTimeInput";
+import RestTimeItem from "../desktop/RestTimeItem";
+import { WorkTimeInput } from "../desktop/WorkTimeInput";
 import { GoDirectlyFlagCheckbox } from "../GoDirectlyFlagCheckbox";
 import ProductionTimeItem from "../items/ProductionTimeItem";
 import SeparatorItem from "../items/SeparatorItem";

@@ -1,3 +1,4 @@
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import { calcTotalRestTime } from "@entities/attendance/lib/time";
 import { StaffType } from "@entities/staff/model/useStaffs/useStaffs";
@@ -6,8 +7,6 @@ import { Attendance } from "@shared/api/graphql/types";
 import { AppButton } from "@shared/ui/button";
 import dayjs from "dayjs";
 import { useContext } from "react";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
 
 import downloadAttendances from "../lib/downloadAttendances";
 

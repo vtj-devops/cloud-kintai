@@ -6,12 +6,10 @@ import {
   UpdateCloseDateInput,
   UpdateCloseDateMutation,
 } from "@shared/api/graphql/types";
+import { type UpdatePayload } from "@shared/api/graphql/updatePayload";
 import { GraphQLResult } from "aws-amplify/api";
 
-export type UpdateCloseDatePayload = {
-  input: UpdateCloseDateInput;
-  condition?: ModelCloseDateConditionInput | null;
-};
+export type UpdateCloseDatePayload = UpdatePayload<UpdateCloseDateInput, ModelCloseDateConditionInput>;
 
 export default async function updateCloseDateData({
   input,

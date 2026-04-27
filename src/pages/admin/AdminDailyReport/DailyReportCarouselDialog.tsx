@@ -1,7 +1,9 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import {
   logDailyReportCommentAdd,
   logDailyReportReactionUpdate,
 } from "@entities/operation-log/model/dailyReportOperationLog";
+import useCognitoUser from "@entities/staff/model/useCognitoUser";
 import { useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import { sendDailyReportCommentNotification } from "@features/attendance/daily-report/lib/sendDailyReportCommentNotification";
 import { graphqlClient } from "@shared/api/amplify/graphqlClient";
@@ -22,9 +24,6 @@ import { formatDateSlash, formatDateTimeReadable } from "@shared/lib/time";
 import { SectionTitle, SubsectionTitle } from "@shared/ui/typography";
 import type { GraphQLResult } from "aws-amplify/api";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-
-import { AuthContext } from "@/context/AuthContext";
-import useCognitoUser from "@/hooks/useCognitoUser";
 
 import {
   type AdminDailyReport,
@@ -516,6 +515,7 @@ export default function DailyReportCarouselDialog({
     <div
       className="fixed inset-0 z-[1400] flex items-center justify-center bg-slate-900/40 p-4"
       onClick={onClose}
+      data-testid="daily-report-carousel-dialog"
     >
       <div
         className="flex h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
@@ -683,6 +683,7 @@ export default function DailyReportCarouselDialog({
                           onClick={() => {
                             void handleToggleReaction(type);
                           }}
+                          data-testid={`daily-report-reaction-${type}`}
                           className={[
                             "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium transition",
                             isSelected
@@ -728,6 +729,7 @@ export default function DailyReportCarouselDialog({
                   }}
                   placeholder="コメントを入力"
                   rows={2}
+                  data-testid="daily-report-comment-input"
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 placeholder-slate-400 focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-200"
                 />
                 <div className="flex justify-end">
@@ -737,6 +739,7 @@ export default function DailyReportCarouselDialog({
                       void handleSubmitComment();
                     }}
                     disabled={isCommentDisabled}
+                    data-testid="daily-report-comment-submit"
                     className="inline-flex h-8 items-center rounded-lg bg-emerald-600 px-4 text-xs font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     追加

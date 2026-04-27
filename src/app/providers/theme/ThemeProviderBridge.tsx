@@ -1,10 +1,9 @@
+import { ThemeContextProvider } from "@app/providers/theme/ThemeContext";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { ThemeProvider } from "@mui/material/styles";
 import { createAppTheme } from "@shared/lib/theme";
 import type { ReactNode } from "react";
 import { useContext, useMemo } from "react";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
-import { ThemeContextProvider } from "@/context/ThemeContext";
 
 type ThemeProviderBridgeProps = {
   children: ReactNode;

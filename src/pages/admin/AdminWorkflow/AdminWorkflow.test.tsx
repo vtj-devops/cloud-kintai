@@ -1,7 +1,6 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import { WorkflowCategory, WorkflowStatus } from "@shared/api/graphql/types";
 import { fireEvent, render, screen } from "@testing-library/react";
-
-import { AuthContext } from "@/context/AuthContext";
 
 import AdminWorkflow from "./AdminWorkflow";
 

@@ -6,6 +6,8 @@ import {
 } from "@shared/api/graphql/documents/mutations";
 import { listWorkflowTemplates } from "@shared/api/graphql/documents/queries";
 import { graphqlBaseQuery } from "@shared/api/graphql/graphqlBaseQuery";
+import { executePaginatedQuery } from "@shared/api/graphql/paginatedQuery";
+import { buildListAndItemTags } from "@shared/api/graphql/tagBuilder";
 import type {
   CreateWorkflowTemplateInput,
   CreateWorkflowTemplateMutation,
@@ -18,23 +20,13 @@ import type {
   UpdateWorkflowTemplateMutation,
   WorkflowTemplate,
 } from "@shared/api/graphql/types";
+import { type UpdatePayload } from "@shared/api/graphql/updatePayload";
 
-export type UpdateWorkflowTemplatePayload = {
-  input: UpdateWorkflowTemplateInput;
-  condition?: ModelWorkflowTemplateConditionInput | null;
-};
-
-type WorkflowTemplateTag = {
-  type: "WorkflowTemplate";
-  id: string;
-};
+export type UpdateWorkflowTemplatePayload = UpdatePayload<UpdateWorkflowTemplateInput, ModelWorkflowTemplateConditionInput>;
 
 type GetWorkflowTemplatesArg = {
   organizationId: string;
 };
-
-const nonNullable = <T>(value: T | null | undefined): value is T =>
-  value !== null && value !== undefined;
 
 const buildTemplateTagId = (template: { id?: string | null }) =>
   template.id ?? "unknown";
@@ -49,60 +41,27 @@ export const workflowTemplateApi = createApi({
       GetWorkflowTemplatesArg
     >({
       async queryFn(arg, _api, _extraOptions, baseQuery) {
-        const templates: WorkflowTemplate[] = [];
-        let nextToken: string | null = null;
+        const result = await executePaginatedQuery<WorkflowTemplate>({
+          baseQuery,
+          document: listWorkflowTemplates,
+          variables: {
+            filter: { organizationId: { eq: arg.organizationId } },
+          } satisfies Omit<ListWorkflowTemplatesQueryVariables, "nextToken">,
+          connectionExtractor: (data) =>
+            (data as ListWorkflowTemplatesQuery | null)?.listWorkflowTemplates,
+          errorMessage: "Failed to fetch workflow templates",
+        });
 
-        do {
-          const result = await baseQuery({
-            document: listWorkflowTemplates,
-            variables: {
-              filter: {
-                organizationId: {
-                  eq: arg.organizationId,
-                },
-              },
-              nextToken,
-            } satisfies ListWorkflowTemplatesQueryVariables,
-          });
-
-          if (result.error) {
-            return { error: result.error };
-          }
-
-          const data = result.data as ListWorkflowTemplatesQuery | null;
-          const connection = data?.listWorkflowTemplates;
-
-          if (!connection) {
-            return { error: { message: "Failed to fetch workflow templates" } };
-          }
-
-          templates.push(...(connection.items?.filter(nonNullable) ?? []));
-          nextToken = connection.nextToken ?? null;
-        } while (nextToken);
-
-        const sortedTemplates = templates.toSorted((a, b) =>
-          b.createdAt.localeCompare(a.createdAt),
-        );
-
-        return { data: sortedTemplates };
-      },
-      providesTags: (result) => {
-        const listTag: WorkflowTemplateTag = {
-          type: "WorkflowTemplate",
-          id: "LIST",
-        };
-        if (!result) {
-          return [listTag];
+        if (result.error) {
+          return { error: result.error };
         }
 
-        return [
-          listTag,
-          ...result.map((template) => ({
-            type: "WorkflowTemplate" as const,
-            id: buildTemplateTagId(template),
-          })),
-        ];
+        return {
+          data: result.data.toSorted((a, b) => b.createdAt.localeCompare(a.createdAt)),
+        };
       },
+      providesTags: (result) =>
+        buildListAndItemTags("WorkflowTemplate", result, buildTemplateTagId),
     }),
     createWorkflowTemplate: builder.mutation<
       WorkflowTemplate,
@@ -155,20 +114,12 @@ export const workflowTemplateApi = createApi({
 
         return { data: updated };
       },
-      invalidatesTags: (result) => {
-        const listTag: WorkflowTemplateTag = {
-          type: "WorkflowTemplate",
-          id: "LIST",
-        };
-        if (!result) {
-          return [listTag];
-        }
-
-        return [
-          listTag,
-          { type: "WorkflowTemplate" as const, id: buildTemplateTagId(result) },
-        ];
-      },
+      invalidatesTags: (result) =>
+        buildListAndItemTags(
+          "WorkflowTemplate",
+          result ? [result] : undefined,
+          buildTemplateTagId,
+        ),
     }),
     deleteWorkflowTemplate: builder.mutation<
       WorkflowTemplate,
@@ -194,12 +145,11 @@ export const workflowTemplateApi = createApi({
         return { data: deleted };
       },
       invalidatesTags: (result, _error, arg) => {
-        const listTag: WorkflowTemplateTag = {
-          type: "WorkflowTemplate",
-          id: "LIST",
-        };
         const targetId = arg.id ?? buildTemplateTagId(result ?? {});
-        return [listTag, { type: "WorkflowTemplate", id: targetId }];
+        return [
+          { type: "WorkflowTemplate", id: "LIST" },
+          { type: "WorkflowTemplate", id: targetId },
+        ];
       },
     }),
   }),

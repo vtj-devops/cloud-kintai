@@ -1,43 +1,12 @@
-import {
-  logDailyReportCommentAdd,
-  logDailyReportReactionUpdate,
-} from "@entities/operation-log/model/dailyReportOperationLog";
-import fetchStaff from "@entities/staff/model/useStaff/fetchStaff";
-import { useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
-import { sendDailyReportCommentNotification } from "@features/attendance/daily-report/lib/sendDailyReportCommentNotification";
-import { graphqlClient } from "@shared/api/amplify/graphqlClient";
-import {
-  buildVersionOrUpdatedAtCondition,
-  getGraphQLErrorMessage,
-  getNextVersion,
-} from "@shared/api/graphql/concurrency";
-import { updateDailyReport } from "@shared/api/graphql/documents/mutations";
-import { getDailyReport } from "@shared/api/graphql/documents/queries";
-import type {
-  DailyReportComment,
-  DailyReportReaction,
-  GetDailyReportQuery,
-  UpdateDailyReportMutation,
-} from "@shared/api/graphql/types";
 import { formatDateSlash, formatDateTimeReadable } from "@shared/lib/time";
 import { DashboardInnerSurface } from "@shared/ui/layout";
 import { SectionTitle } from "@shared/ui/typography";
-import type { GraphQLResult } from "aws-amplify/api";
-import { useCallback, useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
-import { AuthContext } from "@/context/AuthContext";
-import useCognitoUser from "@/hooks/useCognitoUser";
-
-import {
-  type AdminComment,
-  type AdminDailyReport,
-  mapDailyReport,
-  REACTION_META,
-  type ReactionType,
-  type ReportReaction,
-  STATUS_META,
-} from "./data";
+import { DailyReportCommentSection } from "./components/DailyReportCommentSection";
+import { DailyReportReactionSection } from "./components/DailyReportReactionSection";
+import { type AdminDailyReport, STATUS_META } from "./data";
+import { useAdminDailyReportDetailState } from "./hooks/useAdminDailyReportDetailState";
 
 type LocationState = {
   report?: AdminDailyReport;
@@ -51,39 +20,6 @@ const STATUS_BADGE_CLASS: Record<"default" | "info" | "success", string> = {
     "inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700",
 };
 
-const normalizeReactions = (
-  entries?: (DailyReportReaction | null)[] | null,
-): DailyReportReaction[] =>
-  entries?.filter((entry): entry is DailyReportReaction => Boolean(entry)) ??
-  [];
-
-const normalizeComments = (
-  entries?: (DailyReportComment | null)[] | null,
-): DailyReportComment[] =>
-  entries?.filter((entry): entry is DailyReportComment => Boolean(entry)) ?? [];
-
-const buildDailyReportBeforeSnapshot = ({
-  report,
-  reactionEntries,
-  commentEntries,
-}: {
-  report: AdminDailyReport;
-  reactionEntries: DailyReportReaction[] | null;
-  commentEntries: DailyReportComment[] | null;
-}) => ({
-  id: report.id,
-  staffId: report.staffId,
-  reportDate: report.date,
-  title: report.title,
-  content: report.content,
-  status: report.status,
-  reactions: reactionEntries ?? [],
-  comments: commentEntries ?? [],
-  createdAt: report.createdAt ?? null,
-  updatedAt: report.updatedAt,
-  version: report.version ?? null,
-});
-
 interface AdminDailyReportDetailProps {
   overrideId?: string;
 }
@@ -91,396 +27,39 @@ interface AdminDailyReportDetailProps {
 export default function AdminDailyReportDetail({
   overrideId,
 }: AdminDailyReportDetailProps = {}) {
-  const { authStatus } = useContext(AuthContext);
-  const isAuthenticated = authStatus === "authenticated";
   const navigate = useNavigate();
   const { id: paramId } = useParams<{ id: string }>();
   const id = overrideId ?? paramId;
   const location = useLocation();
-  const state = location.state as LocationState | null;
-  const stateReportId = state?.report?.id ?? null;
-  const { staffs, loading: isStaffLoading } = useStaffs({ isAuthenticated });
-  const { cognitoUser } = useCognitoUser();
-
-  const buildStaffName = useCallback(
-    (staffId: string) => {
-      const staff = staffs.find((item) => item.id === staffId);
-      if (!staff) return "スタッフ";
-      const name = [staff.familyName, staff.givenName]
-        .filter((part): part is string => Boolean(part && part.trim()))
-        .join(" ");
-      return name || "スタッフ";
-    },
-    [staffs],
-  );
-
-  const [report, setReport] = useState<AdminDailyReport | null>(
-    () => state?.report ?? null,
-  );
-  const [isLoading, setIsLoading] = useState(!state?.report);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [reactions, setReactions] = useState<ReportReaction[]>(
-    () => report?.reactions ?? [],
-  );
-  const [comments, setComments] = useState<AdminComment[]>(
-    () => report?.comments ?? [],
-  );
-  const [commentInput, setCommentInput] = useState<string>("");
-  const [selectedReactions, setSelectedReactions] = useState<ReactionType[]>(
-    [],
-  );
-  const [reactionEntries, setReactionEntries] = useState<
-    DailyReportReaction[] | null
-  >(null);
-  const [commentEntries, setCommentEntries] = useState<
-    DailyReportComment[] | null
-  >(null);
-  const [actionError, setActionError] = useState<string | null>(null);
-  const [isSavingReaction, setIsSavingReaction] = useState(false);
-  const [isSavingComment, setIsSavingComment] = useState(false);
-  const [currentStaffId, setCurrentStaffId] = useState<string | null>(null);
-  const [currentStaffName, setCurrentStaffName] = useState<string>("管理者");
-  const [isResolvingCurrentStaff, setIsResolvingCurrentStaff] = useState(true);
+  const locationState = location.state as LocationState | null;
+  const initialReport = locationState?.report ?? null;
   const isCompact = overrideId !== undefined;
 
-  const fetchReport = useCallback(async () => {
-    if (!id) return;
-    setIsLoading(true);
-    setLoadError(null);
-    try {
-      const response = (await graphqlClient.graphql({
-        query: getDailyReport,
-        variables: { id },
-        authMode: "userPool",
-      })) as GraphQLResult<GetDailyReportQuery>;
-
-      if (response.errors?.length) {
-        throw new Error(response.errors.map((err) => err.message).join("\n"));
-      }
-
-      const record = response.data?.getDailyReport;
-      if (!record) throw new Error("日報が見つかりませんでした。");
-
-      setReactionEntries(normalizeReactions(record.reactions));
-      setCommentEntries(normalizeComments(record.comments));
-      setReport(mapDailyReport(record, buildStaffName(record.staffId)));
-    } catch (error) {
-      setLoadError(
-        error instanceof Error ? error.message : "日報の取得に失敗しました。",
-      );
-      if (!stateReportId) setReport(null);
-      setReactionEntries(null);
-      setCommentEntries(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [buildStaffName, id, stateReportId]);
-
-  useEffect(() => {
-    void fetchReport();
-  }, [fetchReport]);
-
-  useEffect(() => {
-    setReport((prev) => {
-      if (!prev) return prev;
-      const nextAuthor = buildStaffName(prev.staffId);
-      if (prev.author === nextAuthor) return prev;
-      return { ...prev, author: nextAuthor };
-    });
-  }, [buildStaffName]);
-
-  useEffect(() => {
-    setReactions(report?.reactions ?? []);
-    setComments(report?.comments ?? []);
-    setCommentInput("");
-  }, [report]);
-
-  useEffect(() => {
-    if (!reactionEntries || !currentStaffId) {
-      setSelectedReactions([]);
-      return;
-    }
-    setSelectedReactions(
-      reactionEntries
-        .filter((entry) => entry.staffId === currentStaffId)
-        .map((entry) => entry.type as ReactionType),
-    );
-  }, [currentStaffId, reactionEntries]);
-
-  useEffect(() => {
-    if (cognitoUser === undefined) return;
-    if (!cognitoUser) {
-      setCurrentStaffId(null);
-      setCurrentStaffName("管理者");
-      setIsResolvingCurrentStaff(false);
-      return;
-    }
-    let mounted = true;
-    setIsResolvingCurrentStaff(true);
-    const resolveStaff = async () => {
-      try {
-        const staff = await fetchStaff(cognitoUser.id);
-        if (!mounted) return;
-        if (staff) {
-          const name = [staff.familyName, staff.givenName]
-            .filter((part): part is string => Boolean(part && part.trim()))
-            .join(" ");
-          setCurrentStaffId(staff.id);
-          setCurrentStaffName(name || "管理者");
-        } else {
-          setCurrentStaffId(null);
-          setCurrentStaffName("管理者");
-        }
-      } catch {
-        if (!mounted) return;
-        setCurrentStaffId(null);
-        setCurrentStaffName("管理者");
-      } finally {
-        if (mounted) setIsResolvingCurrentStaff(false);
-      }
-    };
-    void resolveStaff();
-    return () => {
-      mounted = false;
-    };
-  }, [cognitoUser]);
-
-  const handleToggleReaction = async (type: ReactionType) => {
-    if (!report) return;
-    if (!reactionEntries) {
-      setActionError(
-        "リアクション情報の取得中です。少し待ってから再度お試しください。",
-      );
-      return;
-    }
-    if (!currentStaffId || isResolvingCurrentStaff) {
-      setActionError(
-        "スタッフ情報が取得できないため、リアクションを登録できません。",
-      );
-      return;
-    }
-    if (isSavingReaction) return;
-
-    setIsSavingReaction(true);
-    setActionError(null);
-
-    const hasReaction = reactionEntries.some(
-      (entry) => entry.staffId === currentStaffId && entry.type === type,
-    );
-    const timestamp = new Date().toISOString();
-    const nextEntries = hasReaction
-      ? reactionEntries.filter(
-          (entry) => entry.staffId !== currentStaffId || entry.type !== type,
-        )
-      : [
-          ...reactionEntries,
-          {
-            __typename: "DailyReportReaction",
-            staffId: currentStaffId,
-            type,
-            createdAt: timestamp,
-          },
-        ];
-
-    try {
-      const beforeReport = buildDailyReportBeforeSnapshot({
-        report,
-        reactionEntries,
-        commentEntries,
-      });
-      const response = (await graphqlClient.graphql({
-        query: updateDailyReport,
-        variables: {
-          condition: buildVersionOrUpdatedAtCondition(
-            report.version,
-            report.updatedAt,
-          ),
-          input: {
-            id: report.id,
-            reactions: nextEntries.map(({ staffId, type, createdAt }) => ({
-              staffId,
-              type,
-              createdAt,
-            })),
-            updatedAt: timestamp,
-            version: getNextVersion(report.version),
-          },
-        },
-        authMode: "userPool",
-      })) as GraphQLResult<UpdateDailyReportMutation>;
-
-      if (response.errors?.length) {
-        throw new Error(
-          getGraphQLErrorMessage(
-            response.errors,
-            "リアクションの更新に失敗しました。",
-          ),
-        );
-      }
-
-      const updated = response.data?.updateDailyReport;
-      if (!updated) throw new Error("リアクションの更新に失敗しました。");
-
-      await logDailyReportReactionUpdate({
-        actorStaffId: currentStaffId,
-        before: beforeReport,
-        after: updated,
-        operation: hasReaction ? "remove" : "add",
-        reactionType: type,
-      });
-
-      setReactionEntries(normalizeReactions(updated.reactions));
-      setCommentEntries(normalizeComments(updated.comments));
-      setReport(mapDailyReport(updated, buildStaffName(updated.staffId)));
-    } catch (error) {
-      setActionError(
-        error instanceof Error
-          ? error.message
-          : "リアクションの登録に失敗しました。",
-      );
-    } finally {
-      setIsSavingReaction(false);
-    }
-  };
-
-  const handleSubmitComment = async () => {
-    const body = commentInput.trim();
-    if (!body) return;
-    if (!report) return;
-    if (!commentEntries) {
-      setActionError(
-        "コメント情報の取得中です。少し待ってから再度お試しください。",
-      );
-      return;
-    }
-    if (!currentStaffId || isResolvingCurrentStaff) {
-      setActionError(
-        "スタッフ情報が取得できないため、コメントを登録できません。",
-      );
-      return;
-    }
-    if (isSavingComment) return;
-
-    setIsSavingComment(true);
-    setActionError(null);
-
-    const timestamp = new Date().toISOString();
-    const newCommentEntry: DailyReportComment = {
-      __typename: "DailyReportComment",
-      id: `admin-comment-${Date.now().toString(36)}-${Math.random()
-        .toString(36)
-        .slice(2, 8)}`,
-      staffId: currentStaffId,
-      authorName: currentStaffName,
-      body,
-      createdAt: timestamp,
-    };
-    const nextComments = [newCommentEntry, ...commentEntries];
-
-    try {
-      const beforeReport = buildDailyReportBeforeSnapshot({
-        report,
-        reactionEntries,
-        commentEntries,
-      });
-      const response = (await graphqlClient.graphql({
-        query: updateDailyReport,
-        variables: {
-          condition: buildVersionOrUpdatedAtCondition(
-            report.version,
-            report.updatedAt,
-          ),
-          input: {
-            id: report.id,
-            comments: nextComments.map(
-              ({
-                id: commentId,
-                staffId,
-                authorName,
-                body: commentBody,
-                createdAt,
-              }) => ({
-                id: commentId,
-                staffId,
-                authorName,
-                body: commentBody,
-                createdAt,
-              }),
-            ),
-            updatedAt: timestamp,
-            version: getNextVersion(report.version),
-          },
-        },
-        authMode: "userPool",
-      })) as GraphQLResult<UpdateDailyReportMutation>;
-
-      if (response.errors?.length) {
-        throw new Error(
-          getGraphQLErrorMessage(
-            response.errors,
-            "コメントの更新に失敗しました。",
-          ),
-        );
-      }
-
-      const updated = response.data?.updateDailyReport;
-      if (!updated) throw new Error("コメントの更新に失敗しました。");
-
-      try {
-        await sendDailyReportCommentNotification({
-          staffs,
-          report: updated,
-          commentAuthorName: currentStaffName,
-          commentBody: body,
-        });
-      } catch (mailError) {
-        console.error(
-          "Failed to send daily report comment notification:",
-          mailError,
-        );
-      }
-
-      await logDailyReportCommentAdd({
-        actorStaffId: currentStaffId,
-        before: beforeReport,
-        after: updated,
-        comment: newCommentEntry,
-      });
-
-      setReactionEntries(normalizeReactions(updated.reactions));
-      setCommentEntries(normalizeComments(updated.comments));
-      setReport(mapDailyReport(updated, buildStaffName(updated.staffId)));
-      setCommentInput("");
-    } catch (error) {
-      setActionError(
-        error instanceof Error
-          ? error.message
-          : "コメントの登録に失敗しました。",
-      );
-    } finally {
-      setIsSavingComment(false);
-    }
-  };
-
-  const shouldShowLoading = !report && (isLoading || isStaffLoading);
-  const chipsDisabled =
-    !reactionEntries ||
-    !currentStaffId ||
-    isSavingReaction ||
-    isResolvingCurrentStaff;
-  const isCommentDisabled =
-    !commentInput.trim() ||
-    !currentStaffId ||
-    !commentEntries ||
-    isSavingComment ||
-    isResolvingCurrentStaff;
+  const {
+    report,
+    reactions,
+    comments,
+    selectedReactions,
+    commentInput,
+    actionError,
+    loadError,
+    reactionEntries,
+    commentEntries,
+    isResolvingCurrentStaff,
+    chipsDisabled,
+    isCommentDisabled,
+    shouldShowLoading,
+    handleToggleReaction,
+    handleSubmitComment,
+    setCommentInput,
+    clearActionError,
+  } = useAdminDailyReportDetailState(id, initialReport);
 
   return (
     <div
       className={`w-full ${isCompact ? "px-2 pb-4 pt-0" : "px-2 pb-6 pt-4 sm:px-4 md:px-6"}`}
     >
       <div className="space-y-3">
-        {/* Errors */}
         {loadError && (
           <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {loadError}
@@ -491,7 +70,7 @@ export default function AdminDailyReportDetail({
             <span>{actionError}</span>
             <button
               type="button"
-              onClick={() => setActionError(null)}
+              onClick={clearActionError}
               className="ml-3 shrink-0 text-red-400 hover:text-red-600"
             >
               <svg
@@ -511,9 +90,7 @@ export default function AdminDailyReportDetail({
           </div>
         )}
 
-        {/* Main content grid */}
         <div className="grid grid-cols-1 gap-3">
-          {/* Detail panel */}
           <DashboardInnerSurface>
             {shouldShowLoading ? (
               <p className="py-8 text-center text-sm text-slate-400">
@@ -547,7 +124,6 @@ export default function AdminDailyReportDetail({
                   </button>
                 </div>
 
-                {/* Report header */}
                 <div>
                   <SectionTitle className="text-lg font-bold text-slate-800">
                     {report.title}
@@ -570,133 +146,37 @@ export default function AdminDailyReportDetail({
                   </p>
                 </div>
 
-                {/* Content */}
                 <pre className="whitespace-pre-wrap font-[inherit] text-sm leading-relaxed text-slate-700">
                   {report.content || "内容は登録されていません"}
                 </pre>
 
                 <hr className="border-slate-100" />
 
-                {/* Reactions */}
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    リアクション
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {(Object.keys(REACTION_META) as ReactionType[]).map(
-                      (type) => {
-                        const meta = REACTION_META[type];
-                        const count =
-                          reactions.find((r) => r.type === type)?.count ?? 0;
-                        const isSelected = selectedReactions.includes(type);
-                        return (
-                          <button
-                            key={type}
-                            type="button"
-                            disabled={chipsDisabled}
-                            onClick={() => {
-                              void handleToggleReaction(type);
-                            }}
-                            className={[
-                              "inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition",
-                              isSelected
-                                ? "border-emerald-300 bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
-                                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50",
-                              chipsDisabled
-                                ? "cursor-not-allowed opacity-50"
-                                : "",
-                            ]
-                              .filter(Boolean)
-                              .join(" ")}
-                          >
-                            {meta.emoji} {meta.label}
-                            {count > 0 && (
-                              <span className="ml-1 text-slate-400">
-                                ({count})
-                              </span>
-                            )}
-                          </button>
-                        );
-                      },
-                    )}
-                  </div>
-                  {(!reactionEntries || isResolvingCurrentStaff) && (
-                    <p className="text-xs text-slate-400">
-                      スタッフ情報およびリアクション履歴の取得完了後に操作できます。
-                    </p>
-                  )}
-                  {reactions.length === 0 && (
-                    <p className="text-xs text-slate-400">
-                      まだリアクションはありません。
-                    </p>
-                  )}
-                </div>
+                <DailyReportReactionSection
+                  reactions={reactions}
+                  selectedReactions={selectedReactions}
+                  isDisabled={chipsDisabled}
+                  isResolving={isResolvingCurrentStaff}
+                  hasEntries={reactionEntries !== null}
+                  onToggle={(type) => {
+                    void handleToggleReaction(type);
+                  }}
+                />
 
                 <hr className="border-slate-100" />
 
-                {/* Comments */}
-                <div className="space-y-3">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    コメント
-                  </p>
-                  <div className="space-y-2">
-                    <textarea
-                      value={commentInput}
-                      onChange={(e) => {
-                        if (actionError) setActionError(null);
-                        setCommentInput(e.target.value);
-                      }}
-                      placeholder="コメントを入力"
-                      rows={3}
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 placeholder-slate-400 focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-200"
-                    />
-                    <div className="flex justify-end">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          void handleSubmitComment();
-                        }}
-                        disabled={isCommentDisabled}
-                        className="inline-flex h-8 items-center rounded-lg border-0 bg-emerald-600 px-4 text-xs font-semibold text-white shadow-none transition hover:bg-emerald-700 focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        コメントを追加
-                      </button>
-                    </div>
-                    {(!commentEntries || isResolvingCurrentStaff) && (
-                      <p className="text-xs text-slate-400">
-                        スタッフ情報およびコメント履歴の取得完了後に登録できます。
-                      </p>
-                    )}
-                  </div>
-
-                  {comments.length === 0 ? (
-                    <p className="text-xs text-slate-400">
-                      まだコメントはありません。
-                    </p>
-                  ) : (
-                    <div className="space-y-2">
-                      {comments.map((comment) => (
-                        <div
-                          key={comment.id}
-                          className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5"
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <span className="text-xs font-semibold text-slate-700">
-                              {comment.author}
-                            </span>
-                            <span className="shrink-0 text-xs text-slate-400">
-                              {formatDateTimeReadable(comment.createdAt) ||
-                                comment.createdAt}
-                            </span>
-                          </div>
-                          <p className="mt-1 text-sm text-slate-600">
-                            {comment.body}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <DailyReportCommentSection
+                  comments={comments}
+                  commentInput={commentInput}
+                  isSubmitDisabled={isCommentDisabled}
+                  isResolving={isResolvingCurrentStaff}
+                  hasEntries={commentEntries !== null}
+                  onInputChange={setCommentInput}
+                  onClearError={clearActionError}
+                  onSubmit={() => {
+                    void handleSubmitComment();
+                  }}
+                />
               </div>
             )}
           </DashboardInnerSurface>
@@ -705,3 +185,4 @@ export default function AdminDailyReportDetail({
     </div>
   );
 }
+

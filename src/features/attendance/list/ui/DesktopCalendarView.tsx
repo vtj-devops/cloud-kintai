@@ -1,5 +1,5 @@
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
-import { AttendanceStatus } from "@entities/attendance/lib/AttendanceState";
+import AttendanceStatusChip from "@entities/attendance/ui/AttendanceStatusChip";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
@@ -7,10 +7,8 @@ import {
   Box,
   Chip,
   Divider,
-  IconButton,
   Stack,
   styled,
-  Tooltip,
   Typography,
 } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
@@ -22,6 +20,7 @@ import {
   Staff,
 } from "@shared/api/graphql/types";
 import { PANEL_HEIGHTS } from "@shared/config/uiDimensions";
+import { AppIconButton } from "@shared/ui/button";
 import dayjs, { Dayjs } from "dayjs";
 import { useMemo } from "react";
 
@@ -73,26 +72,6 @@ const DayCell = styled(Box, {
   },
 }));
 
-const statusLabelMap: Record<AttendanceStatus, string> = {
-  [AttendanceStatus.Ok]: "OK",
-  [AttendanceStatus.Error]: "要確認",
-  [AttendanceStatus.Requesting]: "申請中",
-  [AttendanceStatus.Late]: "遅刻",
-  [AttendanceStatus.Working]: "勤務中",
-  [AttendanceStatus.None]: "",
-};
-
-const statusChipColor: Record<
-  AttendanceStatus,
-  "default" | "success" | "error" | "warning" | "info"
-> = {
-  [AttendanceStatus.Ok]: "success",
-  [AttendanceStatus.Error]: "error",
-  [AttendanceStatus.Requesting]: "warning",
-  [AttendanceStatus.Late]: "error",
-  [AttendanceStatus.Working]: "info",
-  [AttendanceStatus.None]: "default",
-};
 
 type Props = {
   attendances?: Attendance[];
@@ -204,45 +183,34 @@ export default function DesktopCalendarView({
           justifyContent="space-between"
         >
           <Stack direction="row" spacing={1} alignItems="center">
-            <IconButton
+            <AppIconButton
               aria-label="previous-month"
               onClick={() => updateMonth((prev) => prev.add(-1, "month"))}
-              sx={{
-                border: "1px solid rgba(148,163,184,0.18)",
-                bgcolor: "rgba(255,255,255,0.88)",
-              }}
+              size="sm"
             >
               <ChevronLeftIcon />
-            </IconButton>
-            <IconButton
+            </AppIconButton>
+            <AppIconButton
               aria-label="next-month"
               onClick={() => updateMonth((prev) => prev.add(1, "month"))}
-              sx={{
-                border: "1px solid rgba(148,163,184,0.18)",
-                bgcolor: "rgba(255,255,255,0.88)",
-              }}
+              size="sm"
             >
               <ChevronRightIcon />
-            </IconButton>
+            </AppIconButton>
             <Divider orientation="vertical" flexItem />
             <Typography variant="h6" sx={{ fontWeight: 700 }}>
               {resolvedCurrentMonth.format("YYYY年M月")}
             </Typography>
           </Stack>
           <Box>
-            <Tooltip title="今月に戻る">
-              <IconButton
-                onClick={() => updateMonth(() => dayjs().startOf("month"))}
-                sx={{
-                  px: 1.5,
-                  borderRadius: "9999px",
-                  border: "1px solid rgba(148,163,184,0.18)",
-                  bgcolor: "rgba(255,255,255,0.88)",
-                }}
-              >
-                <Typography variant="body2">今月</Typography>
-              </IconButton>
-            </Tooltip>
+            <AppIconButton
+              onClick={() => updateMonth(() => dayjs().startOf("month"))}
+              aria-label="今月に戻る"
+              size="sm"
+              tooltip="今月に戻る"
+            >
+              <Typography variant="body2">今月</Typography>
+            </AppIconButton>
           </Box>
         </Stack>
 
@@ -405,31 +373,19 @@ export default function DesktopCalendarView({
                       sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
                     >
                       {onOpenInRightPanel && attendance && (
-                        <Tooltip title="右側で開く">
-                          <IconButton
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onOpenInRightPanel(attendance, date);
-                            }}
-                            sx={{
-                              padding: "2px",
-                              "&:hover": {
-                                backgroundColor: "rgba(0, 0, 0, 0.04)",
-                              },
-                            }}
-                          >
-                            <OpenInNewOutlinedIcon sx={{ fontSize: "16px" }} />
-                          </IconButton>
-                        </Tooltip>
+                        <AppIconButton
+                          size="sm"
+                          aria-label="右側で開く"
+                          tooltip="右側で開く"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenInRightPanel(attendance, date);
+                          }}
+                        >
+                          <OpenInNewOutlinedIcon sx={{ fontSize: "16px" }} />
+                        </AppIconButton>
                       )}
-                      {status !== AttendanceStatus.None && (
-                        <Chip
-                          size="small"
-                          label={statusLabelMap[status]}
-                          color={statusChipColor[status]}
-                        />
-                      )}
+                      <AttendanceStatusChip status={status} />
                     </Box>
                   </Stack>
                   {timeRangeLabel && (

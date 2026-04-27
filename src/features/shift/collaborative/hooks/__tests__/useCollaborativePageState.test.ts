@@ -5,7 +5,6 @@ import { useCollaborativePageState } from "../useCollaborativePageState";
 const mockUseCollaborativeShift = jest.fn();
 const mockUseShiftCalendar = jest.fn();
 const mockUseSelectionState = jest.fn();
-const mockUseClipboardOps = jest.fn();
 const mockUseShiftSuggestions = jest.fn();
 const mockUseShiftMetrics = jest.fn();
 const mockGraphql = jest.fn();
@@ -20,10 +19,6 @@ jest.mock("../useShiftCalendar", () => ({
 
 jest.mock("../useSelectionState", () => ({
   useSelectionState: (...args: unknown[]) => mockUseSelectionState(...args),
-}));
-
-jest.mock("../useClipboardOps", () => ({
-  useClipboardOps: (...args: unknown[]) => mockUseClipboardOps(...args),
 }));
 
 jest.mock("../useShiftSuggestions", () => ({
@@ -92,16 +87,6 @@ describe("useCollaborativePageState", () => {
     clearSyncError: jest.fn(),
     updateUserActivity: mockUpdateUserActivity,
     retryPendingChanges: jest.fn(),
-    canUndo: false,
-    canRedo: false,
-    undo: jest.fn(),
-    redo: jest.fn(),
-    getLastUndo: jest.fn(),
-    getLastRedo: jest.fn(),
-    undoHistory: [],
-    redoHistory: [],
-    showHistory: false,
-    toggleHistory: jest.fn(),
     getCellHistory: jest.fn(() => []),
     getAllCellHistory: jest.fn(() => []),
     addComment: jest.fn(),
@@ -126,13 +111,6 @@ describe("useCollaborativePageState", () => {
       days: [],
       dateKeys: ["01", "02"],
       eventCalendar: [],
-    });
-
-    mockUseClipboardOps.mockReturnValue({
-      copy: jest.fn(),
-      paste: jest.fn(() => []),
-      hasClipboard: false,
-      clearClipboard: jest.fn(),
     });
 
     mockUseShiftSuggestions.mockReturnValue({
@@ -309,7 +287,9 @@ describe("useCollaborativePageState", () => {
   });
 
   it("編集ロック未取得時は状態変更も解除も行わない", async () => {
-    mockUseCollaborativeShift.mockReturnValue(buildState({ hasEditLock: false }));
+    mockUseCollaborativeShift.mockReturnValue(
+      buildState({ hasEditLock: false }),
+    );
 
     const { result } = renderHook(() => useCollaborativePageState("2026-02"));
 
@@ -320,6 +300,8 @@ describe("useCollaborativePageState", () => {
 
     expect(mockUpdateShift).not.toHaveBeenCalled();
     expect(mockStopEditingCell).not.toHaveBeenCalled();
-    expect(result.current.editLockError).toBe("編集前にロックを取得してください。");
+    expect(result.current.editLockError).toBe(
+      "編集前にロックを取得してください。",
+    );
   });
 });

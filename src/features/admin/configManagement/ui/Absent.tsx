@@ -1,4 +1,5 @@
 import { useAppDispatchV2 } from "@app/hooks";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import AdminSettingsLayout from "@features/admin/layout/ui/AdminSettingsLayout";
 import AdminSettingsSection from "@features/admin/layout/ui/AdminSettingsSection";
 import { SettingsButton, SettingsSwitch } from "@features/admin/layout/ui/SettingsPrimitives";
@@ -6,7 +7,6 @@ import { CreateAppConfigInput, UpdateAppConfigInput, } from "@shared/api/graphql
 import { pushNotification } from "@shared/lib/store/notificationSlice";
 import { useContext, useEffect, useState } from "react";
 
-import { AppConfigContext } from "@/context/AppConfigContext";
 import { E14001, S14001, S14002 } from "@/errors";
 
 export default function Absent() {

@@ -1,3 +1,4 @@
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import { calcTotalRestTime, calcTotalWorkTime } from "@entities/attendance/lib/time";
 import { Attendance } from "@shared/api/graphql/types";
@@ -13,8 +14,6 @@ import {
 import dayjs, { Dayjs } from "dayjs";
 import { useContext, useMemo } from "react";
 import { Bar } from "react-chartjs-2";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Legend, Tooltip);
 

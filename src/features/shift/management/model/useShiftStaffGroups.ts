@@ -1,8 +1,7 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import { useContext, useMemo } from "react";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
-import { AuthContext } from "@/context/AuthContext";
 
 import { ShiftGroupConstraints } from "../lib/shiftGroups";
 

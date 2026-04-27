@@ -1,12 +1,5 @@
-export { ChangeHistoryPanel } from "./ChangeHistoryPanel";
-
 // Undo/Redo
-export { HistoryToggleButton } from "./HistoryToggleButton";
-export { UndoRedoIndicator } from "./UndoRedoIndicator";
 export { UndoRedoToolbar } from "./UndoRedoToolbar";
-
-// Cell History
-export { CellHistoryPopover } from "./CellHistoryPopover";
 
 // Comments
 export { CellCommentDialog } from "./CellCommentDialog";

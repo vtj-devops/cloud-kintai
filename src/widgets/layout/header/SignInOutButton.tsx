@@ -1,8 +1,7 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import SignInOutButtonView from "@shared/ui/header/SignInOutButton";
 import StaffIcon from "@shared/ui/icon/StaffIcon";
 import { useContext } from "react";
-
-import { AuthContext } from "@/context/AuthContext";
 
 export function SignInOutButton() {
   const { signOut, signIn, cognitoUser, authStatus } = useContext(AuthContext);

@@ -1,9 +1,8 @@
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { AttendanceStatus } from "@entities/attendance/lib/AttendanceState";
 import { SubsectionTitle } from "@shared/ui/typography";
 import dayjs from "dayjs";
 import { CSSProperties, useContext } from "react";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
 
 import { useMobileCalendarUI } from "./mobileCalendarContext";
 import {

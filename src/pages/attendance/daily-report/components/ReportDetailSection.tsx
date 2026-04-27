@@ -68,7 +68,7 @@ function StatusChip({
   label: string;
   className: string;
 }) {
-  return <span className={`dr-status-chip ${className}`.trim()}>{label}</span>;
+  return <span className={`dr-status-chip ${className}`.trim()} data-testid="daily-report-status-chip">{label}</span>;
 }
 
 function CommentCard({ children }: { children: ReactNode }) {

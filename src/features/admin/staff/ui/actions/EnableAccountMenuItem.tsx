@@ -1,3 +1,4 @@
+import enableStaff from "@entities/staff/model/cognito/enableStaff";
 import { StaffType } from "@entities/staff/model/useStaffs/useStaffs";
 import PersonIcon from "@mui/icons-material/Person";
 import { CircularProgress, ListItemIcon, ListItemText, MenuItem, } from "@mui/material";
@@ -7,7 +8,6 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 
 import * as MESSAGE_CODE from "@/errors";
-import enableStaff from "@/hooks/common/enableStaff";
 
 export function EnableAccountMenuItem({ staff, updateStaff, }: {
     staff: StaffType;

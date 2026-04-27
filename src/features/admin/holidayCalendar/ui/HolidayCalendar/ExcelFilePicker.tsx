@@ -2,11 +2,12 @@ import { useAppDispatchV2 } from "@app/hooks";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import DownloadIcon from "@mui/icons-material/Download";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography, } from "@mui/material";
+import { Box, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography, } from "@mui/material";
 import { CompanyHolidayCalendar, CreateCompanyHolidayCalendarInput, } from "@shared/api/graphql/types";
 import { CompanyHolidayCalendarMessage } from "@shared/lib/message/CompanyHolidayCalendarMessage";
 import { MessageStatus } from "@shared/lib/message/Message";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { AppButton } from "@shared/ui/button";
 import dayjs from "dayjs";
 import { useState } from "react";
 
@@ -87,9 +88,9 @@ export function ExcelFilePicker({ bulkCreateCompanyHolidayCalendar, }: {
         })));
     };
     return (<>
-      <Button variant="outlined" size="medium" startIcon={<FileUploadIcon />} onClick={handleClickOpen}>
+      <AppButton variant="outline" startIcon={<FileUploadIcon />} onClick={handleClickOpen}>
         ファイルからまとめて追加
-      </Button>
+      </AppButton>
       <Dialog open={open} onClose={handleClose} PaperProps={{
             component: "form",
             onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
@@ -104,7 +105,7 @@ export function ExcelFilePicker({ bulkCreateCompanyHolidayCalendar, }: {
               専用のテンプレートファイルをダウンロードしてください。
             </Typography>
             <Box>
-              <Button variant="outlined" startIcon={<DownloadIcon />} onClick={() => {
+              <AppButton variant="outline" startIcon={<DownloadIcon />} onClick={() => {
             const a = document.createElement("a");
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             a.href = company_holiday;
@@ -112,7 +113,7 @@ export function ExcelFilePicker({ bulkCreateCompanyHolidayCalendar, }: {
             a.click();
         }}>
                 テンプレート
-              </Button>
+              </AppButton>
             </Box>
             <Typography variant="body1">
               テンプレートに登録したい休日を入力し、CSVファイルを選択してください。
@@ -124,10 +125,10 @@ export function ExcelFilePicker({ bulkCreateCompanyHolidayCalendar, }: {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>キャンセル</Button>
-          <Button type="submit" onClick={onSubmit}>
+          <AppButton variant="ghost" onClick={handleClose}>キャンセル</AppButton>
+          <AppButton type="submit" onClick={onSubmit}>
             登録
-          </Button>
+          </AppButton>
         </DialogActions>
       </Dialog>
     </>);
@@ -146,7 +147,7 @@ function FileInput({ setUploadedData, }: {
         setFile(undefined);
     };
     return (<Box>
-      <Button component="label" variant="outlined">
+      <AppButton as="label" variant="outline">
         ファイルを選択
         <input type="file" hidden accept=".csv" onChange={(event) => {
             const uploadFile = event.target.files?.item(0);
@@ -176,7 +177,7 @@ function FileInput({ setUploadedData, }: {
             reader.onerror = () => handleParseFailure(CSV_PARSE_ERROR_MESSAGE);
             event.target.value = "";
         }}/>
-      </Button>
+      </AppButton>
       <Typography>{file?.name}</Typography>
     </Box>);
 }

@@ -1,6 +1,5 @@
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { useContext, useMemo } from "react";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
 
 export function useAppConfigDerived() {
   const { derived } = useContext(AppConfigContext);

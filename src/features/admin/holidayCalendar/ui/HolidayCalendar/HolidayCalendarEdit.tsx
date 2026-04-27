@@ -1,7 +1,7 @@
 import { useAppDispatchV2 } from "@app/hooks";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import EditIcon from "@mui/icons-material/Edit";
-import { IconButton, Stack, TextField } from "@mui/material";
+import { Stack, TextField } from "@mui/material";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -13,11 +13,11 @@ import { HolidayCalendar, } from "@shared/api/graphql/types";
 import { HolidayCalendarMessage } from "@shared/lib/message/HolidayCalendarMessage";
 import { MessageStatus } from "@shared/lib/message/Message";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { AppIconButton } from "@shared/ui/button";
+import { useDialogCloseGuard } from "@shared/ui/feedback/useDialogCloseGuard";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-
-import { useDialogCloseGuard } from "@/hooks/useDialogCloseGuard";
 
 type Inputs = {
     id: string | null;
@@ -82,11 +82,11 @@ export default function HolidayCalendarEdit({ holidayCalendar, updateHolidayCale
         });
     };
     return (<>
-      <IconButton onClick={() => {
+      <AppIconButton onClick={() => {
             setEditRow(holidayCalendar);
-        }}>
+        }} aria-label="編集">
         <EditIcon fontSize="small"/>
-      </IconButton>
+      </AppIconButton>
       {dialog}
       <Dialog open={Boolean(editRow)} onClose={requestClose}>
         <DialogTitle>法定休日を編集</DialogTitle>
