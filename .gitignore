@@ -95,3 +95,4 @@ amplifytools.xcconfig
 .claude/settings.local.json
 .claude/settings.json
 .mcp.json
+.continue/mcpServers/new-mcp-server.yaml
