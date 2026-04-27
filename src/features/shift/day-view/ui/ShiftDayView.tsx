@@ -36,7 +36,7 @@ export default function ShiftDayView() {
 
   const shiftStaffs = useMemo(
     () => staffs.filter((s) => s.workType === "shift"),
-    [staffs]
+    [staffs],
   );
 
   // 出勤データがあればそれを利用し、なければ既存のモックを利用する
@@ -64,7 +64,7 @@ export default function ShiftDayView() {
           } catch {
             map.set(s.id, null);
           }
-        })
+        }),
       );
 
       if (mounted) {
@@ -268,7 +268,7 @@ export default function ShiftDayView() {
                 const breaksForStaff = mockBreaks.get(s.id) || [];
                 const breaksDuration = breaksForStaff.reduce(
                   (acc, b) => acc + Math.max(0, b.end - b.start),
-                  0
+                  0,
                 );
                 const workTotal = range
                   ? Math.max(0, range.end - range.start - breaksDuration)
@@ -301,7 +301,7 @@ export default function ShiftDayView() {
                         ? h >= range.start && h < range.end
                         : false;
                       const inBreak = breaksForStaff.some(
-                        (b) => h >= b.start && h < b.end
+                        (b) => h >= b.start && h < b.end,
                       );
 
                       // ツールチップ用にそのスタッフの勤務/休憩の区間を組み立てる
@@ -311,12 +311,12 @@ export default function ShiftDayView() {
                         const b = breaksForStaff[0];
                         if (b && b.start > range.start) {
                           segments.push(
-                            `${range.start}:00 - ${b.start}:00 (勤務)`
+                            `${range.start}:00 - ${b.start}:00 (勤務)`,
                           );
                           segments.push(`${b.start}:00 - ${b.end}:00 (休憩)`);
                           if (b.end < range.end) {
                             segments.push(
-                              `${b.end}:00 - ${range.end}:00 (勤務)`
+                              `${b.end}:00 - ${range.end}:00 (勤務)`,
                             );
                           }
                         } else if (
@@ -328,14 +328,14 @@ export default function ShiftDayView() {
                           segments.push(`${b.end}:00 - ${range.end}:00 (勤務)`);
                         } else {
                           segments.push(
-                            `${range.start}:00 - ${range.end}:00 (勤務)`
+                            `${range.start}:00 - ${range.end}:00 (勤務)`,
                           );
                         }
                         // 追加の休憩があれば追記
                         if (breaksForStaff.length > 1) {
                           breaksForStaff.slice(1).forEach((bb) => {
                             segments.push(
-                              `${bb.start}:00 - ${bb.end}:00 (休憩)`
+                              `${bb.start}:00 - ${bb.end}:00 (休憩)`,
                             );
                           });
                         }
@@ -404,6 +404,6 @@ export default function ShiftDayView() {
 }
 
 const isRestWithTimes = (
-  rest: Rest | null | undefined
+  rest: Rest | null | undefined,
 ): rest is Rest & { startTime: string; endTime: string } =>
   Boolean(rest?.startTime && rest?.endTime);

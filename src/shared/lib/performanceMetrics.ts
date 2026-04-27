@@ -13,7 +13,7 @@ export type PerformanceMetrics = {
   FID: number | null; // First Input Delay
   CLS: number | null; // Cumulative Layout Shift
 
-  // 追加メトリクス
+  // Additional metrics
   TTFB: number | null; // Time to First Byte
   FCP: number | null; // First Contentful Paint
   domContentLoaded: number | null;
@@ -117,7 +117,7 @@ class PerformanceMetricsCollector {
   private measureNavigationTiming() {
     window.addEventListener("load", () => {
       const perfData = performance.getEntriesByType(
-        "navigation"
+        "navigation",
       )[0] as PerformanceNavigationTiming;
 
       if (perfData) {
