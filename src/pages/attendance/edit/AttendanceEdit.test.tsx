@@ -1,10 +1,9 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { render, screen, waitFor } from "@testing-library/react";
 import dayjs from "dayjs";
 import type { ContextType } from "react";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
-import { AuthContext } from "@/context/AuthContext";
 
 import AttendanceEdit from "./AttendanceEdit";
 
@@ -42,7 +41,7 @@ jest.mock("@entities/attendance/api/attendanceApi", () => ({
   }),
 }));
 
-jest.mock("@/hooks/useAppNotification", () => ({
+jest.mock("@shared/lib/useAppNotification", () => ({
   useAppNotification: () => ({
     notify: jest.fn(),
   }),
@@ -54,17 +53,14 @@ jest.mock("./useAttendanceEditFormSync", () => ({
   }),
 }));
 
-jest.mock("@/features/attendance/edit/ui/desktopEditor/DesktopEditor", () => {
-  function MockDesktopEditor() {
-    return <div>desktop-editor</div>;
-  }
-
-  return MockDesktopEditor;
-});
-
-jest.mock("@/features/attendance/edit/ui/mobileEditor/MobileEditor", () => ({
-  MobileEditor: function MockMobileEditor() {
-    return <div>mobile-editor</div>;
+jest.mock("@features/attendance/edit/ui/AttendanceEditForm", () => ({
+  AttendanceEditForm: function MockAttendanceEditForm() {
+    return (
+      <>
+        <div data-testid="attendance-mobile-editor">mobile-editor</div>
+        <div data-testid="attendance-desktop-editor">desktop-editor</div>
+      </>
+    );
   },
 }));
 

@@ -1,7 +1,6 @@
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { Box, Stack, Typography } from "@mui/material";
 import { useContext } from "react";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
 
 export default function ProductionTimeItem({
   time,

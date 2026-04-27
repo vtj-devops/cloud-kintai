@@ -11,23 +11,13 @@
   "editor.tabSize": 2,
   "editor.insertSpaces": true,
   "editor.formatOnSave": true,
-  "editor.rulers": [
-    80,
-    100,
-    120
-  ],
+  "editor.rulers": [80, 100, 120],
   "eslint.format.enable": true,
-  "eslint.workingDirectories": [
-    "./src"
-  ],
+  "eslint.workingDirectories": ["./src"],
   "diffEditor.wordWrap": "off",
   "workbench.startupEditor": "readme",
-  "git.branchPrefix": "feature/",
   "git.autoStash": true,
-  "git.branchProtection": [
-    "main",
-    "develop"
-  ],
+  "git.branchProtection": ["main", "develop"],
   "[javascript]": {
     "editor.tabSize": 2,
     "editor.insertSpaces": true,
@@ -51,42 +41,13 @@
   "[jsonc]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "git.autofetch": true,
-  "window.zoomLevel": 1,
-  "git.confirmSync": false,
   "markdown.extension.toc.levels": "2..6",
-  "git.branchRandomName.enable": true,
-  "editor.inlineSuggest.enabled": true,
   "files.readonlyInclude": {
     "node_modules/**/*": true
   },
-  "typescript.tsdk": "node_modules/typescript/lib",
+  "js/ts.tsdk.path": "node_modules/typescript/lib",
   "markdown.extension.toc.omittedFromToc": {
-    "README.md": [
-      "## 目次"
-    ]
+    "README.md": ["## 目次"]
   },
-  "testing.automaticallyOpenTestResults": "neverOpen",
-  "github.copilot.chat.commitMessageGeneration.instructions": [
-    {
-      "file": ".vscode/copilot-commit-message-instructions.md"
-    }
-  ],
-  "github.copilot.chat.pullRequestDescriptionGeneration.instructions": [
-    {
-      "file": ".vscode/copilot-pr-description-instructions.md"
-    }
-  ],
-  "chat.tools.terminal.autoApprove": {
-    "npm run lint": true,
-    "npx eslint": true,
-    "npm view": true,
-    "npm ls": true,
-    "npx tsc --noEmit": true,
-    "npm exec tsc --noEmit": true,
-    "npm run test:unit": true,
-    "npm run build": true,
-    "sed": true,
-    "npm run test:e2e -- smoke-test": true
-  }
+  "testing.automaticallyOpenTestResults": "neverOpen"
 }

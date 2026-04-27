@@ -1,4 +1,6 @@
 import { useAppDispatchV2 } from "@app/hooks";
+import { AuthContext } from "@app/providers/auth/AuthContext";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import {
   useCreateAttendanceMutation,
   useLazyGetAttendanceByStaffAndDateQuery,
@@ -7,18 +9,15 @@ import {
 import { useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import { getWorkflowCategoryLabel } from "@entities/workflow/lib/workflowLabels";
 import useWorkflows from "@entities/workflow/model/useWorkflows";
+import WorkflowStatusChip from "@entities/workflow/ui/WorkflowStatusChip";
 import {
   GetWorkflowQuery,
   Workflow as WorkflowType,
   WorkflowStatus,
 } from "@shared/api/graphql/types";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
-import StatusChip from "@shared/ui/chips/StatusChip";
 import { SectionTitle } from "@shared/ui/typography";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
-import { AuthContext } from "@/context/AuthContext";
 
 import { useWorkflowApprovalActions } from "../hooks/useWorkflowApprovalActions";
 import { useWorkflowDetailData } from "../hooks/useWorkflowDetailData";
@@ -273,12 +272,6 @@ export default function WorkflowCarouselDialog({
 
   useEffect(() => {
     if (!open) return;
-    setCurrentIndex(initialIndex);
-    setIsCompleted(false);
-  }, [initialIndex, open]);
-
-  useEffect(() => {
-    if (!open) return;
 
     previousActiveElementRef.current = document.activeElement;
     const previousOverflow = document.body.style.overflow;
@@ -506,7 +499,7 @@ export default function WorkflowCarouselDialog({
                 <div>
                   <p className="m-0 text-xs text-slate-500">ステータス</p>
                   <div className="mt-1">
-                    <StatusChip status={currentWorkflow.status} />
+                    <WorkflowStatusChip status={currentWorkflow.status} />
                   </div>
                 </div>
 

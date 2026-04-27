@@ -1,11 +1,11 @@
 import { useAppDispatchV2 } from "@app/hooks";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { IconButton } from "@mui/material";
 import { DeleteHolidayCalendarInput, HolidayCalendar, } from "@shared/api/graphql/types";
 import { HolidayCalendarMessage } from "@shared/lib/message/HolidayCalendarMessage";
 import { MessageStatus } from "@shared/lib/message/Message";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { AppIconButton } from "@shared/ui/button";
 import dayjs from "dayjs";
 
 export default function HolidayCalendarDelete({ holidayCalendar, deleteHolidayCalendar, }: {
@@ -36,7 +36,7 @@ export default function HolidayCalendarDelete({ holidayCalendar, deleteHolidayCa
             }));
         });
     };
-    return (<IconButton onClick={onSubmit}>
+    return (<AppIconButton onClick={onSubmit} aria-label="削除" tone="danger">
       <DeleteIcon fontSize="small"/>
-    </IconButton>);
+    </AppIconButton>);
 }

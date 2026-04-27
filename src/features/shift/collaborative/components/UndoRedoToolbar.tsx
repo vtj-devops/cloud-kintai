@@ -1,29 +1,19 @@
 import {
   HelpOutline as HelpOutlineIcon,
   Lightbulb as LightbulbIcon,
-  Redo as RedoIcon,
   Sync as SyncIcon,
-  Undo as UndoIcon,
 } from "@mui/icons-material";
 import PrintIcon from "@mui/icons-material/Print";
-import { Badge, Divider, Paper, Stack, Tooltip } from "@mui/material";
+import { Badge, Divider, Paper, Stack } from "@mui/material";
 import { AppIconButton } from "@shared/ui/button";
 import React from "react";
 
 const MIN_SYNC_SPIN_DURATION_MS = 2000;
 
 /**
- * 取り消し/やり直しツールバーのProps
+ * ツールバーのProps
  */
 export interface UndoRedoToolbarProps {
-  canUndo: boolean;
-  canRedo: boolean;
-  onUndo: () => void;
-  onRedo: () => void;
-  lastUndoDescription?: string;
-  lastRedoDescription?: string;
-  showHistory?: boolean;
-  onToggleHistory?: () => void;
   onShowHelp?: () => void;
   onPrint?: () => void;
   onSync?: () => void;
@@ -35,16 +25,10 @@ export interface UndoRedoToolbarProps {
 }
 
 /**
- * 取り消し/やり直しツールバー
+ * シフト編集ツールバー
  * 見出しの下に配置するツールバー
  */
 export const UndoRedoToolbar: React.FC<UndoRedoToolbarProps> = ({
-  canUndo,
-  canRedo,
-  onUndo,
-  onRedo,
-  lastUndoDescription,
-  lastRedoDescription,
   onShowHelp,
   onPrint,
   onSync,
@@ -116,129 +100,81 @@ export const UndoRedoToolbar: React.FC<UndoRedoToolbarProps> = ({
       }}
     >
       <Stack direction="row" spacing={0.5} alignItems="center">
-        <Tooltip
-          title={
-            canUndo
-              ? lastUndoDescription || "操作を取り消す (Ctrl/Cmd + Z)"
-              : "取り消せる操作はありません"
-          }
-        >
-          <span>
-            <AppIconButton
-              onClick={onUndo}
-              disabled={!canUndo}
-              tone="primary"
-              size="sm"
-              aria-label="undo"
-            >
-              <UndoIcon />
-            </AppIconButton>
-          </span>
-        </Tooltip>
-
-        <Tooltip
-          title={
-            canRedo
-              ? lastRedoDescription || "操作をやり直す (Ctrl/Cmd + Shift + Z)"
-              : "やり直せる操作はありません"
-          }
-        >
-          <span>
-            <AppIconButton
-              onClick={onRedo}
-              disabled={!canRedo}
-              tone="primary"
-              size="sm"
-              aria-label="redo"
-            >
-              <RedoIcon />
-            </AppIconButton>
-          </span>
-        </Tooltip>
-
         {onPrint && (
           <>
             <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 0.5 }} />
-            <Tooltip title="シフト調整表を印刷">
-              <AppIconButton
-                onClick={onPrint}
-                tone="primary"
-                size="sm"
-                aria-label="print"
-              >
-                <PrintIcon />
-              </AppIconButton>
-            </Tooltip>
+            <AppIconButton
+              onClick={onPrint}
+              tone="primary"
+              size="sm"
+              aria-label="print"
+              tooltip="シフト調整表を印刷"
+            >
+              <PrintIcon />
+            </AppIconButton>
 
             {onSync && (
-              <Tooltip
-                title={
-                  syncTooltip || (isSyncBusy ? "同期中です" : "最新状態を取得")
-                }
-              >
-                <span>
-                  <AppIconButton
-                    onClick={onSync}
-                    tone={
-                      syncColor === "error"
-                        ? "danger"
-                        : syncColor === "primary" || syncColor === "success"
-                          ? "primary"
-                          : "neutral"
-                    }
-                    size="sm"
-                    disabled={isSyncBusy}
-                    aria-label="sync"
-                  >
-                    <SyncIcon
-                      sx={{
-                        animation: isSyncAnimating
-                          ? "copilot-sync-spin 1s linear infinite"
-                          : "none",
-                        "@keyframes copilot-sync-spin": {
-                          from: { transform: "rotate(0deg)" },
-                          to: { transform: "rotate(-360deg)" },
-                        },
-                      }}
-                    />
-                  </AppIconButton>
-                </span>
-              </Tooltip>
-            )}
+                <AppIconButton
+                  onClick={onSync}
+                  tone={
+                    syncColor === "error"
+                      ? "danger"
+                      : syncColor === "primary" || syncColor === "success"
+                        ? "primary"
+                        : "neutral"
+                  }
+                  size="sm"
+                  disabled={isSyncBusy}
+                  aria-label="sync"
+                  tooltip={
+                    syncTooltip || (isSyncBusy ? "同期中です" : "最新状態を取得")
+                  }
+                >
+                  <SyncIcon
+                    sx={{
+                      animation: isSyncAnimating
+                        ? "copilot-sync-spin 1s linear infinite"
+                        : "none",
+                      "@keyframes copilot-sync-spin": {
+                        from: { transform: "rotate(0deg)" },
+                        to: { transform: "rotate(-360deg)" },
+                      },
+                    }}
+                  />
+                </AppIconButton>
+              )}
           </>
         )}
 
         {onShowSuggestions && (
-          <Tooltip title="シフト提案を表示">
-            <Badge
-              color="error"
-              badgeContent={suggestionsBadgeCount}
-              max={9}
-              invisible={!suggestionsBadgeCount || suggestionsBadgeCount <= 0}
+          <Badge
+            color="error"
+            badgeContent={suggestionsBadgeCount}
+            max={9}
+            invisible={!suggestionsBadgeCount || suggestionsBadgeCount <= 0}
+          >
+            <AppIconButton
+              onClick={onShowSuggestions}
+              tone="primary"
+              size="sm"
+              aria-label="show suggestions"
+              tooltip="シフト提案を表示"
             >
-              <AppIconButton
-                onClick={onShowSuggestions}
-                tone="primary"
-                size="sm"
-                aria-label="show suggestions"
-              >
-                <LightbulbIcon />
-              </AppIconButton>
-            </Badge>
-          </Tooltip>
+              <LightbulbIcon />
+            </AppIconButton>
+          </Badge>
         )}
 
         {onShowHelp && (
-          <Tooltip title="ヘルプ">
-            <AppIconButton
-              onClick={onShowHelp}
-              tone="neutral"
-              size="sm"
-              aria-label="show help"
-            >
-              <HelpOutlineIcon />
-            </AppIconButton>
-          </Tooltip>
+          <AppIconButton
+            onClick={onShowHelp}
+            tone="neutral"
+            size="sm"
+            aria-label="show help"
+            tooltip="ヘルプ"
+          >
+            <HelpOutlineIcon />
+          </AppIconButton>
         )}
       </Stack>
     </Paper>

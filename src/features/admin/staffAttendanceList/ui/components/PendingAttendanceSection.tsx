@@ -15,7 +15,6 @@ import {
   AlertTitle,
   Button,
   Checkbox,
-  IconButton,
   Stack,
   Table,
   TableBody,
@@ -32,6 +31,7 @@ import {
   Staff,
 } from "@shared/api/graphql/types";
 import { designTokenVar } from "@shared/designSystem";
+import { AppIconButton } from "@shared/ui/button";
 
 const HIGHLIGHT_BORDER = designTokenVar(
   "color.feedback.warning.base",
@@ -195,13 +195,14 @@ export function PendingAttendanceSection({
                         holidayCalendars={holidayCalendars}
                         companyHolidayCalendars={companyHolidayCalendars}
                       />
-                      <IconButton
-                        size="small"
+                      <AppIconButton
+                        size="sm"
                         onClick={() => onEdit(attendance)}
+                        aria-label="編集"
                         data-testid="edit-attendance"
                       >
                         <EditIcon fontSize="small" />
-                      </IconButton>
+                      </AppIconButton>
                     </Stack>
                   </TableCell>
 

@@ -1,6 +1,6 @@
+import WorkflowStatusChip from "@entities/workflow/ui/WorkflowStatusChip";
 import { WorkflowCategory, WorkflowStatus } from "@shared/api/graphql/types";
 import { formatDateSlash } from "@shared/lib/time";
-import StatusChip from "@shared/ui/chips/StatusChip";
 import type { ReactNode } from "react";
 
 import type { WorkflowApprovalStepView } from "../../approval-flow/types";
@@ -97,7 +97,7 @@ export function WorkflowMetadataPanelBase({
           <MetadataRow label="申請日" value={applicationDate} />
           <MetadataRow
             label="ステータス"
-            value={<StatusChip status={status} />}
+            value={<WorkflowStatusChip status={status} />}
           />
 
           {isPaidLeave && (

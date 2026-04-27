@@ -1,4 +1,5 @@
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
+import { CognitoUser } from "@entities/staff/model/useCognitoUser";
 import { StaffType } from "@entities/staff/model/useStaffs/useStaffs";
 import {
   formatStaffDisplayName,
@@ -7,7 +8,6 @@ import {
 import dayjs from "dayjs";
 
 import * as MESSAGE_CODE from "@/errors";
-import { CognitoUser } from "@/hooks/useCognitoUser";
 
 export default function sendChangeRequestMail(
   cognitoUser: CognitoUser,

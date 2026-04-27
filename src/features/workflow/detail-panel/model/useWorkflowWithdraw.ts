@@ -2,10 +2,9 @@ import { buildWorkflowCommentsUpdateInput } from "@features/workflow/comment-thr
 import type { WorkflowEntity } from "@features/workflow/hooks/useWorkflowLoaderWorkflow";
 import { UpdateWorkflowInput, WorkflowStatus } from "@shared/api/graphql/types";
 import { createLogger } from "@shared/lib/logger";
+import type { AppNotificationInput } from "@shared/lib/useAppNotification";
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-
-import type { AppNotificationInput } from "@/hooks/useAppNotification";
 
 const logger = createLogger("useWorkflowWithdraw");
 

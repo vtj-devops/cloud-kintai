@@ -12,7 +12,6 @@ import { AttendanceStatusTooltip } from "@features/attendance/list/ui/Attendance
 import EditIcon from "@mui/icons-material/Edit";
 import {
   Button,
-  IconButton,
   Stack,
   Table,
   TableBody,
@@ -27,6 +26,7 @@ import {
   HolidayCalendar,
   Staff,
 } from "@shared/api/graphql/types";
+import { AppIconButton } from "@shared/ui/button";
 
 import type { PendingAttendanceControls } from "./PendingAttendanceSection";
 
@@ -96,13 +96,14 @@ export function AttendanceTableSection({
                       holidayCalendars={holidayCalendars}
                       companyHolidayCalendars={companyHolidayCalendars}
                     />
-                    <IconButton
-                      size="small"
+                    <AppIconButton
+                      size="sm"
                       onClick={() => onEdit(attendance)}
+                      aria-label="編集"
                       data-testid="edit-attendance-button"
                     >
                       <EditIcon fontSize="small" />
-                    </IconButton>
+                    </AppIconButton>
                   </Stack>
                 </TableCell>
 

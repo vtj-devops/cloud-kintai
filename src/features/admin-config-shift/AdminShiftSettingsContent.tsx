@@ -2,6 +2,7 @@ import SettingsIcon from "@features/admin/layout/ui/SettingsIcon";
 import {
   SettingsAlert,
 } from "@features/admin/layout/ui/SettingsPrimitives";
+import { AppButton } from "@shared/ui/button";
 import { AppTabs } from "@shared/ui/tabs";
 import { SubsectionTitle } from "@shared/ui/typography";
 import { useState } from "react";
@@ -29,6 +30,7 @@ function ShiftGroupTabPanel({ state }: AdminShiftSettingsContentProps) {
     isShiftGroupDirty,
     handleAddGroup,
     handleRemoveGroup,
+    handleSaveShiftGroup,
   } = state;
 
   return (
@@ -90,14 +92,19 @@ function ShiftGroupTabPanel({ state }: AdminShiftSettingsContentProps) {
         </div>
       </div>
 
-      <div className="flex flex-row justify-end pb-4">
-        <p className="text-sm text-slate-500" aria-live="polite">
-          {savingShiftGroup
-            ? "変更を保存中..."
-            : isShiftGroupDirty
-              ? "変更を自動保存します..."
-              : "変更は自動で保存されます。"}
-        </p>
+      <div className="flex flex-row items-center justify-end gap-4 pb-4">
+        {savingShiftGroup && (
+          <p className="text-sm text-slate-500" aria-live="polite">保存中...</p>
+        )}
+        <AppButton
+          variant="solid"
+          tone="primary"
+          disabled={hasValidationError || !isShiftGroupDirty || savingShiftGroup}
+          loading={savingShiftGroup}
+          onClick={handleSaveShiftGroup}
+        >
+          保存
+        </AppButton>
       </div>
     </div>
   );

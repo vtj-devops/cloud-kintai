@@ -16,6 +16,8 @@ import {
   listHolidayCalendars,
 } from "@shared/api/graphql/documents/queries";
 import { graphqlBaseQuery } from "@shared/api/graphql/graphqlBaseQuery";
+import { executePaginatedQuery } from "@shared/api/graphql/paginatedQuery";
+import { buildListAndItemTags } from "@shared/api/graphql/tagBuilder";
 import type {
   CompanyHolidayCalendar,
   CreateCompanyHolidayCalendarInput,
@@ -45,26 +47,13 @@ import type {
   UpdateHolidayCalendarInput,
   UpdateHolidayCalendarMutation,
 } from "@shared/api/graphql/types";
+import { type UpdatePayload } from "@shared/api/graphql/updatePayload";
 
-export type UpdateHolidayCalendarPayload = {
-  input: UpdateHolidayCalendarInput;
-  condition?: ModelHolidayCalendarConditionInput | null;
-};
+export type UpdateHolidayCalendarPayload = UpdatePayload<UpdateHolidayCalendarInput, ModelHolidayCalendarConditionInput>;
 
-export type UpdateCompanyHolidayCalendarPayload = {
-  input: UpdateCompanyHolidayCalendarInput;
-  condition?: ModelCompanyHolidayCalendarConditionInput | null;
-};
+export type UpdateCompanyHolidayCalendarPayload = UpdatePayload<UpdateCompanyHolidayCalendarInput, ModelCompanyHolidayCalendarConditionInput>;
 
-export type UpdateEventCalendarPayload = {
-  input: UpdateEventCalendarInput;
-  condition?: ModelEventCalendarConditionInput | null;
-};
-
-type CalendarTag = {
-  type: "HolidayCalendar" | "CompanyHolidayCalendar" | "EventCalendar";
-  id: string;
-};
+export type UpdateEventCalendarPayload = UpdatePayload<UpdateEventCalendarInput, ModelEventCalendarConditionInput>;
 
 // Exported for testing
 export const nonNullable = <T>(value: T | null | undefined): value is T =>
@@ -83,94 +72,29 @@ export const calendarApi = createApi({
   endpoints: (builder) => ({
     getHolidayCalendars: builder.query<HolidayCalendar[], void>({
       async queryFn(_arg, _queryApi, _extraOptions, baseQuery) {
-        const calendars: HolidayCalendar[] = [];
-        let nextToken: string | null = null;
-
-        do {
-          const result = await baseQuery({
-            document: listHolidayCalendars,
-            variables: { nextToken },
-          });
-
-          if (result.error) {
-            return { error: result.error };
-          }
-
-          const data = result.data as ListHolidayCalendarsQuery | null;
-          const connection = data?.listHolidayCalendars;
-
-          if (!connection) {
-            return { error: { message: "Failed to fetch holiday calendars" } };
-          }
-
-          calendars.push(...connection.items.filter(nonNullable));
-          nextToken = connection.nextToken ?? null;
-        } while (nextToken);
-
-        return { data: calendars };
+        return executePaginatedQuery<HolidayCalendar>({
+          baseQuery,
+          document: listHolidayCalendars,
+          connectionExtractor: (data) =>
+            (data as ListHolidayCalendarsQuery | null)?.listHolidayCalendars,
+          errorMessage: "Failed to fetch holiday calendars",
+        });
       },
-      providesTags: (result) => {
-        const listTag: CalendarTag = { type: "HolidayCalendar", id: "LIST" };
-        if (!result) {
-          return [listTag];
-        }
-
-        return [
-          listTag,
-          ...result.map((calendar) => ({
-            type: "HolidayCalendar" as const,
-            id: buildCalendarTagId(calendar),
-          })),
-        ];
-      },
+      providesTags: (result) =>
+        buildListAndItemTags("HolidayCalendar", result, buildCalendarTagId),
     }),
     getCompanyHolidayCalendars: builder.query<CompanyHolidayCalendar[], void>({
       async queryFn(_arg, _queryApi, _extraOptions, baseQuery) {
-        const calendars: CompanyHolidayCalendar[] = [];
-        let nextToken: string | null = null;
-
-        do {
-          const result = await baseQuery({
-            document: listCompanyHolidayCalendars,
-            variables: { nextToken },
-          });
-
-          if (result.error) {
-            return { error: result.error };
-          }
-
-          const data = result.data as ListCompanyHolidayCalendarsQuery | null;
-          const connection = data?.listCompanyHolidayCalendars;
-
-          if (!connection) {
-            return {
-              error: { message: "Failed to fetch company holiday calendars" },
-            };
-          }
-
-          calendars.push(...connection.items.filter(nonNullable));
-          nextToken = connection.nextToken ?? null;
-        } while (nextToken);
-
-        return { data: calendars };
+        return executePaginatedQuery<CompanyHolidayCalendar>({
+          baseQuery,
+          document: listCompanyHolidayCalendars,
+          connectionExtractor: (data) =>
+            (data as ListCompanyHolidayCalendarsQuery | null)?.listCompanyHolidayCalendars,
+          errorMessage: "Failed to fetch company holiday calendars",
+        });
       },
-      providesTags: (result) => {
-        const listTag: CalendarTag = {
-          type: "CompanyHolidayCalendar",
-          id: "LIST",
-        };
-        if (!result) {
-          return [listTag];
-        }
-
-        return [
-          listTag,
-          ...result.map((calendar) => ({
-            type: "CompanyHolidayCalendar" as const,
-            id: buildCalendarTagId(calendar),
-          })),
-        ];
-      },
+      providesTags: (result) =>
+        buildListAndItemTags("CompanyHolidayCalendar", result, buildCalendarTagId),
     }),
     createHolidayCalendar: builder.mutation<
       HolidayCalendar,
@@ -195,20 +119,12 @@ export const calendarApi = createApi({
 
         return { data: created };
       },
-      invalidatesTags: (result) => {
-        const listTag: CalendarTag = { type: "HolidayCalendar", id: "LIST" };
-        if (!result) {
-          return [listTag];
-        }
-
-        return [
-          listTag,
-          {
-            type: "HolidayCalendar" as const,
-            id: buildCalendarTagId(result),
-          },
-        ];
-      },
+      invalidatesTags: (result) =>
+        buildListAndItemTags(
+          "HolidayCalendar",
+          result ? [result] : undefined,
+          buildCalendarTagId,
+        ),
     }),
     bulkCreateHolidayCalendars: builder.mutation<
       HolidayCalendar[],
@@ -267,20 +183,12 @@ export const calendarApi = createApi({
 
         return { data: updated };
       },
-      invalidatesTags: (result) => {
-        const listTag: CalendarTag = { type: "HolidayCalendar", id: "LIST" };
-        if (!result) {
-          return [listTag];
-        }
-
-        return [
-          listTag,
-          {
-            type: "HolidayCalendar" as const,
-            id: buildCalendarTagId(result),
-          },
-        ];
-      },
+      invalidatesTags: (result) =>
+        buildListAndItemTags(
+          "HolidayCalendar",
+          result ? [result] : undefined,
+          buildCalendarTagId,
+        ),
     }),
     deleteHolidayCalendar: builder.mutation<
       HolidayCalendar,
@@ -306,9 +214,11 @@ export const calendarApi = createApi({
         return { data: deleted };
       },
       invalidatesTags: (result, _error, arg) => {
-        const listTag: CalendarTag = { type: "HolidayCalendar", id: "LIST" };
         const targetId = arg.id ?? buildCalendarTagId(result ?? {});
-        return [listTag, { type: "HolidayCalendar", id: targetId }];
+        return [
+          { type: "HolidayCalendar", id: "LIST" },
+          { type: "HolidayCalendar", id: targetId },
+        ];
       },
     }),
     createCompanyHolidayCalendar: builder.mutation<
@@ -336,23 +246,12 @@ export const calendarApi = createApi({
 
         return { data: created };
       },
-      invalidatesTags: (result) => {
-        const listTag: CalendarTag = {
-          type: "CompanyHolidayCalendar",
-          id: "LIST",
-        };
-        if (!result) {
-          return [listTag];
-        }
-
-        return [
-          listTag,
-          {
-            type: "CompanyHolidayCalendar" as const,
-            id: buildCalendarTagId(result),
-          },
-        ];
-      },
+      invalidatesTags: (result) =>
+        buildListAndItemTags(
+          "CompanyHolidayCalendar",
+          result ? [result] : undefined,
+          buildCalendarTagId,
+        ),
     }),
     bulkCreateCompanyHolidayCalendars: builder.mutation<
       CompanyHolidayCalendar[],
@@ -416,23 +315,12 @@ export const calendarApi = createApi({
 
         return { data: updated };
       },
-      invalidatesTags: (result) => {
-        const listTag: CalendarTag = {
-          type: "CompanyHolidayCalendar",
-          id: "LIST",
-        };
-        if (!result) {
-          return [listTag];
-        }
-
-        return [
-          listTag,
-          {
-            type: "CompanyHolidayCalendar" as const,
-            id: buildCalendarTagId(result),
-          },
-        ];
-      },
+      invalidatesTags: (result) =>
+        buildListAndItemTags(
+          "CompanyHolidayCalendar",
+          result ? [result] : undefined,
+          buildCalendarTagId,
+        ),
     }),
     deleteCompanyHolidayCalendar: builder.mutation<
       CompanyHolidayCalendar,
@@ -460,61 +348,25 @@ export const calendarApi = createApi({
         return { data: deleted };
       },
       invalidatesTags: (result, _error, arg) => {
-        const listTag: CalendarTag = {
-          type: "CompanyHolidayCalendar",
-          id: "LIST",
-        };
         const targetId = arg.id ?? buildCalendarTagId(result ?? {});
-        return [listTag, { type: "CompanyHolidayCalendar", id: targetId }];
+        return [
+          { type: "CompanyHolidayCalendar", id: "LIST" },
+          { type: "CompanyHolidayCalendar", id: targetId },
+        ];
       },
     }),
     getEventCalendars: builder.query<EventCalendar[], void>({
       async queryFn(_arg, _queryApi, _extraOptions, baseQuery) {
-        const calendars: EventCalendar[] = [];
-        let nextToken: string | null = null;
-
-        do {
-          const result = await baseQuery({
-            document: listEventCalendars,
-            variables: { nextToken },
-          });
-
-          if (result.error) {
-            return { error: result.error };
-          }
-
-          const data = result.data as ListEventCalendarsQuery | null;
-          const connection = data?.listEventCalendars;
-
-          if (!connection) {
-            return {
-              error: { message: "Failed to fetch event calendars" },
-            };
-          }
-
-          calendars.push(...connection.items.filter(nonNullable));
-          nextToken = connection.nextToken ?? null;
-        } while (nextToken);
-
-        return { data: calendars };
+        return executePaginatedQuery<EventCalendar>({
+          baseQuery,
+          document: listEventCalendars,
+          connectionExtractor: (data) =>
+            (data as ListEventCalendarsQuery | null)?.listEventCalendars,
+          errorMessage: "Failed to fetch event calendars",
+        });
       },
-      providesTags: (result) => {
-        const listTag: CalendarTag = {
-          type: "EventCalendar",
-          id: "LIST",
-        };
-        if (!result) {
-          return [listTag];
-        }
-
-        return [
-          listTag,
-          ...result.map((calendar) => ({
-            type: "EventCalendar" as const,
-            id: buildCalendarTagId(calendar),
-          })),
-        ];
-      },
+      providesTags: (result) =>
+        buildListAndItemTags("EventCalendar", result, buildCalendarTagId),
     }),
     createEventCalendar: builder.mutation<
       EventCalendar,
@@ -539,20 +391,12 @@ export const calendarApi = createApi({
 
         return { data: created };
       },
-      invalidatesTags: (result) => {
-        const listTag: CalendarTag = { type: "EventCalendar", id: "LIST" };
-        if (!result) {
-          return [listTag];
-        }
-
-        return [
-          listTag,
-          {
-            type: "EventCalendar" as const,
-            id: buildCalendarTagId(result),
-          },
-        ];
-      },
+      invalidatesTags: (result) =>
+        buildListAndItemTags(
+          "EventCalendar",
+          result ? [result] : undefined,
+          buildCalendarTagId,
+        ),
     }),
     bulkCreateEventCalendars: builder.mutation<
       EventCalendar[],
@@ -611,20 +455,12 @@ export const calendarApi = createApi({
 
         return { data: updated };
       },
-      invalidatesTags: (result) => {
-        const listTag: CalendarTag = { type: "EventCalendar", id: "LIST" };
-        if (!result) {
-          return [listTag];
-        }
-
-        return [
-          listTag,
-          {
-            type: "EventCalendar" as const,
-            id: buildCalendarTagId(result),
-          },
-        ];
-      },
+      invalidatesTags: (result) =>
+        buildListAndItemTags(
+          "EventCalendar",
+          result ? [result] : undefined,
+          buildCalendarTagId,
+        ),
     }),
     deleteEventCalendar: builder.mutation<
       EventCalendar,
@@ -650,9 +486,11 @@ export const calendarApi = createApi({
         return { data: deleted };
       },
       invalidatesTags: (result, _error, arg) => {
-        const listTag: CalendarTag = { type: "EventCalendar", id: "LIST" };
         const targetId = arg.id ?? buildCalendarTagId(result ?? {});
-        return [listTag, { type: "EventCalendar", id: targetId }];
+        return [
+          { type: "EventCalendar", id: "LIST" },
+          { type: "EventCalendar", id: targetId },
+        ];
       },
     }),
   }),

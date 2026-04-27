@@ -1,30 +1,27 @@
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { AttendanceEditContext } from "@features/attendance/edit/model/AttendanceEditProvider";
 import { useContext, useMemo } from "react";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
 
 import TimeInputBase from "./TimeInputBase";
 
 export default function EndTimeInput({
   highlight = false,
-}: { highlight?: boolean } = {}) {
+  dataTestId,
+}: {
+  highlight?: boolean;
+  dataTestId?: string;
+} = {}) {
   const { getQuickInputEndTimes } = useContext(AppConfigContext);
-  const { workDate, control, setValue, isOnBreak } = useContext(
+  const { workDate, control, setValue, changeRequests, readOnly, isOnBreak } = useContext(
     AttendanceEditContext
   );
 
-  // Derived state: compute quickInputEndTimes from getQuickInputEndTimes
   const quickInputEndTimes = useMemo(() => {
     const times = getQuickInputEndTimes(true);
-    return times.map((entry) => ({
-      time: entry.time,
-      enabled: entry.enabled,
-    }));
+    return times.map((entry) => ({ time: entry.time, enabled: entry.enabled }));
   }, [getQuickInputEndTimes]);
 
-  if (!workDate || !control || !setValue) {
-    return null;
-  }
+  if (!workDate || !control || !setValue) return null;
 
   return (
     <TimeInputBase<"endTime">
@@ -33,8 +30,9 @@ export default function EndTimeInput({
       setValue={setValue}
       workDate={workDate}
       quickInputTimes={quickInputEndTimes}
-      disabled={isOnBreak}
+      disabled={changeRequests.length > 0 || !!readOnly || !!isOnBreak}
       highlight={highlight}
+      dataTestId={dataTestId}
     />
   );
 }

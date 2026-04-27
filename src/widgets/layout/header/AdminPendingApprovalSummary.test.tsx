@@ -1,3 +1,4 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import { StaffRole } from "@entities/staff/model/useStaffs/useStaffs";
 import { listAttendances } from "@shared/api/graphql/documents/queries";
 import {
@@ -8,8 +9,6 @@ import {
 import { WorkflowStatus } from "@shared/api/graphql/types";
 import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-
-import { AuthContext } from "@/context/AuthContext";
 
 import AdminPendingApprovalSummary from "./AdminPendingApprovalSummary";
 

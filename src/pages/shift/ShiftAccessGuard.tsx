@@ -1,3 +1,4 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import { isShiftWorkType } from "@entities/staff/lib/workTypeOptions";
 import { useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import { LinearProgress } from "@mui/material";
@@ -5,8 +6,6 @@ import { PageSection } from "@shared/ui/layout";
 import Page from "@shared/ui/page/Page";
 import type { ReactNode } from "react";
 import { useContext } from "react";
-
-import { AuthContext } from "@/context/AuthContext";
 
 export const SHIFT_ACCESS_DENIED_MESSAGE =
   "シフト機能は勤務形態がシフト勤務のスタッフのみ利用できます。設定確認や変更が必要な場合は管理者へ確認してください。";

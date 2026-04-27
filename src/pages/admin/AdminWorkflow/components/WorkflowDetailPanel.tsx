@@ -1,4 +1,6 @@
 import { useAppDispatchV2 } from "@app/hooks";
+import { AuthContext } from "@app/providers/auth/AuthContext";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import {
   useCreateAttendanceMutation,
   useLazyGetAttendanceByStaffAndDateQuery,
@@ -15,12 +17,9 @@ import { GetWorkflowQuery, WorkflowStatus } from "@shared/api/graphql/types";
 import { designTokenVar } from "@shared/designSystem";
 import { createLogger } from "@shared/lib/logger";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { useAppNotification } from "@shared/lib/useAppNotification";
 import { SectionTitle, SubsectionTitle } from "@shared/ui/typography";
 import { useCallback, useContext, useMemo } from "react";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
-import { AuthContext } from "@/context/AuthContext";
-import { useAppNotification } from "@/hooks/useAppNotification";
 
 import { useWorkflowApprovalActions } from "../hooks/useWorkflowApprovalActions";
 import { useWorkflowDetailData } from "../hooks/useWorkflowDetailData";

@@ -21,11 +21,10 @@ import {
 import { CompanyHolidayCalendarMessage } from "@shared/lib/message/CompanyHolidayCalendarMessage";
 import { MessageStatus } from "@shared/lib/message/Message";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { useDialogCloseGuard } from "@shared/ui/feedback/useDialogCloseGuard";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-
-import { useDialogCloseGuard } from "@/hooks/useDialogCloseGuard";
 
 type Inputs = {
   startDate: string;

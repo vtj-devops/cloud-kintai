@@ -1,4 +1,5 @@
-import { Box, Button, Paper, Stack, Typography } from "@mui/material";
+import { Box, Paper, Stack, Typography } from "@mui/material";
+import { AppButton } from "@shared/ui/button";
 import dayjs from "dayjs";
 import { RefObject } from "react";
 
@@ -111,13 +112,14 @@ export function ShiftDayDetailPanel({
             {`${focusedDay.format("M/D")}(${weekday})`}
           </Typography>
           {selected && (
-            <Button
-              size="small"
+            <AppButton
+              size="sm"
+              variant="ghost"
               disabled={interactionDisabled}
               onClick={() => onClearDateSelection(focusedDateKey)}
             >
               解除
-            </Button>
+            </AppButton>
           )}
         </Box>
         <ShiftStatusButtons

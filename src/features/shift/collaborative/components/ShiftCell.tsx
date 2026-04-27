@@ -1,4 +1,6 @@
+import LockIcon from "@mui/icons-material/Lock";
 import { alpha } from "@mui/material/styles";
+import dayjs from "dayjs";
 import PropTypes, { type Validator } from "prop-types";
 import React, { type CSSProperties, type FC, memo, type MouseEvent } from "react";
 
@@ -6,7 +8,6 @@ import type {
   ShiftCellEditLockOwner,
   ShiftState,
 } from "../types/collaborative.types";
-import { LockBadge } from "./ui/Badges";
 
 export const shiftStateConfig: Record<
   ShiftState,
@@ -61,6 +62,8 @@ export const ShiftCellBase: FC<ShiftCellProps> = ({
   editLockOwner = null,
   editorName,
   editorColor,
+  lastChangedBy,
+  lastChangedAt,
   onClick,
   onRegisterRef,
   onMouseDown,
@@ -74,7 +77,17 @@ export const ShiftCellBase: FC<ShiftCellProps> = ({
   const isSelfEditing = editLockOwner === "self";
   const isOtherEditing = editLockOwner === "other" && isEditing;
   const tooltipTitle = isLocked ? (
-    "確定済み"
+    <div className="text-xs leading-5 text-slate-900">
+      <div className="font-semibold">確定済み</div>
+      {lastChangedBy && (
+        <div className="text-slate-600">確定者: {lastChangedBy}</div>
+      )}
+      {lastChangedAt && (
+        <div className="text-slate-500">
+          {dayjs(lastChangedAt).format("YYYY/MM/DD HH:mm")}
+        </div>
+      )}
+    </div>
   ) : isSelfEditing ? (
     "編集中（ロック取得中）"
   ) : isOtherEditing ? (
@@ -89,7 +102,7 @@ export const ShiftCellBase: FC<ShiftCellProps> = ({
   const selfEditingColor = "#2196f3";
 
   const backgroundColor = isLocked
-    ? "#ffffff"
+    ? "rgba(148, 163, 184, 0.12)"
     : isSelfEditing
       ? alpha(selfEditingColor, 0.14)
       : isOtherEditing
@@ -100,7 +113,7 @@ export const ShiftCellBase: FC<ShiftCellProps> = ({
         ? alpha("#9c27b0", 0.15)
         : "#ffffff";
   const borderColor = isLocked
-    ? "rgba(226,232,240,0.7)"
+    ? "rgba(100, 116, 139, 0.5)"
     : isSelfEditing
       ? selfEditingColor
       : isOtherEditing
@@ -154,15 +167,22 @@ export const ShiftCellBase: FC<ShiftCellProps> = ({
         event.currentTarget.style.borderColor = borderColor;
       }}
     >
+      {isLocked && (
+        <div
+          className="absolute right-0 top-0 z-10 flex h-4 w-4 items-center justify-center rounded-bl-sm bg-slate-500 text-white"
+          aria-hidden="true"
+        >
+          <LockIcon sx={{ fontSize: 10 }} />
+        </div>
+      )}
       <div
         className="flex items-center justify-center gap-0.5"
-        style={{ opacity: isLocked ? 0.5 : 1 }}
+        style={{ opacity: isLocked ? 0.65 : 1 }}
       >
         {editorTab}
         <span className={`text-sm font-semibold ${config.textClassName}`}>
           {config.label}
         </span>
-        {isLocked && <LockBadge />}
         {isPending && <span className="h-1 w-1 rounded-full bg-amber-500" />}
       </div>
       {typeof tooltipTitle === "string" ? (

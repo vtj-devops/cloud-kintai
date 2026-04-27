@@ -1,11 +1,9 @@
 import { Attendance } from "@shared/api/graphql/types";
 import dayjs from "dayjs";
 
-const ZERO_PAD = (value: number) => value.toString().padStart(2, "0");
+export { formatMinutesToHHmm } from "@shared/lib/time/timeConverter";
 
 const clampPositive = (value: number) => (value > 0 ? value : 0);
-
-// 退勤日を跨いでも daily workDate を基準に所定終業時刻を再現する
 const createScheduledDate = (
   attendance: Attendance,
   scheduledHour: number,
@@ -64,14 +62,4 @@ export const calculateTotalOvertimeMinutes = (
       ),
     0
   );
-};
-
-export const formatMinutesToHHmm = (totalMinutes: number) => {
-  if (!totalMinutes || totalMinutes <= 0) {
-    return "0:00";
-  }
-
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  return `${hours}:${ZERO_PAD(minutes)}`;
 };

@@ -6,6 +6,7 @@ import {
 } from "@shared/api/graphql/documents/mutations";
 import { listAppConfigs } from "@shared/api/graphql/documents/queries";
 import { graphqlBaseQuery } from "@shared/api/graphql/graphqlBaseQuery";
+import { buildListAndItemTags } from "@shared/api/graphql/tagBuilder";
 import type {
   AppConfig,
   CreateAppConfigInput,
@@ -15,11 +16,9 @@ import type {
   UpdateAppConfigInput,
   UpdateAppConfigMutation,
 } from "@shared/api/graphql/types";
+import { type UpdatePayload } from "@shared/api/graphql/updatePayload";
 
-export type UpdateAppConfigPayload = {
-  input: UpdateAppConfigInput;
-  condition?: ModelAppConfigConditionInput | null;
-};
+export type UpdateAppConfigPayload = UpdatePayload<UpdateAppConfigInput, ModelAppConfigConditionInput>;
 
 // Exported for testing
 export const nonNullable = <T>(value: T | null | undefined): value is T =>
@@ -54,17 +53,12 @@ export const appConfigApi = createApi({
 
         return { data: items[0] ?? null };
       },
-      providesTags: (result) => {
-        const baseTag = { type: "AppConfig" as const, id: "LIST" };
-        if (!result) {
-          return [baseTag];
-        }
-
-        return [
-          baseTag,
-          { type: "AppConfig" as const, id: result.id ?? "UNKNOWN" },
-        ];
-      },
+      providesTags: (result) =>
+        buildListAndItemTags(
+          "AppConfig",
+          result ? [result] : undefined,
+          (r) => r.id ?? "unknown",
+        ),
     }),
     createAppConfig: builder.mutation<AppConfig, CreateAppConfigInput>({
       async queryFn(input, _queryApi, _extraOptions, baseQuery) {
@@ -151,16 +145,12 @@ export const appConfigApi = createApi({
 
         return { data: updated };
       },
-      invalidatesTags: (result) => {
-        if (!result) {
-          return [{ type: "AppConfig", id: "LIST" }];
-        }
-
-        return [
-          { type: "AppConfig", id: "LIST" },
-          { type: "AppConfig", id: result.id ?? "UNKNOWN" },
-        ];
-      },
+      invalidatesTags: (result) =>
+        buildListAndItemTags(
+          "AppConfig",
+          result ? [result] : undefined,
+          (r) => r.id ?? "unknown",
+        ),
     }),
   }),
 });

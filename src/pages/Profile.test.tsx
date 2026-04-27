@@ -1,3 +1,4 @@
+import { AuthContext, type AuthContextProps } from "@app/providers/auth/AuthContext";
 import fetchStaff from "@entities/staff/model/useStaff/fetchStaff";
 import updateStaff from "@entities/staff/model/useStaff/updateStaff";
 import { StaffRole } from "@entities/staff/model/useStaffs/useStaffs";
@@ -12,7 +13,6 @@ import {
 
 import * as MESSAGE_CODE from "@/errors";
 
-import { AuthContext, type AuthContextProps } from "../context/AuthContext";
 import Profile from "./Profile";
 
 jest.mock("@entities/staff/model/useStaff/fetchStaff");
@@ -23,7 +23,7 @@ jest.mock("aws-amplify/auth", () => ({
 
 let notifyMock: jest.Mock;
 
-jest.mock("@/hooks/useAppNotification", () => ({
+jest.mock("@shared/lib/useAppNotification", () => ({
   useAppNotification: () => ({
     notify: notifyMock,
   }),

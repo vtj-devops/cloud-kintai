@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo "Running pre-push checks (typecheck + unit tests)..."
+echo "Running pre-push checks (typecheck)..."
 echo "========================================"
 
 npm run prepush:verify

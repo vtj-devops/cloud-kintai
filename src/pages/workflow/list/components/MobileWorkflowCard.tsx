@@ -1,5 +1,5 @@
+import WorkflowStatusChip from "@entities/workflow/ui/WorkflowStatusChip";
 import type { WorkflowListItem } from "@features/workflow/list/workflowListModel";
-import StatusChip from "@shared/ui/chips/StatusChip";
 
 import {
   isCancelledWorkflow,
@@ -37,7 +37,7 @@ export default function MobileWorkflowCard({
             {item.category || EMPTY_VALUE}
           </div>
           <div className="workflow-mobile-card__chip">
-            <StatusChip status={resolveWorkflowStatusKey(item)} />
+            <WorkflowStatusChip status={resolveWorkflowStatusKey(item)} />
           </div>
         </div>
 

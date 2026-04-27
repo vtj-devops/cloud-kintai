@@ -1,5 +1,9 @@
 import { useAppDispatchV2 } from "@app/hooks";
+import { AuthContext } from "@app/providers/auth/AuthContext";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import WORK_TYPE_OPTIONS from "@entities/staff/lib/workTypeOptions";
+import addUserToGroup from "@entities/staff/model/cognito/addUserToGroup";
+import createCognitoUser from "@entities/staff/model/cognito/createCognitoUser";
 import fetchStaffs from "@entities/staff/model/useStaffs/fetchStaffs";
 import {
   StaffRole,
@@ -26,18 +30,14 @@ import {
   UpdateStaffInput,
 } from "@shared/api/graphql/types";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { useDialogCloseGuard } from "@shared/ui/feedback/useDialogCloseGuard";
 import { SectionTitle } from "@shared/ui/typography";
 import dayjs from "dayjs";
 import { useContext, useMemo, useState } from "react";
 import { Control, Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { AppConfigContext } from "@/context/AppConfigContext";
-import { AuthContext } from "@/context/AuthContext";
 import * as MESSAGE_CODE from "@/errors";
-import addUserToGroup from "@/hooks/common/addUserToGroup";
-import createCognitoUser from "@/hooks/common/createCognitoUser";
-import { useDialogCloseGuard } from "@/hooks/useDialogCloseGuard";
 
 const createStaffSchema = z.object({
   familyName: z.string().min(1, "姓を入力してください"),

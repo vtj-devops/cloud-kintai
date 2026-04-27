@@ -1,10 +1,9 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import { useAuthenticator } from "@aws-amplify/ui-react";
+import useCognitoUser from "@entities/staff/model/useCognitoUser";
 import { StaffRole } from "@entities/staff/model/useStaffs/useStaffs";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
-
-import { AuthContext } from "@/context/AuthContext";
-import useCognitoUser from "@/hooks/useCognitoUser";
 
 type SessionProviderProps = {
   children: ReactNode;

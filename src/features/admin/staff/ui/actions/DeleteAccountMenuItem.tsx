@@ -1,3 +1,4 @@
+import deleteCognitoUser from "@entities/staff/model/cognito/deleteCognitoUser";
 import { StaffType } from "@entities/staff/model/useStaffs/useStaffs";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { CircularProgress, ListItemIcon, ListItemText, MenuItem, } from "@mui/material";
@@ -7,7 +8,6 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 
 import * as MESSAGE_CODE from "@/errors";
-import deleteCognitoUser from "@/hooks/common/deleteCognitoUser";
 
 export function DeleteAccountMenuItem({ staff, deleteStaff, }: {
     staff: StaffType;

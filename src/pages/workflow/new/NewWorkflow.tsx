@@ -1,3 +1,4 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import useAppConfig from "@entities/app-config/model/useAppConfig";
 import {
   StaffType,
@@ -27,6 +28,8 @@ import {
 } from "@shared/api/graphql/types";
 import { createLogger } from "@shared/lib/logger";
 import { parseTimeToISO } from "@shared/lib/time";
+import { useAppNotification } from "@shared/lib/useAppNotification";
+import { usePageLeaveGuard } from "@shared/ui/feedback/usePageLeaveGuard";
 import {
   DashboardInnerSurface,
   PageContent,
@@ -36,10 +39,6 @@ import Page from "@shared/ui/page/Page";
 import { SectionTitle } from "@shared/ui/typography";
 import React, { useContext, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-import { AuthContext } from "@/context/AuthContext";
-import { useAppNotification } from "@/hooks/useAppNotification";
-import { usePageLeaveGuard } from "@/hooks/usePageLeaveGuard";
 
 import styles from "./NewWorkflow.module.scss";
 

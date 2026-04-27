@@ -1,3 +1,4 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import { useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import { fetchWorkflowById } from "@entities/workflow/model/loader";
 import useWorkflows from "@entities/workflow/model/useWorkflows";
@@ -13,6 +14,8 @@ import { extractExistingWorkflowComments } from "@features/workflow/comment-thre
 import { useWorkflowEditLoaderState } from "@features/workflow/hooks/useWorkflowEditLoaderState";
 import { sendWorkflowSubmissionNotification } from "@features/workflow/notifications/sendWorkflowSubmissionNotification";
 import { createLogger } from "@shared/lib/logger";
+import { useAppNotification } from "@shared/lib/useAppNotification";
+import { usePageLeaveGuard } from "@shared/ui/feedback/usePageLeaveGuard";
 import {
   DashboardInnerSurface,
   PageContent,
@@ -23,9 +26,6 @@ import { SectionTitle } from "@shared/ui/typography";
 import { type ChangeEvent, type FormEvent, useContext, useState } from "react";
 import { useLoaderData, useNavigate, useParams } from "react-router-dom";
 
-import { AuthContext } from "@/context/AuthContext";
-import { useAppNotification } from "@/hooks/useAppNotification";
-import { usePageLeaveGuard } from "@/hooks/usePageLeaveGuard";
 import type { WorkflowEditLoaderData } from "@/router/loaders/workflowEditLoader";
 
 import styles from "./WorkflowEdit.module.scss";

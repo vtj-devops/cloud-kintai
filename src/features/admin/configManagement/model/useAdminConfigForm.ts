@@ -1,4 +1,5 @@
 import { useAppDispatchV2 } from "@app/hooks";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import type { ShiftDisplayMode } from "@entities/app-config/model/useAppConfig";
 import { appendItem, removeItemAt, toggleEnabledAt, updateItem, } from "@features/admin/configManagement/lib/arrayHelpers";
 import { DEFAULT_AM_HOLIDAY_END, DEFAULT_AM_HOLIDAY_START, DEFAULT_PM_HOLIDAY_END, DEFAULT_PM_HOLIDAY_START, TIME_FORMAT, } from "@features/admin/configManagement/lib/constants";
@@ -9,7 +10,6 @@ import dayjs, { Dayjs } from "dayjs";
 import type { ChangeEvent } from "react";
 import { useContext, useEffect, useMemo, useState } from "react";
 
-import { AppConfigContext } from "@/context/AppConfigContext";
 import { E14001, S14001, S14002 } from "@/errors";
 
 export type QuickInputEntry = {

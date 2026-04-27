@@ -363,10 +363,10 @@ export default function useAttendanceDaily({
 
     (async () => {
       try {
-        // 前月をロード
-        await loadAttendanceDataByMonth(previousMonth);
-        // 当月をロード
-        await loadAttendanceDataByMonth(currentMonth);
+        await Promise.all([
+          loadAttendanceDataByMonth(previousMonth),
+          loadAttendanceDataByMonth(currentMonth),
+        ]);
       } catch (e) {
         console.error("Failed to load initial attendance data", e);
       }

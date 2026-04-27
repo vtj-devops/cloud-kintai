@@ -9,6 +9,8 @@ import {
   listWorkflows,
 } from "@shared/api/graphql/documents/queries";
 import { graphqlBaseQuery } from "@shared/api/graphql/graphqlBaseQuery";
+import { executePaginatedQuery } from "@shared/api/graphql/paginatedQuery";
+import { buildListAndItemTags } from "@shared/api/graphql/tagBuilder";
 import type {
   CreateWorkflowInput,
   CreateWorkflowMutation,
@@ -21,19 +23,9 @@ import type {
   UpdateWorkflowMutation,
   Workflow,
 } from "@shared/api/graphql/types";
+import { type UpdatePayload } from "@shared/api/graphql/updatePayload";
 
-export type UpdateWorkflowPayload = {
-  input: UpdateWorkflowInput;
-  condition?: ModelWorkflowConditionInput | null;
-};
-
-type WorkflowTag = {
-  type: "Workflow";
-  id: string;
-};
-
-const nonNullable = <T>(value: T | null | undefined): value is T =>
-  value !== null && value !== undefined;
+export type UpdateWorkflowPayload = UpdatePayload<UpdateWorkflowInput, ModelWorkflowConditionInput>;
 
 const buildWorkflowTagId = (workflow: { id?: string | null }) =>
   workflow.id ?? "unknown";
@@ -63,46 +55,15 @@ export const workflowApi = createApi({
     }),
     getWorkflows: builder.query<Workflow[], void>({
       async queryFn(_arg, _api, _extraOptions, baseQuery) {
-        const workflows: Workflow[] = [];
-        let nextToken: string | null = null;
-
-        do {
-          const result = await baseQuery({
-            document: listWorkflows,
-            variables: { nextToken },
-          });
-
-          if (result.error) {
-            return { error: result.error };
-          }
-
-          const data = result.data as ListWorkflowsQuery | null;
-          const connection = data?.listWorkflows;
-
-          if (!connection) {
-            return { error: { message: "Failed to fetch workflows" } };
-          }
-
-          workflows.push(...(connection.items?.filter(nonNullable) ?? []));
-          nextToken = connection.nextToken ?? null;
-        } while (nextToken);
-
-        return { data: workflows };
+        return executePaginatedQuery<Workflow>({
+          baseQuery,
+          document: listWorkflows,
+          connectionExtractor: (data) => (data as ListWorkflowsQuery | null)?.listWorkflows,
+          errorMessage: "Failed to fetch workflows",
+        });
       },
-      providesTags: (result) => {
-        const listTag: WorkflowTag = { type: "Workflow", id: "LIST" };
-        if (!result) {
-          return [listTag];
-        }
-
-        return [
-          listTag,
-          ...result.map((workflow) => ({
-            type: "Workflow" as const,
-            id: buildWorkflowTagId(workflow),
-          })),
-        ];
-      },
+      providesTags: (result) =>
+        buildListAndItemTags("Workflow", result, buildWorkflowTagId),
     }),
     createWorkflow: builder.mutation<Workflow, CreateWorkflowInput>({
       async queryFn(input, _api, _extraOptions, baseQuery) {
@@ -124,17 +85,8 @@ export const workflowApi = createApi({
 
         return { data: created };
       },
-      invalidatesTags: (result) => {
-        const listTag: WorkflowTag = { type: "Workflow", id: "LIST" };
-        if (!result) {
-          return [listTag];
-        }
-
-        return [
-          listTag,
-          { type: "Workflow" as const, id: buildWorkflowTagId(result) },
-        ];
-      },
+      invalidatesTags: (result) =>
+        buildListAndItemTags("Workflow", result ? [result] : undefined, buildWorkflowTagId),
     }),
     updateWorkflow: builder.mutation<Workflow, UpdateWorkflowPayload>({
       async queryFn({ input, condition }, _api, _extraOptions, baseQuery) {
@@ -209,9 +161,11 @@ export const workflowApi = createApi({
         return { data: deleted };
       },
       invalidatesTags: (result, _error, arg) => {
-        const listTag: WorkflowTag = { type: "Workflow", id: "LIST" };
         const targetId = arg.id ?? buildWorkflowTagId(result ?? {});
-        return [listTag, { type: "Workflow", id: targetId }];
+        return [
+          { type: "Workflow", id: "LIST" },
+          { type: "Workflow", id: targetId },
+        ];
       },
     }),
   }),

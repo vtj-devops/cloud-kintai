@@ -1,3 +1,5 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { type AttendanceUpsertAction, useLazyGetAttendanceByStaffAndDateQuery, useUpdateAttendanceMutation, useUpsertAttendanceByStaffAndDateMutation, } from "@entities/attendance/api/attendanceApi";
 import { clockInAction, clockOutAction, } from "@entities/attendance/lib/actions/attendanceActions";
 import { resolveBusinessWorkDate, resolveCurrentBusinessWorkDate, } from "@entities/attendance/lib/businessDate";
@@ -9,9 +11,6 @@ import { pushNotification } from "@shared/lib/store/notificationSlice";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useSearchParams } from "react-router-dom";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
-import { AuthContext } from "@/context/AuthContext";
 
 import { validateOfficeQrToken } from "../lib/validateToken";
 
@@ -25,7 +24,7 @@ export function useOfficeQrRegister() {
     const [isOfficeModeEnabled, setIsOfficeModeEnabled] = useState(false);
     const [isValidToken, setIsValidToken] = useState(false);
     const [attendance, setAttendance] = useState<Attendance | null>(null);
-    const [triggerGetAttendance] = useLazyGetAttendanceByStaffAndDateQuery();
+    const [triggerGetAttendance, { error: fetchAttendanceError }] = useLazyGetAttendanceByStaffAndDateQuery();
     const [upsertAttendanceMutation] = useUpsertAttendanceByStaffAndDateMutation();
     const [updateAttendanceMutation] = useUpdateAttendanceMutation();
     const resolveUpsertAction = useCallback((input: CreateAttendanceInput): AttendanceUpsertAction => {
@@ -117,6 +116,7 @@ export function useOfficeQrRegister() {
         })
             .catch((error) => {
             logger.debug("Failed to fetch attendance for office QR", error);
+            dispatch(pushNotification({ tone: "error", message: "勤怠データの取得に失敗しました。" }));
         });
         return () => {
             isMounted = false;
@@ -225,5 +225,6 @@ export function useOfficeQrRegister() {
         mode: qrMode,
         handleClockIn,
         handleClockOut,
+        fetchAttendanceError,
     } as const;
 }

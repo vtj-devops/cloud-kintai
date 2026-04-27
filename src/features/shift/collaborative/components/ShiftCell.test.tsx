@@ -71,8 +71,8 @@ describe("ShiftCell", () => {
     const cell = screen.getByRole("cell");
 
     expect(cell).toHaveStyle({
-      backgroundColor: "#ffffff",
-      border: "2px solid rgba(226,232,240,0.7)",
+      backgroundColor: "rgba(148, 163, 184, 0.12)",
+      border: "2px solid rgba(100, 116, 139, 0.5)",
     });
     expect(screen.getByText("確定済み")).toBeInTheDocument();
     expect(screen.queryByText("編集中（ロック取得中）")).not.toBeInTheDocument();

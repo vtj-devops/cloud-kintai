@@ -1,5 +1,6 @@
 import "./AttendanceList.scss";
 
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import { useListAttendancesByDateRangeQuery } from "@entities/attendance/api/attendanceApi";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import useCloseDates from "@entities/attendance/model/useCloseDates";
@@ -25,7 +26,6 @@ import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { AuthContext } from "@/context/AuthContext";
 import * as MESSAGE_CODE from "@/errors";
 
 import AttendanceListCard from "./AttendanceListCard";

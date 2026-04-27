@@ -12,6 +12,7 @@ export type AppIconButtonProps = Omit<
   size?: IconButtonSize;
   active?: boolean;
   loading?: boolean;
+  tooltip?: ReactNode;
   className?: string;
   children: ReactNode;
   "aria-label": string;
@@ -30,13 +31,14 @@ export default function AppIconButton({
   active = false,
   loading = false,
   disabled = false,
+  tooltip,
   className,
   children,
   ...rest
 }: AppIconButtonProps) {
   const resolvedDisabled = disabled || loading;
 
-  return (
+  const button = (
     <button
       {...rest}
       type={rest.type ?? "button"}
@@ -55,5 +57,19 @@ export default function AppIconButton({
         </span>
       )}
     </button>
+  );
+
+  if (!tooltip) return button;
+
+  return (
+    <span className="relative inline-flex group/app-icon-tooltip">
+      {button}
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-slate-900 px-2 py-1 text-xs font-medium text-white opacity-0 shadow-md transition-opacity duration-150 group-hover/app-icon-tooltip:opacity-100 group-focus-within/app-icon-tooltip:opacity-100"
+      >
+        {tooltip}
+      </span>
+    </span>
   );
 }

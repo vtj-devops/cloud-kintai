@@ -1,7 +1,16 @@
 import { AttendanceStatus } from "@entities/attendance/lib/AttendanceState";
+import type { Attendance } from "@shared/api/graphql/types";
 import dayjs from "dayjs";
 
-import { getStatus } from "../attendanceStatusUtils";
+import {
+  buildWeeks,
+  formatTimeRange,
+  getHolidayNames,
+  getNetWorkingHours,
+  getStatus,
+  getTotalRestHours,
+  isHolidayLike,
+} from "../attendanceStatusUtils";
 
 describe("attendanceStatusUtils.getStatus", () => {
   const buildStaff = (workType: "shift" | "weekday") => ({
@@ -50,5 +59,198 @@ describe("attendanceStatusUtils.getStatus", () => {
     );
 
     expect(status).toBe(AttendanceStatus.None);
+  });
+});
+
+describe("buildWeeks", () => {
+  it("returns arrays of 7-day weeks covering the full month", () => {
+    const weeks = buildWeeks(dayjs("2024-01-01"));
+    weeks.forEach((week) => expect(week).toHaveLength(7));
+    const allDays = weeks.flat();
+    expect(allDays.some((d) => d.format("YYYY-MM-DD") === "2024-01-01")).toBe(true);
+    expect(allDays.some((d) => d.format("YYYY-MM-DD") === "2024-01-31")).toBe(true);
+  });
+});
+
+describe("getTotalRestHours", () => {
+  const makeAttendance = (overrides: Partial<Attendance>): Attendance => ({
+    __typename: "Attendance",
+    id: "a1",
+    staffId: "s1",
+    workDate: "2024-01-01",
+    startTime: "2024-01-01T09:00:00Z",
+    endTime: "2024-01-01T18:00:00Z",
+    rests: null,
+    createdAt: "",
+    updatedAt: "",
+    ...overrides,
+  });
+
+  it("returns 0 when attendance is undefined", () => {
+    expect(getTotalRestHours(undefined)).toBe(0);
+  });
+
+  it("returns 0 when rests is null", () => {
+    expect(getTotalRestHours(makeAttendance({ rests: null }))).toBe(0);
+  });
+
+  it("returns 0 when endTime is missing", () => {
+    expect(
+      getTotalRestHours(
+        makeAttendance({
+          endTime: null,
+          rests: [{ __typename: "Rest", startTime: "2024-01-01T12:00:00Z", endTime: "2024-01-01T13:00:00Z" }],
+        })
+      )
+    ).toBe(0);
+  });
+
+  it("returns correct total rest hours", () => {
+    const attendance = makeAttendance({
+      rests: [
+        { __typename: "Rest", startTime: "2024-01-01T12:00:00Z", endTime: "2024-01-01T13:00:00Z" },
+      ],
+    });
+    expect(getTotalRestHours(attendance)).toBeCloseTo(1);
+  });
+});
+
+describe("getNetWorkingHours", () => {
+  const makeAttendance = (overrides: Partial<Attendance>): Attendance => ({
+    __typename: "Attendance",
+    id: "a1",
+    staffId: "s1",
+    workDate: "2024-01-01",
+    startTime: null,
+    endTime: null,
+    rests: null,
+    createdAt: "",
+    updatedAt: "",
+    ...overrides,
+  });
+
+  it("returns 0 when attendance is undefined", () => {
+    expect(getNetWorkingHours(undefined)).toBe(0);
+  });
+
+  it("returns 0 when startTime is missing", () => {
+    expect(getNetWorkingHours(makeAttendance({ endTime: "2024-01-01T18:00:00Z" }))).toBe(0);
+  });
+
+  it("returns correct net hours without rest", () => {
+    const attendance = makeAttendance({
+      startTime: "2024-01-01T09:00:00Z",
+      endTime: "2024-01-01T17:00:00Z",
+    });
+    expect(getNetWorkingHours(attendance)).toBeCloseTo(8);
+  });
+
+  it("subtracts rest time from work time", () => {
+    const attendance = makeAttendance({
+      startTime: "2024-01-01T09:00:00Z",
+      endTime: "2024-01-01T18:00:00Z",
+      rests: [
+        { __typename: "Rest", startTime: "2024-01-01T12:00:00Z", endTime: "2024-01-01T13:00:00Z" },
+      ],
+    });
+    expect(getNetWorkingHours(attendance)).toBeCloseTo(8);
+  });
+});
+
+describe("formatTimeRange", () => {
+  const makeAttendance = (overrides: Partial<Attendance>): Attendance => ({
+    __typename: "Attendance",
+    id: "a1",
+    staffId: "s1",
+    workDate: "2024-01-01",
+    startTime: null,
+    endTime: null,
+    rests: null,
+    createdAt: "",
+    updatedAt: "",
+    ...overrides,
+  });
+
+  it("returns undefined when attendance is undefined", () => {
+    expect(formatTimeRange(undefined)).toBeUndefined();
+  });
+
+  it("returns undefined when both startTime and endTime are null", () => {
+    expect(formatTimeRange(makeAttendance({}))).toBeUndefined();
+  });
+
+  it("formats time range as HH:mm - HH:mm", () => {
+    const attendance = makeAttendance({
+      startTime: "2024-01-01T00:00:00Z",
+      endTime: "2024-01-01T09:00:00Z",
+    });
+    const result = formatTimeRange(attendance);
+    expect(result).toMatch(/\d{2}:\d{2} - \d{2}:\d{2}/);
+  });
+});
+
+describe("getHolidayNames", () => {
+  const holidayCalendars = [
+    {
+      __typename: "HolidayCalendar" as const,
+      id: "h1",
+      holidayDate: "2024-01-01",
+      name: "元日",
+      createdAt: "",
+      updatedAt: "",
+    },
+  ];
+
+  it("returns holiday name for a holiday date", () => {
+    const result = getHolidayNames(dayjs("2024-01-01"), holidayCalendars, []);
+    expect(result.holidayName).toBe("元日");
+  });
+
+  it("returns undefined names for non-holiday date", () => {
+    const result = getHolidayNames(dayjs("2024-01-02"), holidayCalendars, []);
+    expect(result.holidayName).toBeUndefined();
+    expect(result.companyHolidayName).toBeUndefined();
+  });
+});
+
+describe("isHolidayLike", () => {
+  const holidayCalendars = [
+    {
+      __typename: "HolidayCalendar" as const,
+      id: "h1",
+      holidayDate: "2024-01-01",
+      name: "元日",
+      createdAt: "",
+      updatedAt: "",
+    },
+  ];
+
+  const makeStaff = (workType: "shift" | "weekday") => ({
+    __typename: "Staff" as const,
+    id: "s1",
+    cognitoUserId: "c1",
+    mailAddress: "a@b.com",
+    role: "staff",
+    enabled: true,
+    status: "active",
+    workType,
+    createdAt: "",
+    updatedAt: "",
+  });
+
+  it("returns true for weekday worker on Sunday", () => {
+    const sunday = dayjs("2024-01-07"); // Sunday
+    expect(isHolidayLike(sunday, makeStaff("weekday"), [], [])).toBe(true);
+  });
+
+  it("returns false for shift worker on Sunday (no company holiday)", () => {
+    const sunday = dayjs("2024-01-07");
+    expect(isHolidayLike(sunday, makeStaff("shift"), [], [])).toBe(false);
+  });
+
+  it("returns true for both worker types on a national holiday", () => {
+    const holiday = dayjs("2024-01-01");
+    expect(isHolidayLike(holiday, makeStaff("shift"), holidayCalendars, [])).toBe(true);
+    expect(isHolidayLike(holiday, makeStaff("weekday"), holidayCalendars, [])).toBe(true);
   });
 });

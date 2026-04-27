@@ -1,4 +1,4 @@
-import StatusChip from "@shared/ui/chips/StatusChip";
+import WorkflowStatusChip from "@entities/workflow/ui/WorkflowStatusChip";
 import { SubsectionTitle } from "@shared/ui/typography";
 
 import type { WorkflowApprovalStepView } from "../types";
@@ -55,7 +55,7 @@ export default function WorkflowApprovalTimeline({
               </div>
               {!isApplicant && (
                 <div className="sm:ml-auto">
-                  <StatusChip status={step.state} />
+                  <WorkflowStatusChip status={step.state} />
                 </div>
               )}
             </div>

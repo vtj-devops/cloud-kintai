@@ -4,20 +4,6 @@ import userEvent from "@testing-library/user-event";
 import { UndoRedoToolbar } from "./UndoRedoToolbar";
 
 describe("UndoRedoToolbar", () => {
-  it("undo/redoの活性状態を維持する", () => {
-    render(
-      <UndoRedoToolbar
-        canUndo={false}
-        canRedo
-        onUndo={jest.fn()}
-        onRedo={jest.fn()}
-      />,
-    );
-
-    expect(screen.getByRole("button", { name: "undo" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "redo" })).toBeEnabled();
-  });
-
   it("syncとhelpの操作を呼び出す", async () => {
     const user = userEvent.setup();
     const onSync = jest.fn();
@@ -25,10 +11,6 @@ describe("UndoRedoToolbar", () => {
 
     render(
       <UndoRedoToolbar
-        canUndo
-        canRedo
-        onUndo={jest.fn()}
-        onRedo={jest.fn()}
         onPrint={jest.fn()}
         onSync={onSync}
         onShowHelp={onShowHelp}

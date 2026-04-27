@@ -44,4 +44,20 @@ describe("AppIconButton", () => {
     expect(button).toBeDisabled();
     expect(button.querySelector(".app-icon-button__spinner")).toBeInTheDocument();
   });
+
+  it("tooltipが指定された場合、role=tooltipの要素を含む", () => {
+    render(
+      <AppIconButton aria-label="削除" tooltip="削除する">
+        D
+      </AppIconButton>,
+    );
+
+    expect(screen.getByRole("tooltip")).toHaveTextContent("削除する");
+  });
+
+  it("tooltipが未指定の場合、role=tooltipの要素を含まない", () => {
+    render(<AppIconButton aria-label="削除">D</AppIconButton>);
+
+    expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
+  });
 });

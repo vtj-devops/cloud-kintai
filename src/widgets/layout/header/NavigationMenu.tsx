@@ -1,3 +1,5 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { isShiftWorkType } from "@entities/staff/lib/workTypeOptions";
 import {
   StaffRole,
@@ -18,8 +20,6 @@ import MobileMenuView, { MobileMenuItem } from "@shared/ui/header/MobileMenu";
 import { useCallback, useContext, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { AppConfigContext } from "@/context/AppConfigContext";
-import { AuthContext } from "@/context/AuthContext";
 import { preloadRoute } from "@/router/routePreloaders";
 import { useMobileDrawer } from "@/widgets/layout/header/useMobileDrawer";
 

@@ -1,17 +1,18 @@
 import { useAppDispatchV2 } from "@app/hooks";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Stack, TextField, } from "@mui/material";
+import { Stack, TextField, } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { CompanyHolidayCalendar, CreateCompanyHolidayCalendarInput, } from "@shared/api/graphql/types";
 import { CompanyHolidayCalendarMessage } from "@shared/lib/message/CompanyHolidayCalendarMessage";
 import { MessageStatus } from "@shared/lib/message/Message";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { AppButton, AppIconButton } from "@shared/ui/button";
+import AppDialog from "@shared/ui/feedback/AppDialog";
+import { useDialogCloseGuard } from "@shared/ui/feedback/useDialogCloseGuard";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-
-import { useDialogCloseGuard } from "@/hooks/useDialogCloseGuard";
 
 type Inputs = {
     holidayDate: string;
@@ -61,33 +62,22 @@ export default function CompanyHolidayCalendarCopy({ companyHolidayCalendar, cre
         })));
     };
     return (<>
-      <IconButton onClick={() => setOpen(true)}>
+      <AppIconButton onClick={() => setOpen(true)} aria-label="コピー">
         <ContentCopyIcon fontSize="small"/>
-      </IconButton>
+      </AppIconButton>
       {dialog}
-      <Dialog open={open} onClose={requestClose}>
-        <DialogTitle>会社休日をコピーして新規作成</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            <DialogContentText>
-              コピー元の内容を編集してから登録してください。
-            </DialogContentText>
-            <Controller name="holidayDate" control={control} rules={{ required: true }} render={({ field }) => (<DatePicker label="日付" format={AttendanceDate.DisplayFormat} value={field.value ? dayjs(field.value) : null} onChange={(date) => field.onChange(date?.toISOString() ?? "")} slotProps={{
-                textField: {
-                    required: true,
-                },
-            }}/>)}/>
-            <TextField label="休日名" required {...register("name", { required: true })}/>
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={requestClose}>
-            キャンセル
-          </Button>
-          <Button disabled={!isValid || !isDirty || isSubmitting} onClick={handleSubmit(onSubmit)}>
-            登録
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <AppDialog open={open} onClose={requestClose} title="会社休日をコピーして新規作成" description="コピー元の内容を編集してから登録してください。" actions={<>
+          <AppButton variant="outline" tone="neutral" onClick={requestClose}>キャンセル</AppButton>
+          <AppButton disabled={!isValid || !isDirty || isSubmitting} onClick={handleSubmit(onSubmit)}>登録</AppButton>
+        </>}>
+        <Stack spacing={2} sx={{ mt: 1 }}>
+          <Controller name="holidayDate" control={control} rules={{ required: true }} render={({ field }) => (<DatePicker label="日付" format={AttendanceDate.DisplayFormat} value={field.value ? dayjs(field.value) : null} onChange={(date) => field.onChange(date?.toISOString() ?? "")} slotProps={{
+              textField: {
+                  required: true,
+              },
+          }}/>)}/>
+          <TextField label="休日名" required {...register("name", { required: true })}/>
+        </Stack>
+      </AppDialog>
     </>);
 }

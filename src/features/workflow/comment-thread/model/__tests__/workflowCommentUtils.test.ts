@@ -103,6 +103,15 @@ describe("commentsToWorkflowMessages", () => {
     ]);
   });
 
+  it("uses default formatTimestamp when not provided", () => {
+    const comments = [commentFixture({ id: "c-1", staffId: "staff-1", text: "テスト" })];
+    const result = commentsToWorkflowMessages(comments, staffs, {
+      generateId: () => "gen-id",
+    });
+    expect(result).toHaveLength(1);
+    expect(typeof result[0].time).toBe("string");
+  });
+
   it("ignores null entries", () => {
     const result = commentsToWorkflowMessages(
       [commentFixture(), null],

@@ -1,11 +1,10 @@
+import { AuthContext } from "@app/providers/auth/AuthContext";
 import {
   SettingsAlert,
   SettingsSelect,
 } from "@features/admin/layout/ui/SettingsPrimitives";
 import { SectionTitle, SubsectionTitle } from "@shared/ui/typography";
 import { useContext, useMemo, useState } from "react";
-
-import { AuthContext } from "@/context/AuthContext";
 
 import { downloadJsonFile } from "../model/downloadJsonFile";
 import {

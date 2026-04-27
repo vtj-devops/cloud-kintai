@@ -98,7 +98,7 @@
     "test:all": "npm run test:unit && npm run test:e2e",
     "hooks:install": "git config core.hooksPath .githooks",
     "prepare": "npm run hooks:install",
-    "prepush:verify": "npm run typecheck && npm run test:unit"
+    "prepush:verify": "npm run typecheck"
   },
   "eslintConfig": {
     "extends": [

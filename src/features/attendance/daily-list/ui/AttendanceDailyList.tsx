@@ -1,21 +1,22 @@
 import "./styles.scss";
 
+import { AuthContext } from "@app/providers/auth/AuthContext";
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { useDeleteAttendanceMutation, useLazyGetAttendanceByIdQuery, } from "@entities/attendance/api/attendanceApi";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import useAttendanceDaily, { AttendanceDaily, DuplicateAttendanceDaily, } from "@entities/attendance/model/useAttendanceDaily";
 import { useCalendars } from "@entities/calendar/model/useCalendars";
 import { useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import SearchIcon from "@mui/icons-material/Search";
-import { Alert, AlertTitle, Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography, } from "@mui/material";
+import { Alert, AlertTitle, Box, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography, } from "@mui/material";
 import { Attendance } from "@shared/api/graphql/types";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { AppButton, AppIconButton } from "@shared/ui/button";
 import dayjs from "dayjs";
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 
-import { AppConfigContext } from "@/context/AppConfigContext";
-import { AuthContext } from "@/context/AuthContext";
 import * as MESSAGE_CODE from "@/errors";
 
 import { formatMinutesToHHmm, } from "../lib/overtimeUtils";
@@ -24,6 +25,106 @@ import { ActionsTableCell } from "./ActionsTableCell";
 import { EndTimeTableCell } from "./EndTimeTableCell";
 import MoveDateItem from "./MoveDateItem";
 import { StartTimeTableCell } from "./StartTimeTableCell";
+
+// Summary message cell styles
+const remarksTruncatedBoxSx = {
+    display: "inline-block",
+    verticalAlign: "middle",
+    ml: 0.5,
+} as const;
+const remarksBoxSx = { ml: 0.5 } as const;
+
+// Inline diff highlight styles
+const diffWrapperSx = { whiteSpace: "pre-wrap" } as const;
+const diffHighlightSx = {
+    backgroundColor: "rgba(255, 87, 34, 0.22)",
+    borderRadius: 0.5,
+    px: 0.5,
+} as const;
+
+// Duplicate badge chip
+const duplicateBadgeChipSx = { fontWeight: 600 } as const;
+
+// Table layout styles
+const tableContainerSx = { width: "100%", overflowX: "auto" } as const;
+const summaryCellSx = {
+    maxWidth: 360,
+    whiteSpace: "nowrap",
+    textOverflow: "ellipsis",
+    overflow: "hidden",
+} as const;
+const overtimeCellSx = { textAlign: "right" as const, whiteSpace: "nowrap" } as const;
+const recordIdsCellSx = {
+    display: { xs: "none", md: "table-cell" },
+    whiteSpace: "nowrap",
+} as const;
+const col90Sx = { width: 90 } as const;
+const noWrapCellSx = { whiteSpace: "nowrap" } as const;
+
+// Duplicate error section
+const duplicateErrorBoxSx = {
+    pb: 2,
+    border: "1px solid",
+    borderColor: "error.main",
+    borderRadius: 2,
+    p: 2,
+    backgroundColor: "rgba(255, 205, 210, 0.16)",
+} as const;
+const sectionTitleSx = { mb: 1 } as const;
+const alertMb2Sx = { mb: 2 } as const;
+const colStaffSx = { width: "30%" } as const;
+const colDateSx = { width: "25%" } as const;
+const colCountSx = { width: "15%" } as const;
+const colActionSx = { width: "12%" } as const;
+
+// Duplicate resolution dialog
+const dialogHeaderSx = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    mb: 1.5,
+    gap: 1,
+} as const;
+const colItemLabelSx = { width: "16%" } as const;
+
+// List header and search bar
+const listHeaderBoxSx = {
+    mb: 1,
+    display: "flex",
+    alignItems: { xs: "flex-start", sm: "center" },
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    gap: 1,
+} as const;
+const searchBoxSx = { display: "flex", alignItems: "center", gap: 1 } as const;
+const searchTextFieldSx = {
+    maxWidth: 360,
+    "& .MuiOutlinedInput-root": {
+        borderRadius: "18px",
+        backgroundColor: "#ffffff",
+        "& fieldset": {
+            borderColor: "rgba(148,163,184,0.35)",
+        },
+        "&:hover fieldset": {
+            borderColor: "rgba(100,116,139,0.45)",
+        },
+        "&.Mui-focused fieldset": {
+            borderColor: "#19b985",
+            borderWidth: "1px",
+        },
+    },
+} as const;
+
+// Pending requests section
+const pendingOuterBoxSx = { pb: 2, pt: 2 } as const;
+const pendingWarningBoxSx = {
+    border: "1px solid",
+    borderColor: "warning.main",
+    borderRadius: 2,
+    p: 2,
+    backgroundColor: "rgba(255,243,205,0.12)",
+} as const;
+const alertTitleBoldSx = { fontWeight: "bold" } as const;
 
 export default function AttendanceDailyList() {
     const { targetWorkDate } = useParams();
@@ -113,14 +214,10 @@ export default function AttendanceDailyList() {
             {absentFlag && <Chip size="small" label="欠勤" color="error"/>}
 
             {needTruncate ? (<Tooltip title={full} arrow placement="top">
-                <Box component="span" sx={{
-                    display: "inline-block",
-                    verticalAlign: "middle",
-                    ml: 0.5,
-                }}>
+                <Box component="span" sx={remarksTruncatedBoxSx}>
                   {visible}
                 </Box>
-              </Tooltip>) : (<Box component="span" sx={{ ml: 0.5 }}>
+              </Tooltip>) : (<Box component="span" sx={remarksBoxSx}>
                 {visible}
               </Box>)}
           </Stack>
@@ -157,24 +254,6 @@ export default function AttendanceDailyList() {
         duplicateAttendances,
         loading,
     });
-    const tableContainerSx = useMemo(() => ({
-        width: "100%",
-        overflowX: "auto",
-    }), []);
-    const summaryCellSx = useMemo(() => ({
-        maxWidth: 360,
-        whiteSpace: "nowrap",
-        textOverflow: "ellipsis",
-        overflow: "hidden",
-    }), []);
-    const overtimeCellSx = useMemo(() => ({
-        textAlign: "right" as const,
-        whiteSpace: "nowrap",
-    }), []);
-    const recordIdsCellSx = useMemo(() => ({
-        display: { xs: "none", md: "table-cell" },
-        whiteSpace: "nowrap",
-    }), []);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [confirmTargetStaffId, setConfirmTargetStaffId] = useState<string | null>(null);
     const [confirmTargetName, setConfirmTargetName] = useState<string>("");
@@ -251,6 +330,10 @@ export default function AttendanceDailyList() {
         staffNameMap,
         triggerGetAttendanceById,
     ]);
+    const handleOpenConfirmClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+        const staffId = e.currentTarget.dataset.staffId;
+        if (staffId) handleOpenConfirm(staffId);
+    }, [handleOpenConfirm]);
     const handleCloseConfirm = useCallback(() => {
         setConfirmOpen(false);
         setConfirmRecords([]);
@@ -273,6 +356,11 @@ export default function AttendanceDailyList() {
             return;
         setSelectedRecordIndex((prev) => (prev === index ? null : index));
     }, [selectionMode]);
+    const handleRecordHeaderClick = useCallback((e: React.MouseEvent<HTMLTableCellElement>) => {
+        if (selectionMode !== "record") return;
+        const idx = Number(e.currentTarget.dataset.recordIndex);
+        handleSelectRecord(idx);
+    }, [selectionMode, handleSelectRecord]);
     // handleSelectField は confirmFieldRows を参照するため、confirmFieldRows 定義後に配置します
     const renderInlineDiff = useCallback((base: string, target: string) => {
         if (base === target)
@@ -292,13 +380,9 @@ export default function AttendanceDailyList() {
         const sameStart = b.slice(0, prefix);
         const diffMid = b.slice(prefix, b.length - suffix);
         const sameEnd = b.slice(b.length - suffix);
-        return (<Box component="span" sx={{ whiteSpace: "pre-wrap" }}>
+        return (<Box component="span" sx={diffWrapperSx}>
         {sameStart}
-        {diffMid ? (<Box component="span" sx={{
-                    backgroundColor: "rgba(255, 87, 34, 0.22)",
-                    borderRadius: 0.5,
-                    px: 0.5,
-                }}>
+        {diffMid ? (<Box component="span" sx={diffHighlightSx}>
             {diffMid || " "}
           </Box>) : null}
         {sameEnd}
@@ -312,7 +396,7 @@ export default function AttendanceDailyList() {
             .map((d) => `${dayjs(d.workDate).format("YYYY/MM/DD")}: ${d.ids.join(", ")}`)
             .join("\n");
         return (<Tooltip title={detail || "重複データがあります"} arrow placement="top">
-          <Chip size="small" color="warning" label="重複" sx={{ fontWeight: 600 }}/>
+          <Chip size="small" color="warning" label="重複" sx={duplicateBadgeChipSx}/>
         </Tooltip>);
     }, [duplicateInfoByStaff]);
     const confirmFieldRows = useMemo(() => {
@@ -407,30 +491,77 @@ export default function AttendanceDailyList() {
         setLastFieldRowIndex(rowIndex);
         setLastFieldRecordIndex(index);
     }, [selectionMode, lastFieldRowIndex, lastFieldRecordIndex, confirmFieldRows]);
+    const handleBodyCellClick = useCallback((e: React.MouseEvent<HTMLTableCellElement>) => {
+        const idx = Number(e.currentTarget.dataset.recordIndex);
+        const rowIndex = Number(e.currentTarget.dataset.rowIndex);
+        const fieldLabel = e.currentTarget.dataset.fieldLabel ?? "";
+        if (selectionMode === "record") {
+            handleSelectRecord(idx);
+        } else if (selectionMode === "field") {
+            handleSelectField(fieldLabel, idx, rowIndex, e.shiftKey);
+        }
+    }, [selectionMode, handleSelectRecord, handleSelectField]);
+    const handleDeleteDuplicates = useCallback(async () => {
+        if (selectedRecordIndex === null) return;
+        const selected = confirmRecords[selectedRecordIndex];
+        const toDelete = confirmRecords
+            .filter((_, idx) => idx !== selectedRecordIndex)
+            .map((r) => r.id)
+            .filter(Boolean) as string[];
+        if (toDelete.length === 0) return;
+        const ok = window.confirm(`選択したデータのみを残し、他の重複レコードを削除します。対象件数: ${toDelete.length}\n削除対象ID: ${toDelete.join(", ")}\nこの操作は取り消せません。実行しますか？`);
+        if (!ok) return;
+        setConfirmLoading(true);
+        try {
+            for (const id of toDelete) {
+                try {
+                    await deleteAttendance({ id }).unwrap();
+                }
+                catch (e) {
+                    console.error("Failed to delete attendance:", id, e);
+                    dispatch(pushNotification({
+                        tone: "error",
+                        message: MESSAGE_CODE.E00001
+                    }));
+                }
+            }
+            setConfirmRecords(selected ? [selected] : []);
+            dispatch(pushNotification({
+                tone: "success",
+                message: `選択したデータのみ残しました（残件数: ${selected ? 1 : 0}）`
+            }));
+        }
+        finally {
+            setConfirmLoading(false);
+        }
+    }, [selectedRecordIndex, confirmRecords, deleteAttendance, dispatch]);
+    const handleSearchToggle = useCallback(() => {
+        setIsSearchVisible((prev) => {
+            const next = !prev;
+            if (!next) setSearchName("");
+            return next;
+        });
+    }, []);
+    const handleSearchNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchName(e.target.value);
+    }, []);
     return (<Stack direction="column" spacing={1}>
-      {hasDuplicateAttendances && (<Box sx={{
-                pb: 2,
-                border: "1px solid",
-                borderColor: "error.main",
-                borderRadius: 2,
-                p: 2,
-                backgroundColor: "rgba(255, 205, 210, 0.16)",
-            }}>
-          <Typography variant="h6" sx={{ mb: 1 }}>
+      {hasDuplicateAttendances && (<Box sx={duplicateErrorBoxSx}>
+          <Typography variant="h6" sx={sectionTitleSx}>
             重複データが検出されたスタッフ ({mergedDuplicateAttendances.length})
           </Typography>
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert severity="error" sx={alertMb2Sx}>
             同一日付に重複した勤怠データがあります。早急にデータ統合を実施してください。
           </Alert>
           <TableContainer sx={tableContainerSx}>
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ width: "30%" }}>スタッフ</TableCell>
-                  <TableCell sx={{ width: "25%" }}>対象日</TableCell>
-                  <TableCell sx={{ width: "15%" }}>重複件数</TableCell>
+                  <TableCell sx={colStaffSx}>スタッフ</TableCell>
+                  <TableCell sx={colDateSx}>対象日</TableCell>
+                  <TableCell sx={colCountSx}>重複件数</TableCell>
                   <TableCell sx={recordIdsCellSx}>レコードID一覧</TableCell>
-                  <TableCell sx={{ width: "12%" }} align="right">
+                  <TableCell sx={colActionSx} align="right">
                     確認
                   </TableCell>
                 </TableRow>
@@ -448,9 +579,9 @@ export default function AttendanceDailyList() {
                         {dup.ids.join(", ") || "-"}
                       </TableCell>
                       <TableCell align="right">
-                        <Button variant="contained" color="error" size="small" onClick={() => handleOpenConfirm(dup.staffId)}>
+                        <AppButton variant="solid" tone="danger" size="sm" data-staff-id={dup.staffId} onClick={handleOpenConfirmClick}>
                           確認
-                        </Button>
+                        </AppButton>
                       </TableCell>
                     </TableRow>))}
               </TableBody>
@@ -466,13 +597,7 @@ export default function AttendanceDailyList() {
           {confirmLoading ? (<Typography>読み込み中...</Typography>) : confirmRecords.length === 0 ? (<Typography color="text.secondary">
               該当の重複データを取得できませんでした。
             </Typography>) : (<>
-              <Box sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                mb: 1.5,
-                gap: 1,
-            }}>
+              <Box sx={dialogHeaderSx}>
                 <Typography variant="body2" color="text.secondary">
                   選択モードを切り替えて、レコード単位または項目単位で採用候補をマークできます。
                 </Typography>
@@ -486,7 +611,7 @@ export default function AttendanceDailyList() {
                 <Table size="small">
                   <TableHead>
                     <TableRow>
-                      <TableCell sx={{ width: "16%" }}>項目</TableCell>
+                      <TableCell sx={colItemLabelSx}>項目</TableCell>
                       {confirmRecords.map((rec, idx) => {
                 const isSelected = selectionMode === "record" &&
                     selectedRecordIndex === idx;
@@ -501,7 +626,7 @@ export default function AttendanceDailyList() {
                         backgroundColor: isSelected
                             ? "rgba(25,118,210,0.08)"
                             : undefined,
-                    }} onClick={() => selectable && handleSelectRecord(idx)}>
+                    }} data-record-index={idx} onClick={handleRecordHeaderClick}>
                             #{idx + 1} ({rec.id})
                           </TableCell>);
             })}
@@ -544,15 +669,7 @@ export default function AttendanceDailyList() {
                                 backgroundColor: isFieldSelected || recordSelected
                                     ? "rgba(25,118,210,0.08)"
                                     : undefined,
-                            }} onClick={(event) => {
-                                if (!selectable)
-                                    return;
-                                if (isRecordMode) {
-                                    handleSelectRecord(idx);
-                                    return;
-                                }
-                                handleSelectField(row.label, idx, rowIndex, event.shiftKey);
-                            }}>
+                            }} data-record-index={idx} data-row-index={rowIndex} data-field-label={row.label} onClick={handleBodyCellClick}>
                                 {content}
                               </TableCell>);
                     })}
@@ -564,110 +681,31 @@ export default function AttendanceDailyList() {
             </>)}
         </DialogContent>
         <DialogActions>
-          {selectionMode === "record" && selectedRecordIndex !== null && (<Button color="error" variant="outlined" onClick={async () => {
-                const selected = confirmRecords[selectedRecordIndex!];
-                const toDelete = confirmRecords
-                    .filter((_, idx) => idx !== selectedRecordIndex)
-                    .map((r) => r.id)
-                    .filter(Boolean) as string[];
-                if (toDelete.length === 0)
-                    return;
-                const ok = window.confirm(`選択したデータのみを残し、他の重複レコードを削除します。対象件数: ${toDelete.length}\n削除対象ID: ${toDelete.join(", ")}\nこの操作は取り消せません。実行しますか？`);
-                if (!ok)
-                    return;
-                setConfirmLoading(true);
-                try {
-                    for (const id of toDelete) {
-                        try {
-                            await deleteAttendance({ id }).unwrap();
-                        }
-                        catch (e) {
-                            console.error("Failed to delete attendance:", id, e);
-                            dispatch(pushNotification({
-                                tone: "error",
-                                message: MESSAGE_CODE.E00001
-                            }));
-                        }
-                    }
-                    // ダイアログ内の表示を選択済みの1件に更新
-                    setConfirmRecords(selected ? [selected] : []);
-                    dispatch(pushNotification({
-                        tone: "success",
-                        message: `選択したデータのみ残しました（残件数: ${selected ? 1 : 0}）`
-                    }));
-                }
-                finally {
-                    setConfirmLoading(false);
-                }
-            }}>
+          {selectionMode === "record" && selectedRecordIndex !== null && (<AppButton variant="outline" tone="danger" onClick={handleDeleteDuplicates}>
               選択したデータを残す
-            </Button>)}
-          <Button onClick={handleCloseConfirm} color="inherit">
+            </AppButton>)}
+          <AppButton variant="ghost" tone="neutral" onClick={handleCloseConfirm}>
             閉じる
-          </Button>
+          </AppButton>
         </DialogActions>
       </Dialog>
 
-      <Box sx={{
-            mb: 1,
-            display: "flex",
-            alignItems: { xs: "flex-start", sm: "center" },
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 1,
-        }}>
+      <Box sx={listHeaderBoxSx}>
         <MoveDateItem workDate={dayjs(targetWorkDate || today)}/>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <IconButton aria-label="スタッフ名検索を表示" onClick={() => {
-            setIsSearchVisible((prev) => {
-                const next = !prev;
-                if (!next) {
-                    setSearchName("");
-                }
-                return next;
-            });
-        }} size="small" sx={{
-            border: "1px solid rgba(148,163,184,0.35)",
-            backgroundColor: "#ffffff",
-            color: "#475569",
-            "&:hover": {
-                backgroundColor: "#f8fafc",
-            },
-        }}>
+        <Box sx={searchBoxSx}>
+          <AppIconButton aria-label="スタッフ名検索を表示" onClick={handleSearchToggle} size="sm">
             <SearchIcon fontSize="small"/>
-          </IconButton>
-          {isSearchVisible && (<TextField label="スタッフ名で検索" variant="outlined" size="small" value={searchName} onChange={(e) => setSearchName(e.target.value)} sx={{
-                maxWidth: 360,
-                "& .MuiOutlinedInput-root": {
-                    borderRadius: "18px",
-                    backgroundColor: "#ffffff",
-                    "& fieldset": {
-                        borderColor: "rgba(148,163,184,0.35)",
-                    },
-                    "&:hover fieldset": {
-                        borderColor: "rgba(100,116,139,0.45)",
-                    },
-                    "&.Mui-focused fieldset": {
-                        borderColor: "#19b985",
-                        borderWidth: "1px",
-                    },
-                },
-            }}/>)}
+          </AppIconButton>
+          {isSearchVisible && (<TextField label="スタッフ名で検索" variant="outlined" size="small" value={searchName} onChange={handleSearchNameChange} sx={searchTextFieldSx}/>)}
         </Box>
       </Box>
-      {pendingList.length > 0 && (<Box sx={{ pb: 2, pt: 2 }}>
-          <Box sx={{
-                border: "1px solid",
-                borderColor: "warning.main",
-                borderRadius: 2,
-                p: 2,
-                backgroundColor: "rgba(255,243,205,0.12)",
-            }}>
-            <Typography variant="h6" sx={{ mb: 1 }}>
+      {pendingList.length > 0 && (<Box sx={pendingOuterBoxSx}>
+          <Box sx={pendingWarningBoxSx}>
+            <Typography variant="h6" sx={sectionTitleSx}>
               申請中のスタッフ ({pendingList.length})
             </Typography>
             <Alert severity="warning">
-              <AlertTitle sx={{ fontWeight: "bold" }}>
+              <AlertTitle sx={alertTitleBoldSx}>
                 確認してください
               </AlertTitle>
               申請中のスタッフがあります。承認されるまで反映されません
@@ -677,7 +715,7 @@ export default function AttendanceDailyList() {
                 <TableHead>
                   <TableRow>
                     <TableCell />
-                    <TableCell sx={{ width: 90 }}>重複</TableCell>
+                    <TableCell sx={col90Sx}>重複</TableCell>
                     <TableCell className="table-cell-header--staff-name">
                       氏名
                     </TableCell>
@@ -697,7 +735,7 @@ export default function AttendanceDailyList() {
                 <TableBody>
                   {pendingList.map((row, index) => (<TableRow key={`pending-${index}`} className="attendance-row">
                       <ActionsTableCell row={row} attendances={attendanceMap[row.sub] ?? []} attendanceLoading={!!attendanceLoadingMap[row.sub]} attendanceError={attendanceErrorMap[row.sub] ?? null} holidayCalendars={holidayCalendars} companyHolidayCalendars={companyHolidayCalendars} calendarLoading={calendarsLoading} targetWorkDate={displayDateFormatted}/>
-                      <TableCell sx={{ width: 90 }}>
+                      <TableCell sx={col90Sx}>
                         {renderDuplicateBadge(row)}
                       </TableCell>
                       <TableCell>{`${row.familyName} ${row.givenName}`}</TableCell>
@@ -709,7 +747,7 @@ export default function AttendanceDailyList() {
                       <TableCell sx={summaryCellSx}>
                         {renderSummaryMessage(getAttendanceForDisplayDate(row))}
                       </TableCell>
-                      <TableCell sx={{ whiteSpace: "nowrap" }}/>
+                      <TableCell sx={noWrapCellSx}/>
                     </TableRow>))}
                 </TableBody>
               </Table>
@@ -722,7 +760,7 @@ export default function AttendanceDailyList() {
           <TableHead>
             <TableRow>
               <TableCell />
-              <TableCell sx={{ width: 90 }}>重複</TableCell>
+              <TableCell sx={col90Sx}>重複</TableCell>
               <TableCell className="table-cell-header--staff-name">
                 氏名
               </TableCell>
@@ -742,7 +780,7 @@ export default function AttendanceDailyList() {
           <TableBody>
             {filteredAttendanceList.map((row, index) => (<TableRow key={index} className="attendance-row">
                 <ActionsTableCell row={row} attendances={attendanceMap[row.sub] ?? []} attendanceLoading={!!attendanceLoadingMap[row.sub]} attendanceError={attendanceErrorMap[row.sub] ?? null} holidayCalendars={holidayCalendars} companyHolidayCalendars={companyHolidayCalendars} calendarLoading={calendarsLoading} targetWorkDate={displayDateFormatted}/>
-                <TableCell sx={{ width: 90 }}>
+                <TableCell sx={col90Sx}>
                   {renderDuplicateBadge(row)}
                 </TableCell>
                 <TableCell>{`${row.familyName} ${row.givenName}`}</TableCell>
@@ -754,7 +792,7 @@ export default function AttendanceDailyList() {
                 <TableCell sx={summaryCellSx}>
                   {renderSummaryMessage(getAttendanceForDisplayDate(row))}
                 </TableCell>
-                <TableCell sx={{ whiteSpace: "nowrap" }}/>
+                <TableCell sx={noWrapCellSx}/>
               </TableRow>))}
           </TableBody>
         </Table>

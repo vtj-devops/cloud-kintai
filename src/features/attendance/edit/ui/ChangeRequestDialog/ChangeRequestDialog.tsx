@@ -1,10 +1,12 @@
 import { type UpdateAttendanceMutationArg } from "@entities/attendance/api/attendanceApi";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import { StaffType } from "@entities/staff/model/useStaffs/useStaffs";
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField, Typography, } from "@mui/material";
+import { Stack, TextField, Typography, } from "@mui/material";
 import { Attendance } from "@shared/api/graphql/types";
 import { GenericMailSender } from "@shared/lib/mail/GenericMailSender";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { AppButton } from "@shared/ui/button";
+import AppDialog from "@shared/ui/feedback/AppDialog";
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -60,29 +62,9 @@ export default function ChangeRequestDialog({ attendance, updateAttendance, staf
     if (!attendance || !changeRequest) {
         return null;
     }
-    return (<Dialog onClose={handleClose} open={open} fullWidth maxWidth="md">
-      <DialogTitle>変更リクエスト(勤務日: {getWorkDate()})</DialogTitle>
-      <DialogContent>
-        <Stack spacing={2}>
-          <Typography variant="body1" sx={{ mb: 2 }}>
-            スタッフから勤怠情報の変更リクエストが届いています。
-            <br />
-            内容を確認して承認または却下してください。
-          </Typography>
-          <ChangeRequestDiffTable attendance={attendance} changeRequest={changeRequest} size="medium"/>
-          <Stack direction="column" spacing={1}>
-            <Typography variant="body1">【スタッフからのコメント】</Typography>
-            <TextField fullWidth multiline disabled minRows={3} value={changeRequest?.staffComment || "コメントはありません"}/>
-          </Stack>
-          <Stack direction="column" spacing={1}>
-            <Typography variant="body1">【スタッフへのコメント】</Typography>
-            <TextField label="コメント" fullWidth multiline minRows={3} value={comment} onChange={(e) => setComment(e.target.value)}/>
-          </Stack>
-        </Stack>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose}>閉じる</Button>
-        <Button onClick={() => {
+    return (<AppDialog open={open} onClose={handleClose} fullWidth maxWidth="md" title={`変更リクエスト(勤務日: ${getWorkDate()})`} actions={<>
+        <AppButton variant="ghost" onClick={handleClose}>閉じる</AppButton>
+        <AppButton variant="solid" tone="danger" onClick={() => {
             handleRejectChangeRequest(attendance, updateAttendance, comment)
                 .then(async (updatedAttendance) => {
                 if (!staff || !updatedAttendance) {
@@ -105,10 +87,10 @@ export default function ChangeRequestDialog({ attendance, updateAttendance, staf
                 message: MESSAGE_CODE.E04007
             })));
             handleClose();
-        }} variant="contained" color="error">
+        }}>
           却下
-        </Button>
-        <Button onClick={() => {
+        </AppButton>
+        <AppButton variant="solid" onClick={() => {
             handleApproveChangeRequest(attendance, updateAttendance, comment)
                 .then(async (updatedAttendance) => {
                 if (!staff || !updatedAttendance) {
@@ -127,7 +109,6 @@ export default function ChangeRequestDialog({ attendance, updateAttendance, staf
                         ? `${updatedAttendance.workDate} の勤怠情報の変更リクエストが承認されました`
                         : undefined
                 }));
-                // navigate to staff attendance list
                 navigate(`/admin/staff/${updatedAttendance.staffId}/attendance`);
                 handleClose();
             })
@@ -135,9 +116,25 @@ export default function ChangeRequestDialog({ attendance, updateAttendance, staf
                 tone: "error",
                 message: MESSAGE_CODE.E04006
             })));
-        }} variant="contained">
+        }}>
           承認
-        </Button>
-      </DialogActions>
-    </Dialog>);
+        </AppButton>
+      </>}>
+      <Stack spacing={2}>
+        <Typography variant="body1" sx={{ mb: 2 }}>
+          スタッフから勤怠情報の変更リクエストが届いています。
+          <br />
+          内容を確認して承認または却下してください。
+        </Typography>
+        <ChangeRequestDiffTable attendance={attendance} changeRequest={changeRequest} size="medium"/>
+        <Stack direction="column" spacing={1}>
+          <Typography variant="body1">【スタッフからのコメント】</Typography>
+          <TextField fullWidth multiline disabled minRows={3} value={changeRequest?.staffComment || "コメントはありません"}/>
+        </Stack>
+        <Stack direction="column" spacing={1}>
+          <Typography variant="body1">【スタッフへのコメント】</Typography>
+          <TextField label="コメント" fullWidth multiline minRows={3} value={comment} onChange={(e) => setComment(e.target.value)}/>
+        </Stack>
+      </Stack>
+    </AppDialog>);
 }

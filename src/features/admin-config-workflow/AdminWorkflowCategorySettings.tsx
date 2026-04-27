@@ -1,6 +1,5 @@
 import AdminSettingsLayout from "@features/admin/layout/ui/AdminSettingsLayout";
-
-import { usePageLeaveGuard } from "@/hooks/usePageLeaveGuard";
+import { usePageLeaveGuard } from "@shared/ui/feedback/usePageLeaveGuard";
 
 import AdminWorkflowSettingsContent from "./AdminWorkflowSettingsContent";
 import { useAdminWorkflowSettings } from "./useAdminWorkflowSettings";

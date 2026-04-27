@@ -1,9 +1,8 @@
+import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { AttendanceDateTime } from "@entities/attendance/lib/AttendanceDateTime";
 import { AttendanceHistory } from "@shared/api/graphql/types";
 import { SubsectionTitle } from "@shared/ui/typography";
 import { useContext, useState } from "react";
-
-import { AppConfigContext } from "@/context/AppConfigContext";
 
 const cellClassName =
   "whitespace-nowrap border-b border-slate-200 px-4 py-3 text-sm text-slate-700 align-top";
@@ -71,9 +70,10 @@ export function AttendanceHistoryRow({
 
   return (
     <>
-      <tr className="bg-white transition hover:bg-slate-50/70">
+      <tr data-testid="attendance-history-row" className="bg-white transition hover:bg-slate-50/70">
         <td className={`${cellClassName} w-14`}>
           <button
+            data-testid="attendance-history-toggle"
             type="button"
             onClick={() => setOpen((prev) => !prev)}
             className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
