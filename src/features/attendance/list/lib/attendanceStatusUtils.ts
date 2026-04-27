@@ -3,10 +3,16 @@
  * 複数のコンポーネント間で共有されるロジックを集約
  */
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
-import { AttendanceState, AttendanceStatus } from "@entities/attendance/lib/AttendanceState";
+import {
+  AttendanceState,
+  AttendanceStatus,
+} from "@entities/attendance/lib/AttendanceState";
 import { CompanyHoliday } from "@entities/attendance/lib/CompanyHoliday";
 import { Holiday } from "@entities/attendance/lib/Holiday";
-import { calcTotalRestTime, calcTotalWorkTime } from "@entities/attendance/lib/time";
+import {
+  calcTotalRestTime,
+  calcTotalWorkTime,
+} from "@entities/attendance/lib/time";
 import {
   Attendance,
   CompanyHolidayCalendar,
@@ -90,13 +96,13 @@ export function formatTimeRange(attendance: Attendance | undefined) {
 export function getHolidayNames(
   date: Dayjs,
   holidayCalendars: HolidayCalendar[],
-  companyHolidayCalendars: CompanyHolidayCalendar[]
+  companyHolidayCalendars: CompanyHolidayCalendar[],
 ) {
   const workDate = date.format(AttendanceDate.DataFormat);
   const holiday = new Holiday(holidayCalendars, workDate).getHoliday();
   const companyHoliday = new CompanyHoliday(
     companyHolidayCalendars,
-    workDate
+    workDate,
   ).getHoliday();
 
   return {
@@ -112,13 +118,13 @@ export const isHolidayLike = (
   date: Dayjs,
   staff: Staff | null | undefined,
   holidayCalendars: HolidayCalendar[],
-  companyHolidayCalendars: CompanyHolidayCalendar[]
+  companyHolidayCalendars: CompanyHolidayCalendar[],
 ): boolean => {
   const workDate = date.format(AttendanceDate.DataFormat);
   const isHoliday = new Holiday(holidayCalendars, workDate).isHoliday();
   const isCompanyHoliday = new CompanyHoliday(
     companyHolidayCalendars,
-    workDate
+    workDate,
   ).isHoliday();
 
   if (staff?.workType === "shift") {
@@ -129,6 +135,13 @@ export const isHolidayLike = (
   return isHoliday || isCompanyHoliday || [0, 6].includes(date.day());
 };
 
+export const hasSystemComment = (attendance: Attendance | undefined): boolean =>
+  Boolean(
+    attendance &&
+    Array.isArray(attendance.systemComments) &&
+    attendance.systemComments.length > 0,
+  );
+
 /**
  * 指定日付の勤怠ステータスを判定
  */
@@ -137,7 +150,7 @@ export const getStatus = (
   staff: Staff | null | undefined,
   holidayCalendars: HolidayCalendar[],
   companyHolidayCalendars: CompanyHolidayCalendar[],
-  date: Dayjs
+  date: Dayjs,
 ): AttendanceStatus => {
   if (!staff) return AttendanceStatus.None;
 
@@ -164,7 +177,7 @@ export const getStatus = (
         date,
         staff,
         holidayCalendars,
-        companyHolidayCalendars
+        companyHolidayCalendars,
       );
       if (holidayLike) return AttendanceStatus.None;
     }
@@ -173,11 +186,15 @@ export const getStatus = (
     return AttendanceStatus.Error;
   }
 
+  if (hasSystemComment(attendance)) {
+    return AttendanceStatus.Error;
+  }
+
   // 打刻データがある場合は AttendanceState で判定
   return new AttendanceState(
     staff,
     attendance,
     holidayCalendars,
-    companyHolidayCalendars
+    companyHolidayCalendars,
   ).get();
 };

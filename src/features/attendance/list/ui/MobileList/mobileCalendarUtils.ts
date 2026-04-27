@@ -9,7 +9,10 @@ import {
 import dayjs, { Dayjs } from "dayjs";
 
 import { getStatus, isHolidayLike } from "../../lib/attendanceStatusUtils";
-import { MonthTerm, resolveMonthlyTerms as resolveMonthlyTermsBase } from "../../lib/monthlyTermUtils";
+import {
+  MonthTerm,
+  resolveMonthlyTerms as resolveMonthlyTermsBase,
+} from "../../lib/monthlyTermUtils";
 
 export type { MonthTerm };
 
@@ -101,17 +104,8 @@ export const getHolidayInfoByDate = (
   return null;
 };
 
-const hasDayError = (
-  attendance: Attendance | undefined,
-  status: AttendanceStatus,
-) => {
-  return (
-    (Array.isArray(attendance?.systemComments) &&
-      attendance.systemComments.length > 0) ||
-    status === AttendanceStatus.Error ||
-    status === AttendanceStatus.Late
-  );
-};
+const hasDayError = (status: AttendanceStatus) =>
+  status === AttendanceStatus.Error || status === AttendanceStatus.Late;
 
 const resolveDayTermColor = ({
   date,
@@ -170,7 +164,7 @@ export const getDayCellMeta = ({
 
   return {
     status,
-    hasError: hasDayError(attendance, status),
+    hasError: hasDayError(status),
     holidayInfo: getHolidayInfoByDate(
       date,
       holidayCalendars,
