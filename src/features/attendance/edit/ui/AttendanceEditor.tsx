@@ -26,12 +26,13 @@ import { AttendanceErrorSummary } from "@features/attendance/edit/ui/components/
 import { SubstituteHolidayDateInput } from "@features/attendance/edit/ui/items/SubstituteHolidayDateInput";
 import { zodResolver } from "@hookform/resolvers/zod";
 import AddAlarmIcon from "@mui/icons-material/AddAlarm";
-import { Checkbox, LinearProgress } from "@mui/material";
+import { Checkbox } from "@mui/material";
 import { HourlyPaidHolidayTimeInput } from "@shared/api/graphql/types";
 import { Logger } from "@shared/lib/logger";
 import { AttendanceEditMailSender } from "@shared/lib/mail/AttendanceEditMailSender";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
 import { AppButton, AppIconButton } from "@shared/ui/button";
+import { ProgressBar } from "@shared/ui/feedback";
 import { InlineAlert } from "@shared/ui/feedback/InlineAlert";
 import { usePageLeaveGuard } from "@shared/ui/feedback/usePageLeaveGuard";
 import GroupContainer from "@shared/ui/group-container/GroupContainer";
@@ -657,9 +658,9 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
     isDirty,
     isBusy: isSubmitting,
   });
-  if (appConfigLoading || staffsLoading || !hasAttendanceFetched) {
-    return <LinearProgress />;
-  }
+    if (appConfigLoading || staffsLoading || !hasAttendanceFetched) {
+      return <ProgressBar />;
+    }
   if (staffSError) {
     return (
       <InlineAlert tone="error" title="エラー">
@@ -795,7 +796,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
             <div className="pointer-events-auto z-[1500] max-h-[60vh] w-[260px] overflow-y-auto">
               {historiesLoading ? (
                 <div className="p-2">
-                  <LinearProgress />
+                  <ProgressBar />
                 </div>
               ) : sortedHistories && sortedHistories.length > 0 ? (
                 <div className="flex flex-col gap-1">

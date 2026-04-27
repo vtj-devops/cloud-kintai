@@ -6,7 +6,6 @@ import {
   Box,
   Chip,
   Container,
-  LinearProgress,
   Paper,
   Stack,
   Table,
@@ -21,6 +20,7 @@ import {
 } from "@mui/material";
 import { useAppNotification } from "@shared/lib/useAppNotification";
 import CommonBreadcrumbs from "@shared/ui/breadcrumbs/CommonBreadcrumbs";
+import { ProgressBar } from "@shared/ui/feedback";
 import dayjs from "dayjs";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -117,7 +117,7 @@ export default function StaffShiftList() {
   const nextMonth = () => setCurrentMonth((m) => m.add(1, "month"));
 
   if (calendarLoading) {
-    return <LinearProgress sx={{ width: "100%" }} />;
+    return <ProgressBar className="w-full" />;
   }
 
   return (

@@ -1,14 +1,23 @@
-import { Box, CircularProgress } from "@mui/material";
+import {
+  Box,
+  CircularProgress,
+  type CircularProgressProps,
+} from "@mui/material";
 import { FC } from "react";
+
+type CenteredSpinnerProps = {
+  size?: number;
+  color?: CircularProgressProps["color"];
+};
 
 /**
  * Full‑screen centered spinner used across the app.
  * It accepts optional size and color props to keep it flexible.
  */
-export const CenteredSpinner: FC<{
-  size?: number;
-  color?: string;
-}> = ({ size = 40, color = "primary" }) => (
+export const CenteredSpinner: FC<CenteredSpinnerProps> = ({
+  size = 40,
+  color = "primary",
+}) => (
   <Box
     sx={{
       width: "100%",
@@ -18,7 +27,7 @@ export const CenteredSpinner: FC<{
       justifyContent: "center",
     }}
   >
-    <CircularProgress size={size} color={color as any} />
+    <CircularProgress size={size} color={color} />
   </Box>
 );
 

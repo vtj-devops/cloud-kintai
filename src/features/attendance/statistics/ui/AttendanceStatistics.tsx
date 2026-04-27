@@ -9,11 +9,11 @@ import {
   Alert,
   Button,
   ButtonGroup,
-  LinearProgress,
   Paper,
   Stack,
   Typography,
 } from "@mui/material";
+import { ProgressBar } from "@shared/ui/feedback";
 import { PageTitle } from "@shared/ui/typography";
 import dayjs from "dayjs";
 import { useContext, useMemo, useState } from "react";
@@ -117,11 +117,7 @@ function ProgressPanel(props: {
           <Typography variant="body2" color="text.secondary">
             進捗: {Math.round(props.progressPercent)}%
           </Typography>
-          <LinearProgress
-            variant="determinate"
-            value={Math.max(0, Math.min(props.progressPercent, 100))}
-            aria-label="稼働統計の再集計進捗"
-          />
+          <ProgressBar />
         </Stack>
       </Stack>
     </Paper>
@@ -375,7 +371,7 @@ export default function AttendanceStatistics() {
         </Stack>
       </Stack>
 
-      {loading ? <LinearProgress aria-label="稼働統計を読み込み中" /> : null}
+        {loading ? <ProgressBar data-testid="progress-bar" aria-label="稼働統計を読み込み中" /> : null}
 
       {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
       {snapshotErrorMessage ? (

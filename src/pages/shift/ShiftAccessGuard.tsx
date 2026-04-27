@@ -1,7 +1,7 @@
 import { AuthContext } from "@app/providers/auth/AuthContext";
 import { isShiftWorkType } from "@entities/staff/lib/workTypeOptions";
 import { useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
-import { LinearProgress } from "@mui/material";
+import { ProgressBar } from "@shared/ui/feedback";
 import { PageSection } from "@shared/ui/layout";
 import Page from "@shared/ui/page/Page";
 import type { ReactNode } from "react";
@@ -35,7 +35,7 @@ export default function ShiftAccessGuard({
     return (
       <Page title={title} width="full" showDefaultHeader={false}>
         <PageSection variant="plain" layoutVariant="detail" sx={{ gap: 0 }}>
-          <LinearProgress data-testid="shift-access-loading" />
+          <ProgressBar data-testid="shift-access-loading" />
         </PageSection>
       </Page>
     );

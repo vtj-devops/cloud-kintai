@@ -3,13 +3,14 @@ import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import { type UpdateCompanyHolidayCalendarPayload, useBulkCreateCompanyHolidayCalendarsMutation, useCreateCompanyHolidayCalendarMutation, useDeleteCompanyHolidayCalendarMutation, useGetCompanyHolidayCalendarsQuery, useUpdateCompanyHolidayCalendarMutation, } from "@entities/calendar/api/calendarApi";
 import { useHolidayCalendarList } from "@features/admin/holidayCalendar/model/useHolidayCalendarList";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { FormControl, InputLabel, LinearProgress, MenuItem, Paper, Select, Stack, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, TextField, Typography, } from "@mui/material";
+import { FormControl, InputLabel, MenuItem, Paper, Select, Stack, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, TextField, Typography, } from "@mui/material";
 import { buildVersionOrUpdatedAtCondition, getNextVersion, } from "@shared/api/graphql/concurrency";
 import { CompanyHolidayCalendar } from "@shared/api/graphql/types";
 import { CompanyHolidayCalendarMessage } from "@shared/lib/message/CompanyHolidayCalendarMessage";
 import { MessageStatus } from "@shared/lib/message/Message";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
 import { AppButton, AppIconButton } from "@shared/ui/button";
+import { ProgressBar } from "@shared/ui/feedback";
 import dayjs from "dayjs";
 import { useCallback, useEffect } from "react";
 
@@ -59,7 +60,7 @@ export default function CompanyHolidayCalendarList() {
         yearOffset: YEAR_OFFSET,
     });
     if (calendarLoading) {
-        return <LinearProgress sx={{ width: "100%" }}/>;
+        return <ProgressBar className="w-full" />;
     }
     const handleDelete = async (companyHolidayCalendar: CompanyHolidayCalendar) => {
         // eslint-disable-next-line no-alert

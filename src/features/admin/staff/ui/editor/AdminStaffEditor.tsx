@@ -18,7 +18,6 @@ import {
   Chip,
   CircularProgress,
   FormControlLabel,
-  LinearProgress,
   Radio,
   RadioGroup,
   Tab,
@@ -31,6 +30,7 @@ import {
   ApproverSettingMode,
 } from "@shared/api/graphql/types";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { ProgressBar } from "@shared/ui/feedback";
 import { usePageLeaveGuard } from "@shared/ui/feedback/usePageLeaveGuard";
 import { PageTitle } from "@shared/ui/typography";
 import dayjs from "dayjs";
@@ -138,7 +138,7 @@ export default function AdminStaffEditor() {
       })),
     [getShiftGroups],
   );
-  if (staffLoading) return <LinearProgress />;
+  if (staffLoading) return <ProgressBar />;
   if (staffError) {
     dispatch(
       pushNotification({

@@ -1,9 +1,9 @@
 import type { ShiftDisplayMode } from "@entities/app-config/model/useAppConfig";
 import useAppConfig from "@entities/app-config/model/useAppConfig";
 import { ShiftRequestForm } from "@features/shift/request-form";
-import { LinearProgress } from "@mui/material";
 import ShiftCollaborativePage from "@pages/shift/collaborative/ShiftCollaborative";
 import ShiftAccessGuard from "@pages/shift/ShiftAccessGuard";
+import { ProgressBar } from "@shared/ui/feedback";
 import { PageSection } from "@shared/ui/layout";
 import Page from "@shared/ui/page/Page";
 
@@ -30,7 +30,7 @@ function ShiftRequestContent() {
     return (
       <Page title="希望シフト" width="full" showDefaultHeader={false}>
         <PageSection variant="plain" layoutVariant="detail" sx={{ gap: 0 }}>
-          <LinearProgress data-testid="shift-mode-loading" />
+          <ProgressBar data-testid="shift-mode-loading" />
         </PageSection>
       </Page>
     );

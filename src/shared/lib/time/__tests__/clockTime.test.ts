@@ -17,12 +17,12 @@ describe("buildClockTimeDayjs", () => {
   });
 
   it("無効入力: null → fallback を返す", () => {
-    const result = buildClockTimeDayjs(null as any);
+    const result = buildClockTimeDayjs(null);
     expect(result.format("HH:mm")).toBe("00:00");
   });
 
   it("無効入力: undefined → fallback を返す", () => {
-    const result = buildClockTimeDayjs(undefined as any);
+    const result = buildClockTimeDayjs(undefined);
     expect(result.format("HH:mm")).toBe("00:00");
   });
 

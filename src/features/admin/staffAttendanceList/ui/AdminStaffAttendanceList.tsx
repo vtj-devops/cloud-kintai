@@ -16,7 +16,6 @@ import { useSplitView } from "@features/splitView";
 import {
   Alert,
   Box,
-  LinearProgress,
   Stack,
   Table,
   TableBody,
@@ -29,6 +28,7 @@ import {
 } from "@mui/material";
 import { Attendance } from "@shared/api/graphql/types";
 import { designTokenVar } from "@shared/designSystem";
+import { ProgressBar } from "@shared/ui/feedback";
 import { PageSection } from "@shared/ui/layout";
 import dayjs, { type Dayjs } from "dayjs";
 import type { ReactNode } from "react";
@@ -194,7 +194,7 @@ export default function AdminStaffAttendanceList() {
   }
 
   if (attendanceLoading || calendarLoading) {
-    return renderStandaloneSection(<LinearProgress />);
+    return renderStandaloneSection(<ProgressBar />);
   }
 
   return (
