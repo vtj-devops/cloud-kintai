@@ -75,7 +75,10 @@ describe("AttendanceGraph", () => {
 
     render(
       <WithConfig>
-        <AttendanceGraph attendances={attendances} month={dayjs("2024-06-01")} />
+        <AttendanceGraph
+          attendances={attendances}
+          month={dayjs("2024-06-01")}
+        />
       </WithConfig>,
     );
 

@@ -1,4 +1,7 @@
-import { calcTotalRestTime, calcTotalWorkTime } from "@entities/attendance/lib/time";
+import {
+  calcTotalRestTime,
+  calcTotalWorkTime,
+} from "@entities/attendance/lib/time";
 import type { Attendance } from "@shared/api/graphql/types";
 
 export type AttendanceWorkStatusHours = {
@@ -26,7 +29,10 @@ export const toAttendanceWorkStatusHours = ({
     };
   }
 
-  const grossWorkHours = calcTotalWorkTime(attendance.startTime, attendance.endTime);
+  const grossWorkHours = calcTotalWorkTime(
+    attendance.startTime,
+    attendance.endTime,
+  );
   const totalRestHours = (attendance.rests ?? [])
     .filter((item): item is NonNullable<typeof item> => !!item)
     .reduce((restAcc, rest) => {

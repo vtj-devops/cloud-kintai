@@ -1,11 +1,7 @@
 import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
-import {
-  WORK_STATUS_DATASET_META,
-} from "@entities/attendance/lib/workStatusChart";
-import {
-  toAttendanceWorkStatusHours,
-} from "@entities/attendance/lib/workStatusChartAggregation";
+import { WORK_STATUS_DATASET_META } from "@entities/attendance/lib/workStatusChart";
+import { toAttendanceWorkStatusHours } from "@entities/attendance/lib/workStatusChartAggregation";
 import { Attendance } from "@shared/api/graphql/types";
 import { alphaColor } from "@shared/lib/color";
 import {
@@ -33,19 +29,19 @@ export function AttendanceGraph({
 
   const standardWorkHours = useMemo(
     () => getStandardWorkHours(),
-    [getStandardWorkHours]
+    [getStandardWorkHours],
   );
 
   const targetMonth = useMemo(
     () => (month ? month.startOf("month") : dayjs().startOf("month")),
-    [month]
+    [month],
   );
 
   const attendanceByDate = useMemo(() => {
     return attendances.reduce((map, attendance) => {
       if (attendance.workDate) {
         const key = dayjs(attendance.workDate).format(
-          AttendanceDate.DataFormat
+          AttendanceDate.DataFormat,
         );
         map.set(key, attendance);
       }

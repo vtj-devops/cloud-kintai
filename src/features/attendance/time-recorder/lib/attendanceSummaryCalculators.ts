@@ -1,6 +1,9 @@
 import type { DateRange } from "@entities/attendance/lib/aggregationDateRange";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
-import { calcTotalRestTime, calcTotalWorkTime } from "@entities/attendance/lib/time";
+import {
+  calcTotalRestTime,
+  calcTotalWorkTime,
+} from "@entities/attendance/lib/time";
 import { toAttendanceWorkStatusHours } from "@entities/attendance/lib/workStatusChartAggregation";
 import type { Attendance } from "@shared/api/graphql/types";
 import dayjs from "dayjs";
@@ -65,16 +68,12 @@ export function calcAttendanceChartSummary(
     if (!attendance.workDate || !attendance.startTime || !attendance.endTime) {
       return acc;
     }
-    const {
-      workHours,
-      paidHolidayHours,
-      restHours,
-      overtimeHours,
-    } = toAttendanceWorkStatusHours({
-      attendance,
-      standardWorkHours: clampedStandardWorkHours,
-      hideRestHoursOnPaidHoliday: true,
-    });
+    const { workHours, paidHolidayHours, restHours, overtimeHours } =
+      toAttendanceWorkStatusHours({
+        attendance,
+        standardWorkHours: clampedStandardWorkHours,
+        hideRestHoursOnPaidHoliday: true,
+      });
     const workDateKey = dayjs(attendance.workDate).format(
       AttendanceDate.DataFormat,
     );
