@@ -17,10 +17,22 @@
 ## Skill 参照
 
 - 開発コマンドと検証手順は `.agents/skills/garaku-dev-commands/SKILL.md` を参照
+- テスト設計・Jest/Playwright 規約は `.agents/skills/garaku-testing-guide/SKILL.md` を参照
 - 配置ルールと依存方向は `.agents/skills/garaku-architecture-map/SKILL.md` を参照
 - 機能配置と修正対象の当たりを付けるときは `.agents/skills/garaku-feature-map/SKILL.md` を参照
 - 勤怠ドメイン全般は `.agents/skills/about-kintai-app/SKILL.md` を参照
 - 権限・ロールは `.agents/skills/about-permissions/SKILL.md` を参照
+
+## Skill 優先順位（競合時）
+
+- 実装場所探索（どこを直すか）と構成判定（レイヤー違反）が同時に出た場合:
+	1) `garaku-feature-map` で候補を特定し、2) `garaku-architecture-map` で正誤判定する
+- 検証コマンド選定とテスト設計が同時に出た場合:
+	1) `garaku-testing-guide` でテスト層を決め、2) `garaku-dev-commands` で実行順を決める
+- 勤怠仕様と権限仕様が同時に出た場合:
+	1) `about-permissions` を優先してアクセス可否を確定し、2) `about-kintai-app` で業務ルールを適用する
+- エラー調査時の開始点:
+	実装場所不明なら `garaku-feature-map`、仕様不明ならドメインSKILL（`about-kintai-app` / `about-permissions`）を先に使う
 
 ## 詳細仕様ドキュメント
 
