@@ -1,3 +1,8 @@
+import type { QueryReturnValue } from "@reduxjs/toolkit/query";
+import type {
+  GraphQLBaseQueryArgs,
+  GraphQLBaseQueryError,
+} from "@shared/api/graphql/graphqlBaseQuery";
 import type {
   Attendance,
   CreateAttendanceInput,
@@ -62,25 +67,16 @@ export type DeleteAttendanceMutationArg = {
   logContext?: AttendanceOperationLogContext;
 };
 
-export type AttendanceQueryError = {
-  message: string;
-  details?: unknown;
-};
+export type AttendanceQueryError = GraphQLBaseQueryError;
 
 export type AttendanceWriteInputExtras = {
   staffWorkDateKey?: string;
 };
 
-export type AttendanceBaseQuery = (arg: {
-  document: string;
-  variables?: Record<string, unknown>;
-  authMode?: string;
-}) =>
-  | {
-      data?: unknown;
-      error?: unknown;
-    }
-  | PromiseLike<{
-      data?: unknown;
-      error?: unknown;
-    }>;
+type AttendanceMaybePromise<T> = T | PromiseLike<T>;
+
+export type AttendanceBaseQuery = (
+  arg: GraphQLBaseQueryArgs,
+) => AttendanceMaybePromise<
+  QueryReturnValue<unknown, GraphQLBaseQueryError, {}>
+>;

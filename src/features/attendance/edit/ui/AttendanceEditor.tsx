@@ -6,8 +6,6 @@ import {
 } from "@entities/attendance/api/attendanceApi";
 import { useOvertimeRequest } from "@entities/attendance/hooks/useOvertimeRequest";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
-import { AttendanceDateTime } from "@entities/attendance/lib/AttendanceDateTime";
-import { resolveConfigTimeOnDate } from "@entities/attendance/lib/resolveConfigTimeOnDate";
 import { attendanceEditSchema } from "@entities/attendance/validation/attendanceEditSchema";
 import { collectAttendanceErrorMessages } from "@entities/attendance/validation/collectErrorMessages";
 import {
@@ -16,42 +14,31 @@ import {
 } from "@entities/attendance/validation/overtimeCheckValidator";
 import { useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import AttendanceEditProvider from "@features/attendance/edit/model/AttendanceEditProvider";
-import {
-  AttendanceEditInputs,
-  defaultValues,
-  HourlyPaidHolidayTimeInputs,
-  RestInputs,
-} from "@features/attendance/edit/model/common";
-import { AttendanceErrorSummary } from "@features/attendance/edit/ui/components/AttendanceErrorSummary";
-import { SubstituteHolidayDateInput } from "@features/attendance/edit/ui/items/SubstituteHolidayDateInput";
+import { AttendanceEditInputs, defaultValues } from "@features/attendance/edit/model/common";
+import { useAttendanceGoDirectlyHandler } from "@features/attendance/edit/model/useAttendanceGoDirectlyHandler";
+import { useAttendanceHolidayHandlers } from "@features/attendance/edit/model/useAttendanceHolidayHandlers";
+import { useAttendanceSubmit } from "@features/attendance/edit/model/useAttendanceSubmit";
+import { AttendanceVacationTabs } from "@features/attendance/edit/ui/components/AttendanceVacationTabs";
 import { zodResolver } from "@hookform/resolvers/zod";
-import AddAlarmIcon from "@mui/icons-material/AddAlarm";
-import { Checkbox } from "@mui/material";
-import { HourlyPaidHolidayTimeInput } from "@shared/api/graphql/types";
 import { Logger } from "@shared/lib/logger";
-import { AttendanceEditMailSender } from "@shared/lib/mail/AttendanceEditMailSender";
-import { pushNotification } from "@shared/lib/store/notificationSlice";
-import { AppButton, AppIconButton } from "@shared/ui/button";
 import { ProgressBar } from "@shared/ui/feedback";
 import { InlineAlert } from "@shared/ui/feedback/InlineAlert";
 import { usePageLeaveGuard } from "@shared/ui/feedback/usePageLeaveGuard";
 import GroupContainer from "@shared/ui/group-container/GroupContainer";
-import dayjs from "dayjs";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
+import { useFieldArray, useForm } from "react-hook-form";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-
-import * as MESSAGE_CODE from "@/errors";
 
 import { useAttendanceRecord } from "../model/useAttendanceRecord";
 import ChangeRequestDialog from "./ChangeRequestDialog/ChangeRequestDialog";
 import { AttendanceEditFormSkeleton } from "./components/AttendanceEditFormSkeleton";
-import { VacationTabs } from "./components/VacationTabs";
-// eslint-disable-next-line import/no-cycle
-import EditAttendanceHistoryList from "./EditAttendanceHistoryList/EditAttendanceHistoryList";
-import IsDeemedHolidayFlagInput from "./IsDeemedHolidayFlagInput";
-import HourlyPaidHolidayTimeItem, {
+import { AttendanceEditorAdditionalBottomContent } from "./components/AttendanceEditorAdditionalBottomContent";
+import { AttendanceEditorAlerts } from "./components/AttendanceEditorAlerts";
+import { AttendanceEditorEditActions } from "./components/AttendanceEditorEditActions";
+import { AttendanceEditorHeader } from "./components/AttendanceEditorHeader";
+import { AttendanceEditorHistorySidebar } from "./components/AttendanceEditorHistorySidebar";
+import { AttendanceEditorSaveAction } from "./components/AttendanceEditorSaveAction";
+import {
   calcTotalHourlyPaidHolidayTime,
 } from "./items/HourlyPaidHolidayTimeItem";
 // eslint-disable-next-line import/no-cycle
@@ -61,26 +48,7 @@ import { calcTotalRestTime } from "./items/RestTimeItem/RestTimeItem";
 import WorkDateItem from "./items/WorkDateItem";
 import { calcTotalWorkTime } from "./items/WorkTimeItem/WorkTimeItem";
 import MoveDateItem from "./MoveDateItem";
-import PaidHolidayFlagInputCommon from "./PaidHolidayFlagInput";
-import QuickInputButtons from "./QuickInputButtons";
-import { SystemCommentList } from "./SystemCommentList";
 
-function buildHourlyPaidHolidayTimes(
-  data: HourlyPaidHolidayTimeInputs[] | undefined,
-): HourlyPaidHolidayTimeInput[] {
-  if (!data) {
-    return [];
-  }
-  return data.reduce<HourlyPaidHolidayTimeInput[]>((acc, item) => {
-    if (item.startTime && item.endTime) {
-      acc.push({
-        startTime: item.startTime,
-        endTime: item.endTime,
-      });
-    }
-    return acc;
-  }, []);
-}
 const MONTH_QUERY_KEY = "month";
 export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
   const {
@@ -104,7 +72,6 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
   const getStartTime = () => configStartTime;
   const getEndTime = () => configEndTime;
   const getAbsentEnabled = () => absentEnabled;
-  const dispatch = useDispatch();
   const { targetWorkDate, staffId: targetStaffId } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -294,352 +261,25 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
       ),
     [watchedStartTime, watchedRests],
   );
-  const onSubmit = useCallback(
-    async (data: AttendanceEditInputs) => {
-      if (overtimeError) {
-        dispatch(
-          pushNotification({
-            tone: "error",
-            message: overtimeError,
-          }),
-        );
-        return;
-      }
-      if (attendance) {
-        const payload = {
-          id: attendance.id,
-          staffId: attendance.staffId,
-          workDate: data.workDate,
-          startTime: data.paidHolidayFlag
-            ? resolveConfigTimeOnDate(
-                getStartTime(),
-                data.workDate as string | null | undefined,
-                attendance?.workDate,
-                targetWorkDate,
-              )
-            : data.startTime,
-          endTime: data.paidHolidayFlag
-            ? resolveConfigTimeOnDate(
-                getEndTime(),
-                data.workDate as string | null | undefined,
-                attendance?.workDate,
-                targetWorkDate,
-              )
-            : data.endTime || null,
-          absentFlag: data.absentFlag ?? false,
-          isDeemedHoliday: data.isDeemedHoliday,
-          goDirectlyFlag: data.goDirectlyFlag,
-          returnDirectlyFlag: data.returnDirectlyFlag,
-          remarks: data.remarks,
-          revision: data.revision,
-          paidHolidayFlag: data.paidHolidayFlag,
-          specialHolidayFlag: data.specialHolidayFlag,
-          substituteHolidayDate: data.substituteHolidayDate,
-          rests: data.paidHolidayFlag
-            ? [
-                {
-                  startTime: new AttendanceDateTime()
-                    .setDateString(
-                      (data.workDate as string) || attendance?.workDate || "",
-                    )
-                    .setRestStart()
-                    .toISOString(),
-                  endTime: new AttendanceDateTime()
-                    .setDateString(
-                      (data.workDate as string) || attendance?.workDate || "",
-                    )
-                    .setRestEnd()
-                    .toISOString(),
-                },
-              ]
-            : (data.rests || []).map((rest) => ({
-                startTime: rest.startTime,
-                endTime: rest.endTime,
-              })),
-          systemComments: (data.systemComments || []).map(
-            ({ comment, confirmed, createdAt }) => ({
-              comment,
-              confirmed,
-              createdAt,
-            }),
-          ),
-          hourlyPaidHolidayTimes: data.paidHolidayFlag
-            ? []
-            : buildHourlyPaidHolidayTimes(data.hourlyPaidHolidayTimes),
-          logContext: {
-            action: "attendance.update",
-          },
-        };
-        try {
-          const res = await handleUpdateAttendance(payload);
-          try {
-            const isEditingOtherStaff =
-              staff && currentUser && staff.cognitoUserId !== currentUser.id;
-            if (isEditingOtherStaff && res && enabledSendMail) {
-              await new AttendanceEditMailSender(staff, res).changeRequest();
-            }
-          } catch (mailError) {
-            logger.error(`Failed to send edit mail: ${mailError}`);
-          }
-          dispatch(
-            pushNotification({
-              tone: "success",
-              message: MESSAGE_CODE.S04001,
-            }),
-          );
-          runWithoutGuard(() => navigate(attendanceListPath));
-        } catch (error) {
-          logger.error(`Update attendance error:`, error);
-          const errorMessage =
-            error instanceof Error ? error.message : String(error);
-          logger.error(`Error details: ${errorMessage}`);
-          dispatch(
-            pushNotification({
-              tone: "error",
-              message: MESSAGE_CODE.E04001,
-            }),
-          );
-        }
-        return;
-      }
-      if (!targetStaffId || !targetWorkDate) {
-        dispatch(
-          pushNotification({
-            tone: "error",
-            message: MESSAGE_CODE.E04001,
-          }),
-        );
-        return;
-      }
-      try {
-        const res = await handleCreateAttendance({
-          staffId: targetStaffId,
-          workDate: new AttendanceDateTime()
-            .setDateString(targetWorkDate)
-            .toDataFormat(),
-          startTime: data.paidHolidayFlag
-            ? resolveConfigTimeOnDate(
-                getStartTime(),
-                data.workDate as string | null | undefined,
-                targetWorkDate,
-              )
-            : data.startTime,
-          absentFlag: data.absentFlag ?? false,
-          isDeemedHoliday: data.isDeemedHoliday,
-          endTime: data.paidHolidayFlag
-            ? resolveConfigTimeOnDate(
-                getEndTime(),
-                data.workDate as string | null | undefined,
-                targetWorkDate,
-              )
-            : data.endTime,
-          goDirectlyFlag: data.goDirectlyFlag,
-          returnDirectlyFlag: data.returnDirectlyFlag,
-          remarks: data.remarks,
-          specialHolidayFlag: data.specialHolidayFlag,
-          paidHolidayFlag: data.paidHolidayFlag,
-          substituteHolidayDate: data.substituteHolidayDate,
-          rests: data.paidHolidayFlag
-            ? [
-                {
-                  startTime: new AttendanceDateTime()
-                    .setDateString((targetWorkDate as string) || "")
-                    .setRestStart()
-                    .toISOString(),
-                  endTime: new AttendanceDateTime()
-                    .setDateString((targetWorkDate as string) || "")
-                    .setRestEnd()
-                    .toISOString(),
-                },
-              ]
-            : (data.rests || []).map((rest) => ({
-                startTime: rest.startTime,
-                endTime: rest.endTime,
-              })),
-          systemComments: (data.systemComments || []).map(
-            ({ comment, confirmed, createdAt }) => ({
-              comment,
-              confirmed,
-              createdAt,
-            }),
-          ),
-          hourlyPaidHolidayTimes: data.paidHolidayFlag
-            ? []
-            : buildHourlyPaidHolidayTimes(data.hourlyPaidHolidayTimes),
-          logContext: {
-            action: "attendance.create",
-          },
-        });
-        if (!staff) {
-          return;
-        }
-        if (enabledSendMail) {
-          try {
-            const isEditingOtherStaff =
-              currentUser && staff.cognitoUserId !== currentUser.id;
-            if (isEditingOtherStaff) {
-              await new AttendanceEditMailSender(staff, res).changeRequest();
-            }
-          } catch (mailError) {
-            logger.error(`Failed to send create mail: ${mailError}`);
-          }
-        }
-        dispatch(
-          pushNotification({
-            tone: "success",
-            message: MESSAGE_CODE.S04001,
-          }),
-        );
-        runWithoutGuard(() => navigate(attendanceListPath));
-      } catch (error) {
-        logger.error(`Create attendance error:`, error);
-        const errorMessage =
-          error instanceof Error ? error.message : String(error);
-        logger.error(`Error details: ${errorMessage}`);
-        dispatch(
-          pushNotification({
-            tone: "error",
-            message: MESSAGE_CODE.E04001,
-          }),
-        );
-      }
-    },
-    [
-      attendance,
-      staff,
-      enabledSendMail,
-      handleUpdateAttendance,
-      handleCreateAttendance,
-      targetStaffId,
-      targetWorkDate,
-      dispatch,
-      getStartTime,
-      getEndTime,
-      navigate,
-      attendanceListPath,
-      overtimeError,
-    ],
-  );
-  const handleAbsentFlagChange = useCallback(
-    (checked: boolean) => {
-      const tags: string[] = (getValues("remarkTags") as string[]) || [];
-      const has = tags.includes("欠勤");
-      if (checked && !has) {
-        setValue("remarkTags", [...tags, "欠勤"]);
-      }
-      if (!checked && has) {
-        setValue(
-          "remarkTags",
-          tags.filter((t) => t !== "欠勤"),
-        );
-      }
-    },
-    [getValues, setValue],
-  );
-  const handleSpecialHolidayFlagChange = useCallback(
-    (checked: boolean) => {
-      if (checked) {
-        const tags: string[] = (getValues("remarkTags") as string[]) || [];
-        if (!tags.includes("特別休暇")) {
-          setValue("remarkTags", [...tags, "特別休暇"]);
-        }
-        try {
-          const desiredStart = resolveConfigTimeOnDate(
-            getStartTime(),
-            getValues("startTime") as string | null | undefined,
-            targetWorkDate,
-            attendance?.workDate,
-            workDate,
-          );
-          const desiredEnd = resolveConfigTimeOnDate(
-            getEndTime(),
-            getValues("endTime") as string | null | undefined,
-            targetWorkDate,
-            attendance?.workDate,
-            workDate,
-          );
-          if (getValues("startTime") !== desiredStart) {
-            setValue("startTime", desiredStart);
-          }
-          if (getValues("endTime") !== desiredEnd) {
-            setValue("endTime", desiredEnd);
-          }
-        } catch (error) {
-          logger.debug(
-            "Failed to set default times for special holiday",
-            error,
-          );
-        }
-        const dateStr =
-          (getValues("workDate") as string) || attendance?.workDate || "";
-        const lunchStartCfg = getLunchRestStartTime();
-        const lunchEndCfg = getLunchRestEndTime();
-        const baseDay = dateStr
-          ? dayjs(dateStr)
-          : workDate
-            ? workDate
-            : dayjs();
-        const desiredRests: RestInputs[] = [
-          {
-            startTime: baseDay
-              .hour(lunchStartCfg.hour())
-              .minute(lunchStartCfg.minute())
-              .second(0)
-              .millisecond(0)
-              .toISOString(),
-            endTime: baseDay
-              .hour(lunchEndCfg.hour())
-              .minute(lunchEndCfg.minute())
-              .second(0)
-              .millisecond(0)
-              .toISOString(),
-          },
-        ];
-        try {
-          const currentRests = getValues("rests") || [];
-          if (JSON.stringify(currentRests) !== JSON.stringify(desiredRests)) {
-            if (restReplace && typeof restReplace === "function") {
-              restReplace(desiredRests);
-            } else {
-              setValue("rests", desiredRests);
-            }
-          }
-        } catch (error) {
-          logger.debug("Failed to sync rests for special holiday", error);
-        }
-        try {
-          const currentHourly = getValues("hourlyPaidHolidayTimes") || [];
-          if ((currentHourly as HourlyPaidHolidayTimeInputs[]).length > 0) {
-            hourlyPaidHolidayTimeReplace([]);
-          }
-        } catch (error) {
-          logger.debug(
-            "Failed to clear hourly paid holiday times for special holiday",
-            error,
-          );
-        }
-        try {
-          const currentPaid = getValues("paidHolidayFlag");
-          if (currentPaid) {
-            setValue("paidHolidayFlag", false);
-          }
-        } catch (error) {
-          logger.debug(
-            "Failed to unset paid holiday flag for special holiday",
-            error,
-          );
-        }
-      } else {
-        const tags: string[] = (getValues("remarkTags") as string[]) || [];
-        if (tags.includes("特別休暇")) {
-          setValue(
-            "remarkTags",
-            tags.filter((t) => t !== "特別休暇"),
-          );
-        }
-      }
-    },
-    [
+  const { onSubmit } = useAttendanceSubmit({
+    attendance,
+    staff,
+    currentUserId: currentUser?.id,
+    enabledSendMail,
+    handleUpdateAttendance,
+    handleCreateAttendance,
+    targetStaffId,
+    targetWorkDate,
+    getStartTime,
+    getEndTime,
+    attendanceListPath,
+    overtimeError,
+    logger,
+    navigateToAttendanceList: () =>
+      runWithoutGuard(() => navigate(attendanceListPath)),
+  });
+  const { handleAbsentFlagChange, handleSpecialHolidayFlagChange } =
+    useAttendanceHolidayHandlers({
       getValues,
       setValue,
       getStartTime,
@@ -647,13 +287,20 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
       getLunchRestStartTime,
       getLunchRestEndTime,
       targetWorkDate,
-      attendance,
+      attendanceWorkDate: attendance?.workDate,
       workDate,
       restReplace,
       hourlyPaidHolidayTimeReplace,
       logger,
-    ],
-  );
+    });
+  const { handleGoDirectlyChange } = useAttendanceGoDirectlyHandler({
+    setValue,
+    getValues,
+    getStartTime,
+    workDate,
+    targetWorkDate,
+    setHighlightStartTime,
+  });
   const { dialog, runWithoutGuard } = usePageLeaveGuard({
     isDirty,
     isBusy: isSubmitting,
@@ -725,47 +372,16 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
             <p className="mt-1 text-center text-sm text-slate-600">保存中...</p>
           </div>
         )}
-        <div className="flex flex-wrap items-center justify-between gap-1.5">
-          <AppButton
-            data-testid="attendance-admin-back-button"
-            onClick={() => {
-              navigate(attendanceListPath);
-            }}
-            variant="outline"
-            tone="neutral"
-            size="sm"
-          >
-            <span aria-hidden="true" className="text-base leading-none">
-              ←
-            </span>
-            勤怠一覧に戻る
-          </AppButton>
-          {workDate && (
-            <div data-testid="attendance-workdate-label" className="inline-flex w-fit items-center rounded-full bg-slate-900/5 px-3 py-1.5 text-xs font-semibold tracking-[0.08em] text-slate-600">
-              {workDate.format(AttendanceDate.DisplayFormat)}
-            </div>
-          )}
-        </div>
-        <div>
-          {readOnly && (
-            <div className="mt-1">
-              <InlineAlert tone="info">
-                <div>この画面は表示専用です（編集はできません）</div>
-                {sortedHistories[historyIndex] && (
-                  <div className="mt-0.5 text-sm">
-                    履歴作成日時:{" "}
-                    {dayjs(sortedHistories[historyIndex].createdAt).format(
-                      "YYYY/MM/DD HH:mm:ss",
-                    )}
-                  </div>
-                )}
-              </InlineAlert>
-            </div>
-          )}
-          {readOnly && (
-            <div className="mt-1">
-              <AppButton
-                onClick={() => {
+        <AttendanceEditorHeader
+          workDate={workDate}
+          onBackToAttendanceList={() => {
+            navigate(attendanceListPath);
+          }}
+          readOnly={readOnly}
+          currentHistoryCreatedAt={sortedHistories[historyIndex]?.createdAt}
+          onBackToEdit={
+            readOnly
+              ? () => {
                   const date = workDate
                     ? workDate.format(AttendanceDate.DataFormat)
                     : targetWorkDate;
@@ -781,101 +397,42 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
                       `${editPath}?${new URLSearchParams({ [MONTH_QUERY_KEY]: month }).toString()}`,
                     );
                   }
-                }}
-                variant="outline"
-                tone="neutral"
-                size="sm"
-              >
-                編集画面に戻る
-              </AppButton>
-            </div>
-          )}
-        </div>
+                }
+              : undefined
+          }
+        />
         <div className={readOnly ? "mt-1 flex items-start gap-2" : undefined}>
           {readOnly && (
-            <div className="pointer-events-auto z-[1500] max-h-[60vh] w-[260px] overflow-y-auto">
-              {historiesLoading ? (
-                <div className="p-2">
-                  <ProgressBar />
-                </div>
-              ) : sortedHistories && sortedHistories.length > 0 ? (
-                <div className="flex flex-col gap-1">
-                  {sortedHistories.map((h, idx) => (
-                    <AppButton
-                      key={idx}
-                      onClick={() => {
-                        setHistoryIndex(idx);
-                        try {
-                          applyHistory(idx);
-                        } catch (error) {
-                          logger.debug(
-                            "Failed to apply attendance history",
-                            error,
-                          );
-                        }
-                      }}
-                      variant={idx === historyIndex ? "solid" : "outline"}
-                      tone={idx === historyIndex ? "primary" : "neutral"}
-                      size="sm"
-                      fullWidth
-                      className="flex-col items-start"
-                    >
-                      <span className="text-sm font-semibold text-slate-900">
-                        {`履歴 #${sortedHistories.length - idx}`}
-                      </span>
-                      <span className="mt-1 text-xs text-slate-500">
-                        {dayjs(h.createdAt).format("YYYY/MM/DD HH:mm:ss")}
-                      </span>
-                    </AppButton>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-2">
-                  <InlineAlert tone="info">履歴がありません。</InlineAlert>
-                </div>
-              )}
-            </div>
+            <AttendanceEditorHistorySidebar
+              historiesLoading={historiesLoading}
+              sortedHistories={sortedHistories}
+              historyIndex={historyIndex}
+              onSelectHistory={(idx) => {
+                setHistoryIndex(idx);
+                try {
+                  applyHistory(idx);
+                } catch (error) {
+                  logger.debug("Failed to apply attendance history", error);
+                }
+              }}
+            />
           )}
           <div className="grow">
             <div className="flex flex-col gap-2 px-[120px]">
-              {errorMessages.length > 0 && (
-                <AttendanceErrorSummary messages={errorMessages} />
-              )}
+              <AttendanceEditorAlerts
+                errorMessages={errorMessages}
+                overtimeError={overtimeError}
+                showNoDataAlert={!attendance}
+              />
 
-              {overtimeError && (
-                <div>
-                  <InlineAlert tone="error" title="残業チェック">
-                    {overtimeError}
-                  </InlineAlert>
-                </div>
-              )}
-
-              {!attendance && (
-                <div>
-                  <InlineAlert tone="info">
-                    指定された日付に勤怠情報の登録がありません。保存時に新規作成されます。
-                  </InlineAlert>
-                </div>
-              )}
-
-              <div className="flex gap-1">
-                {!readOnly && <EditAttendanceHistoryList />}
-                {!readOnly && <SystemCommentList />}
-              </div>
-
-              {!readOnly && (
-                <GroupContainer hideAccent hideBorder>
-                  <QuickInputButtons
-                    setValue={setValue}
-                    restReplace={restReplace}
-                    hourlyPaidHolidayTimeReplace={hourlyPaidHolidayTimeReplace}
-                    workDate={workDate}
-                    visibleMode="admin"
-                    getValues={getValues}
-                    readOnly={readOnly}
-                  />
-                </GroupContainer>
-              )}
+              <AttendanceEditorEditActions
+                readOnly={readOnly}
+                setValue={setValue}
+                restReplace={restReplace}
+                hourlyPaidHolidayTimeReplace={hourlyPaidHolidayTimeReplace}
+                workDate={workDate}
+                getValues={getValues}
+              />
 
               <GroupContainer hideAccent hideBorder>
                 <div>
@@ -896,239 +453,48 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
                 totalHourlyPaidHolidayTime={totalHourlyPaidHolidayTime}
                 readOnly={readOnly}
                 changeRequests={changeRequests}
-                onGoDirectlyChange={(checked) => {
-                  if (checked) {
-                    setValue(
-                      "startTime",
-                      resolveConfigTimeOnDate(
-                        getStartTime(),
-                        getValues("startTime") as string | null | undefined,
-                        workDate,
-                        targetWorkDate,
-                      ),
-                    );
-                    setHighlightStartTime(true);
-                    setTimeout(() => setHighlightStartTime(false), 2500);
-                  }
-                }}
-                vacationTabsContent={(() => {
-                  const items: {
-                    label: string;
-                    content: JSX.Element;
-                  }[] = [];
-                  items.push({
-                    label: "振替休日",
-                    content: <SubstituteHolidayDateInput />,
-                  });
-                  items.push({
-                    label: "有給(1日)",
-                    content: (
-                      <PaidHolidayFlagInputCommon
-                        label="有給休暇(1日)"
-                        control={control}
-                        setValue={setValue}
-                        workDate={workDate ? workDate.toISOString() : undefined}
-                        setPaidHolidayTimes={true}
-                        disabled={changeRequests.length > 0 || !!readOnly}
-                        restReplace={restReplace}
-                        getValues={getValues}
-                      />
-                    ),
-                  });
-                  if (getAbsentEnabled && getAbsentEnabled()) {
-                    items.push({
-                      label: "欠勤",
-                      content: (
-                        <div className="mt-1">
-                          <div className="flex items-center">
-                            <div className="w-[150px] font-bold">欠勤</div>
-                            <div>
-                              <Controller
-                                name="absentFlag"
-                                control={control}
-                                render={({ field }) => (
-                                  <Checkbox
-                                    {...field}
-                                    checked={field.value || false}
-                                    onChange={(e) => {
-                                      field.onChange(e);
-                                      handleAbsentFlagChange(e.target.checked);
-                                    }}
-                                    disabled={
-                                      changeRequests.length > 0 || !!readOnly
-                                    }
-                                  />
-                                )}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      ),
-                    });
-                  }
-                  if (getSpecialHolidayEnabled && getSpecialHolidayEnabled()) {
-                    items.push({
-                      label: "特別休暇",
-                      content: (
-                        <div className="mt-1">
-                          <div className="flex items-center">
-                            <div className="w-[150px] font-bold">特別休暇</div>
-                            <div>
-                              <Controller
-                                name="specialHolidayFlag"
-                                control={control}
-                                render={({ field }) => (
-                                  <Checkbox
-                                    {...field}
-                                    checked={field.value || false}
-                                    onChange={(e) => {
-                                      field.onChange(e);
-                                      handleSpecialHolidayFlagChange(
-                                        e.target.checked,
-                                      );
-                                    }}
-                                    disabled={
-                                      changeRequests.length > 0 || !!readOnly
-                                    }
-                                  />
-                                )}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      ),
-                    });
-                  }
-                  if (getHourlyPaidHolidayEnabled()) {
-                    items.push({
-                      label: `時間単位(${hourlyPaidHolidayTimeFields.length}件)`,
-                      content: (
-                        <div className="flex flex-col gap-1">
-                          <div className="flex">
-                            <div className="w-[150px] font-bold">{`時間単位休暇(${hourlyPaidHolidayTimeFields.length}件)`}</div>
-                            <div className="flex grow flex-col gap-1">
-                              {hourlyPaidHolidayTimeFields.length === 0 && (
-                                <div className="text-sm text-slate-500">
-                                  時間単位休暇の時間帯を追加してください。
-                                </div>
-                              )}
-                              {hourlyPaidHolidayTimeFields.map(
-                                (hourlyPaidHolidayTime, index) => (
-                                  <HourlyPaidHolidayTimeItem
-                                    key={hourlyPaidHolidayTime.id}
-                                    time={hourlyPaidHolidayTime}
-                                    index={index}
-                                  />
-                                ),
-                              )}
-                              <div>
-                                <AppIconButton
-                                  aria-label="add-hourly-paid-holiday-time"
-                                  onClick={() =>
-                                    hourlyPaidHolidayTimeAppend({
-                                      startTime: null,
-                                      endTime: null,
-                                    })
-                                  }
-                                  disabled={!!readOnly}
-                                  tone="primary"
-                                >
-                                  <AddAlarmIcon />
-                                </AppIconButton>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ),
-                    });
-                  }
-                  items.push({
-                    label: "指定休日",
-                    content: (
-                      <div className="mt-1">
-                        <IsDeemedHolidayFlagInput
-                          control={control}
-                          name="isDeemedHoliday"
-                          disabled={
-                            !(staff?.workType === "shift") || !!readOnly
-                          }
-                          helperText={
-                            staff?.workType === "shift"
-                              ? undefined
-                              : "※シフト勤務のスタッフのみ設定できます"
-                          }
-                        />
-                      </div>
-                    ),
-                  });
-                  return (
-                    <VacationTabs
-                      value={vacationTab}
-                      onChange={setVacationTab}
-                      items={items}
-                      panelPadding={2}
-                      tabsProps={{
-                        "aria-label": "vacation-tabs",
-                        sx: { borderBottom: 1, borderColor: "divider" },
-                      }}
-                    />
-                  );
-                })()}
+                onGoDirectlyChange={handleGoDirectlyChange}
+                vacationTabsContent={
+                  <AttendanceVacationTabs
+                    value={vacationTab}
+                    onChange={setVacationTab}
+                    control={control}
+                    setValue={setValue}
+                    getValues={getValues}
+                    restReplace={restReplace}
+                    workDateIso={workDate ? workDate.toISOString() : undefined}
+                    readOnly={readOnly}
+                    changeRequestsLength={changeRequests.length}
+                    getAbsentEnabled={getAbsentEnabled}
+                    getSpecialHolidayEnabled={getSpecialHolidayEnabled}
+                    getHourlyPaidHolidayEnabled={getHourlyPaidHolidayEnabled}
+                    handleAbsentFlagChange={handleAbsentFlagChange}
+                    handleSpecialHolidayFlagChange={handleSpecialHolidayFlagChange}
+                    hourlyPaidHolidayTimeFields={hourlyPaidHolidayTimeFields}
+                    hourlyPaidHolidayTimeAppend={hourlyPaidHolidayTimeAppend}
+                    staffWorkType={staff?.workType}
+                  />
+                }
                 remarksContent={<RemarksItem />}
                 additionalBottomContent={
                   !readOnly ? (
-                    <GroupContainer hideAccent hideBorder>
-                      {attendance?.updatedAt && (
-                        <div className="flex items-center">
-                          <div className="w-[150px] font-bold">
-                            最終更新日時
-                          </div>
-                          <div className="grow">
-                            <div className="pl-1 text-base text-slate-500">
-                              {dayjs(attendance.updatedAt).format(
-                                "YYYY/MM/DD HH:mm:ss",
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      <div>
-                        <div className="flex items-center">
-                          <div className="w-[150px] font-bold">メール設定</div>
-                          <div className="flex items-center gap-3 text-sm text-slate-700">
-                            <input
-                              type="checkbox"
-                              checked={enabledSendMail}
-                              onChange={() =>
-                                setEnabledSendMail((prev) => !prev)
-                              }
-                              className="h-4 w-4 accent-emerald-600"
-                            />
-                            <span>スタッフに変更通知メールを送信する</span>
-                          </div>
-                        </div>
-                      </div>
-                    </GroupContainer>
+                    <AttendanceEditorAdditionalBottomContent
+                      updatedAt={attendance?.updatedAt}
+                      enabledSendMail={enabledSendMail}
+                      onToggleSendMail={() =>
+                        setEnabledSendMail((prev) => !prev)
+                      }
+                    />
                   ) : undefined
                 }
               />
 
-              <div className="flex items-center justify-center gap-3">
-                <div>
-                  {!readOnly && (
-                    <AppButton
-                      onClick={handleSubmit(onSubmit)}
-                      disabled={
-                        !isValid || !isDirty || isSubmitting || !!overtimeError
-                      }
-                      loading={isSubmitting}
-                      size="lg"
-                    >
-                      {isSubmitting ? "保存中..." : "保存"}
-                    </AppButton>
-                  )}
-                </div>
-              </div>
+              <AttendanceEditorSaveAction
+                readOnly={readOnly}
+                onSave={handleSubmit(onSubmit)}
+                disabled={!isValid || !isDirty || isSubmitting || !!overtimeError}
+                loading={isSubmitting}
+              />
             </div>
           </div>
         </div>
