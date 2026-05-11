@@ -1,15 +1,7 @@
 import { AuthContext } from "@app/providers/auth/AuthContext";
 import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
-import {
-  getWorkStatus,
-  WorkStatusCodes,
-} from "@entities/attendance/lib/actions/workStatus";
-import { calcTotalRestTime, calcTotalWorkTime } from "@entities/attendance/lib/time";
 import useCloseDates from "@entities/attendance/model/useCloseDates";
-import {
-  type StaffType,
-  useStaffs,
-} from "@entities/staff/model/useStaffs/useStaffs";
+import { useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import { graphqlClient } from "@shared/api/amplify/graphqlClient";
 import {
   listAttendances,
@@ -41,7 +33,6 @@ import {
   BarElement,
   CategoryScale,
   Chart as ChartJS,
-  type ChartOptions,
   Legend,
   LinearScale,
   Tooltip as ChartTooltip,
@@ -49,34 +40,18 @@ import {
 import dayjs from "dayjs";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 
+import {
+  buildStaffWorkStatusChartData,
+  buildStaffWorkStatusChartOptions,
+  buildStaffWorkStatusSummary,
+  countDuplicateAttendanceDays,
+  isAttendanceCurrentWorking,
+} from "../lib/adminDashboardSelectors";
 import { resolveAggregationDateRange } from "../lib/resolveAggregationDateRange";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ChartTooltip, Legend);
 
 const logger = createLogger("AdminDashboard");
-
-const isAttendanceCurrentWorking = (attendance: Attendance) => {
-  const { code } = getWorkStatus(attendance);
-  return code === WorkStatusCodes.WORKING || code === WorkStatusCodes.RESTING;
-};
-
-const buildStaffIdentityMaps = (staffs: StaffType[]) =>
-  staffs.reduce<{
-    staffLabelsById: Record<string, string>;
-    canonicalStaffIdByAttendanceStaffId: Record<string, string>;
-  }>((acc, staff) => {
-    if (!staff.id) return acc;
-    const displayName = [staff.familyName, staff.givenName]
-      .filter((part): part is string => Boolean(part && part.trim()))
-      .join(" ");
-    if (!displayName) return acc;
-    acc.staffLabelsById[staff.id] = displayName;
-    acc.canonicalStaffIdByAttendanceStaffId[staff.id] = staff.id;
-    if (staff.cognitoUserId) {
-      acc.canonicalStaffIdByAttendanceStaffId[staff.cognitoUserId] = staff.id;
-    }
-    return acc;
-  }, { staffLabelsById: {}, canonicalStaffIdByAttendanceStaffId: {} });
 
 export function useAdminDashboard() {
   const { authStatus } = useContext(AuthContext);
@@ -85,14 +60,21 @@ export function useAdminDashboard() {
   const { staffs, loading: staffLoading } = useStaffs({ isAuthenticated });
   const { closeDates, loading: closeDatesLoading } = useCloseDates();
 
-  const [currentWorkingStaffCount, setCurrentWorkingStaffCount] = useState<number>(0);
-  const [isLoadingCurrentWorkingStaffCount, setIsLoadingCurrentWorkingStaffCount] =
-    useState(false);
+  const [currentWorkingStaffCount, setCurrentWorkingStaffCount] =
+    useState<number>(0);
+  const [
+    isLoadingCurrentWorkingStaffCount,
+    setIsLoadingCurrentWorkingStaffCount,
+  ] = useState(false);
   const [periodAttendances, setPeriodAttendances] = useState<Attendance[]>([]);
-  const [isLoadingPeriodAttendances, setIsLoadingPeriodAttendances] = useState(false);
-  const [submittedDailyReportCount, setSubmittedDailyReportCount] = useState<number>(0);
-  const [approvedDailyReportCount, setApprovedDailyReportCount] = useState<number>(0);
-  const [isLoadingDailyReportStatus, setIsLoadingDailyReportStatus] = useState(false);
+  const [isLoadingPeriodAttendances, setIsLoadingPeriodAttendances] =
+    useState(false);
+  const [submittedDailyReportCount, setSubmittedDailyReportCount] =
+    useState<number>(0);
+  const [approvedDailyReportCount, setApprovedDailyReportCount] =
+    useState<number>(0);
+  const [isLoadingDailyReportStatus, setIsLoadingDailyReportStatus] =
+    useState(false);
 
   const targetWorkDate = useMemo(() => dayjs().format("YYYY-MM-DD"), []);
   const currentMonth = useMemo(() => dayjs().startOf("month"), []);
@@ -126,7 +108,8 @@ export function useAdminDashboard() {
           },
           authMode: "userPool",
         })) as GraphQLResult<ListAttendancesQuery>;
-        if (response.errors?.length) throw new Error(response.errors[0].message);
+        if (response.errors?.length)
+          throw new Error(response.errors[0].message);
         const connection = response.data?.listAttendances;
         const items = connection?.items ?? [];
         items.forEach((attendance) => {
@@ -155,12 +138,15 @@ export function useAdminDashboard() {
           query: listAttendances,
           variables: {
             limit: 200,
-            filter: { workDate: { ge: aggregationStartDate, le: aggregationEndDate } },
+            filter: {
+              workDate: { ge: aggregationStartDate, le: aggregationEndDate },
+            },
             nextToken,
           },
           authMode: "userPool",
         })) as GraphQLResult<ListAttendancesQuery>;
-        if (response.errors?.length) throw new Error(response.errors[0].message);
+        if (response.errors?.length)
+          throw new Error(response.errors[0].message);
         const connection = response.data?.listAttendances;
         const items = connection?.items ?? [];
         items.forEach((attendance) => {
@@ -193,7 +179,8 @@ export function useAdminDashboard() {
           },
           authMode: "userPool",
         })) as GraphQLResult<ListDailyReportsQuery>;
-        if (response.errors?.length) throw new Error(response.errors[0].message);
+        if (response.errors?.length)
+          throw new Error(response.errors[0].message);
         const connection = response.data?.listDailyReports;
         const items = connection?.items ?? [];
         items.forEach((dailyReport) => {
@@ -279,9 +266,11 @@ export function useAdminDashboard() {
       }, 300);
     };
 
-    const handleAttendanceEvent = (attendance?: {
-      workDate?: string | null;
-    } | null) => {
+    const handleAttendanceEvent = (
+      attendance?: {
+        workDate?: string | null;
+      } | null,
+    ) => {
       const workDate = attendance?.workDate;
       if (!workDate) {
         return;
@@ -302,9 +291,11 @@ export function useAdminDashboard() {
       }
     };
 
-    const handleDailyReportEvent = (dailyReport?: {
-      reportDate?: string | null;
-    } | null) => {
+    const handleDailyReportEvent = (
+      dailyReport?: {
+        reportDate?: string | null;
+      } | null,
+    ) => {
       if (dailyReport?.reportDate !== targetWorkDate) {
         return;
       }
@@ -407,133 +398,27 @@ export function useAdminDashboard() {
 
   const staffWorkStatusSummary = useMemo(() => {
     const standardWorkHours = Math.max(getStandardWorkHours(), 0);
-    const { staffLabelsById, canonicalStaffIdByAttendanceStaffId } =
-      buildStaffIdentityMaps(staffs);
-    const staffIds = Object.keys(staffLabelsById);
-    const totalsByStaff = periodAttendances.reduce<
-      Record<string, { workHours: number; overtimeHours: number }>
-    >((acc, attendance) => {
-      if (!attendance.staffId || !attendance.startTime || !attendance.endTime) return acc;
-      const canonicalStaffId = canonicalStaffIdByAttendanceStaffId[attendance.staffId];
-      if (!canonicalStaffId) return acc;
-
-      const workHours = calcTotalWorkTime(attendance.startTime, attendance.endTime);
-      if (!Number.isFinite(workHours)) return acc;
-
-      const restHours = (attendance.rests ?? [])
-        .filter((item): item is NonNullable<typeof item> => !!item)
-        .reduce((restAcc, rest) => {
-          if (!rest.startTime || !rest.endTime) return restAcc;
-          return restAcc + calcTotalRestTime(rest.startTime, rest.endTime);
-        }, 0);
-      if (!Number.isFinite(restHours)) return acc;
-
-      const netWorkHours = Math.max(workHours - restHours, 0);
-      if (!Number.isFinite(netWorkHours)) return acc;
-
-      const current = acc[canonicalStaffId] ?? { workHours: 0, overtimeHours: 0 };
-      const dailyOvertimeHours = Math.max(netWorkHours - standardWorkHours, 0);
-      acc[canonicalStaffId] = {
-        workHours: Number((current.workHours + netWorkHours).toFixed(2)),
-        overtimeHours: Number((current.overtimeHours + dailyOvertimeHours).toFixed(2)),
-      };
-      return acc;
-    }, {});
-
-    staffIds.forEach((staffId) => {
-      if (totalsByStaff[staffId]) return;
-      totalsByStaff[staffId] = { workHours: 0, overtimeHours: 0 };
+    return buildStaffWorkStatusSummary({
+      staffs,
+      periodAttendances,
+      standardWorkHours,
     });
-
-    return Object.entries(totalsByStaff)
-      .map(([staffId, totals]) => {
-        const label = staffLabelsById[staffId];
-        if (!label) return null;
-        return { label, workHours: totals.workHours, overtimeHours: totals.overtimeHours };
-      })
-      .filter((item): item is NonNullable<typeof item> => item !== null)
-      .toSorted((left, right) => right.workHours - left.workHours);
   }, [getStandardWorkHours, periodAttendances, staffs]);
 
-  const duplicateAttendanceDayCount = useMemo(() => {
-    const { canonicalStaffIdByAttendanceStaffId } = buildStaffIdentityMaps(staffs);
-    const attendancesByStaffDate = periodAttendances.reduce<Record<string, number>>(
-      (acc, attendance) => {
-        if (!attendance.staffId || !attendance.workDate) return acc;
-        const canonicalStaffId = canonicalStaffIdByAttendanceStaffId[attendance.staffId];
-        if (!canonicalStaffId) return acc;
-        const key = `${canonicalStaffId}#${attendance.workDate}`;
-        acc[key] = (acc[key] ?? 0) + 1;
-        return acc;
-      },
-      {},
-    );
-
-    return Object.values(attendancesByStaffDate).filter((count) => count > 1).length;
-  }, [periodAttendances, staffs]);
+  const duplicateAttendanceDayCount = useMemo(
+    () => countDuplicateAttendanceDays({ staffs, periodAttendances }),
+    [periodAttendances, staffs],
+  );
 
   const staffWorkStatusChartData = useMemo(
-    () => ({
-      labels: staffWorkStatusSummary.map((item) => item.label),
-      datasets: [
-        {
-          label: "勤務時間",
-          data: staffWorkStatusSummary.map((item) => item.workHours),
-          backgroundColor: "rgba(14,116,144,0.82)",
-          borderColor: "rgba(14,116,144,1)",
-          borderWidth: 1,
-          stack: "work-status",
-        },
-        {
-          label: "残業時間",
-          data: staffWorkStatusSummary.map((item) => -item.overtimeHours),
-          backgroundColor: "rgba(225,29,72,0.82)",
-          borderColor: "rgba(225,29,72,1)",
-          borderWidth: 1,
-          stack: "work-status",
-        },
-      ],
-    }),
+    () => buildStaffWorkStatusChartData(staffWorkStatusSummary),
     [staffWorkStatusSummary],
   );
 
-  const staffWorkStatusChartOptions = useMemo<ChartOptions<"bar">>(() => {
-    const maxWorkHours = Math.max(0, ...staffWorkStatusSummary.map((item) => item.workHours));
-    const maxOvertimeHours = Math.max(
-      0,
-      ...staffWorkStatusSummary.map((item) => item.overtimeHours),
-    );
-    return {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: "bottom",
-          labels: { boxWidth: 12, boxHeight: 12, color: "#334155" },
-        },
-        tooltip: {
-          callbacks: {
-            label: (context) =>
-              `${context.dataset.label}: ${Math.abs(Number(context.parsed.y ?? 0)).toFixed(1)}h`,
-          },
-        },
-      },
-      scales: {
-        x: {
-          stacked: true,
-          grid: { display: false },
-          ticks: { color: "#64748b", autoSkip: false, maxRotation: 90, minRotation: 90 },
-        },
-        y: {
-          stacked: true,
-          suggestedMin: maxOvertimeHours > 0 ? -Math.ceil(maxOvertimeHours + 0.5) : 0,
-          suggestedMax: Math.max(1, Math.ceil(maxWorkHours + 0.5)),
-          ticks: { color: "#64748b", callback: (value) => `${value}h` },
-          grid: { color: "rgba(148,163,184,0.22)" },
-        },
-      },
-    };
-  }, [staffWorkStatusSummary]);
+  const staffWorkStatusChartOptions = useMemo(
+    () => buildStaffWorkStatusChartOptions(staffWorkStatusSummary),
+    [staffWorkStatusSummary],
+  );
 
   // ラベル
   const currentWorkingStaffCountLabel = isLoadingCurrentWorkingStaffCount

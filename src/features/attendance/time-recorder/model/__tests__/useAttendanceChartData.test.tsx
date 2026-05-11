@@ -1,4 +1,7 @@
-import { AppConfigContext, FALLBACK_DERIVED } from "@entities/app-config/model/AppConfigContext";
+import {
+  AppConfigContext,
+  FALLBACK_DERIVED,
+} from "@entities/app-config/model/AppConfigContext";
 import type { DateRange } from "@entities/attendance/lib/aggregationDateRange";
 import { createMockAppConfig, createMockAttendance } from "@shared/test-utils";
 import { renderHook } from "@testing-library/react";
@@ -42,17 +45,18 @@ describe("useAttendanceChartData", () => {
     });
   });
 
-  it("stackedBarData は 勤務時間・残業時間・休憩時間 の 3 datasets を持つ", () => {
+  it("stackedBarData は 勤務時間・有給休暇・残業時間・休憩時間 の 4 datasets を持つ", () => {
     const { result } = renderHook(
       () => useAttendanceChartData([], FIXED_RANGE),
       { wrapper: createWrapper() },
     );
 
     const { datasets } = result.current.stackedBarData;
-    expect(datasets).toHaveLength(3);
+    expect(datasets).toHaveLength(4);
     expect(datasets[0].label).toBe("勤務時間");
-    expect(datasets[1].label).toBe("残業時間");
-    expect(datasets[2].label).toBe("休憩時間");
+    expect(datasets[1].label).toBe("有給休暇");
+    expect(datasets[2].label).toBe("残業時間");
+    expect(datasets[3].label).toBe("休憩時間");
   });
 
   it("labels は日付範囲の各日付 (M/D 形式) に対応する", () => {
@@ -109,9 +113,34 @@ describe("useAttendanceChartData", () => {
       (e) => e.label === "6/1",
     );
     // 残業時間 dataset の値は負値
-    const overtimeDataset = result.current.stackedBarData.datasets[1];
+    const overtimeDataset = result.current.stackedBarData.datasets[2];
     const overtimeData = overtimeDataset.data as number[];
     expect(overtimeData[june1Index]).toBeLessThan(0);
+  });
+
+  it("有給休暇フラグ付き勤怠は有給休暇 dataset に反映され、勤務時間 dataset には含まれない", () => {
+    const attendances = [
+      createMockAttendance({
+        workDate: "2024-06-01",
+        startTime: "2024-06-01T09:00:00Z",
+        endTime: "2024-06-01T17:00:00Z",
+        paidHolidayFlag: true,
+      }),
+    ];
+
+    const { result } = renderHook(
+      () => useAttendanceChartData(attendances, FIXED_RANGE),
+      { wrapper: createWrapper() },
+    );
+
+    const june1Index = result.current.chartSummary.findIndex(
+      (e) => e.label === "6/1",
+    );
+    const workDataset = result.current.stackedBarData.datasets[0];
+    const paidHolidayDataset = result.current.stackedBarData.datasets[1];
+
+    expect((workDataset.data as number[])[june1Index]).toBe(0);
+    expect((paidHolidayDataset.data as number[])[june1Index]).toBeCloseTo(8, 0);
   });
 
   it("休憩ありの勤怠は restHours が正しく計上される", () => {
@@ -137,6 +166,38 @@ describe("useAttendanceChartData", () => {
 
     const june2 = result.current.chartSummary.find((e) => e.label === "6/2");
     expect(june2?.restHours).toBeCloseTo(1, 0);
+  });
+
+  it("有給休暇フラグ付き勤怠では休憩時間が restHours dataset に計上されない", () => {
+    const attendances = [
+      createMockAttendance({
+        workDate: "2024-06-01",
+        startTime: "2024-06-01T09:00:00Z",
+        endTime: "2024-06-01T18:00:00Z",
+        paidHolidayFlag: true,
+        rests: [
+          {
+            __typename: "Rest",
+            startTime: "2024-06-01T12:00:00Z",
+            endTime: "2024-06-01T13:00:00Z",
+          },
+        ],
+      }),
+    ];
+
+    const { result } = renderHook(
+      () => useAttendanceChartData(attendances, FIXED_RANGE),
+      { wrapper: createWrapper() },
+    );
+
+    const june1Index = result.current.chartSummary.findIndex(
+      (e) => e.label === "6/1",
+    );
+    const paidHolidayDataset = result.current.stackedBarData.datasets[1];
+    const restDataset = result.current.stackedBarData.datasets[3];
+
+    expect((paidHolidayDataset.data as number[])[june1Index]).toBeCloseTo(9, 0);
+    expect((restDataset.data as number[])[june1Index]).toBe(0);
   });
 
   it("stackedBarOptions には responsive・stacked 設定が含まれる", () => {
@@ -166,7 +227,8 @@ describe("useAttendanceChartData", () => {
       { wrapper: createWrapper(8) },
     );
 
-    const suggestedMin = result.current.stackedBarOptions.scales?.y?.suggestedMin;
+    const suggestedMin =
+      result.current.stackedBarOptions.scales?.y?.suggestedMin;
     expect(Number(suggestedMin)).toBeLessThan(0);
   });
 

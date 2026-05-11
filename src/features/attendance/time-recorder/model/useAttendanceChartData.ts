@@ -1,5 +1,10 @@
 import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import type { DateRange } from "@entities/attendance/lib/aggregationDateRange";
+import {
+  formatWorkStatusTooltipLabel,
+  WORK_STATUS_CHART_STACK,
+  WORK_STATUS_DATASET_META,
+} from "@entities/attendance/lib/workStatusChart";
 import { calcAttendanceChartSummary } from "@features/attendance/time-recorder/lib/attendanceSummaryCalculators";
 import type { Attendance } from "@shared/api/graphql/types";
 import { type ChartData, type ChartOptions } from "chart.js";
@@ -26,28 +31,36 @@ export function useAttendanceChartData(
       labels: chartSummary.map((item) => item.label),
       datasets: [
         {
-          label: "勤務時間",
+          label: WORK_STATUS_DATASET_META.regular.label,
           data: chartSummary.map((item) => item.workHours),
-          backgroundColor: "rgba(14,116,144,0.8)",
-          borderColor: "rgba(14,116,144,1)",
+          backgroundColor: WORK_STATUS_DATASET_META.regular.backgroundColor,
+          borderColor: WORK_STATUS_DATASET_META.regular.borderColor,
           borderWidth: 1,
-          stack: "work-status",
+          stack: WORK_STATUS_CHART_STACK,
         },
         {
-          label: "残業時間",
+          label: WORK_STATUS_DATASET_META.paidHoliday.label,
+          data: chartSummary.map((item) => item.paidHolidayHours),
+          backgroundColor: WORK_STATUS_DATASET_META.paidHoliday.backgroundColor,
+          borderColor: WORK_STATUS_DATASET_META.paidHoliday.borderColor,
+          borderWidth: 1,
+          stack: WORK_STATUS_CHART_STACK,
+        },
+        {
+          label: WORK_STATUS_DATASET_META.overtime.label,
           data: chartSummary.map((item) => -item.overtimeHours),
-          backgroundColor: "rgba(225,29,72,0.82)",
-          borderColor: "rgba(225,29,72,1)",
+          backgroundColor: WORK_STATUS_DATASET_META.overtime.backgroundColor,
+          borderColor: WORK_STATUS_DATASET_META.overtime.borderColor,
           borderWidth: 1,
-          stack: "work-status",
+          stack: WORK_STATUS_CHART_STACK,
         },
         {
-          label: "休憩時間",
+          label: WORK_STATUS_DATASET_META.rest.label,
           data: chartSummary.map((item) => item.restHours),
-          backgroundColor: "rgba(249,115,22,0.76)",
-          borderColor: "rgba(249,115,22,1)",
+          backgroundColor: WORK_STATUS_DATASET_META.rest.backgroundColor,
+          borderColor: WORK_STATUS_DATASET_META.rest.borderColor,
           borderWidth: 1,
-          stack: "work-status",
+          stack: WORK_STATUS_CHART_STACK,
         },
       ],
     }),
@@ -57,7 +70,9 @@ export function useAttendanceChartData(
   const stackedBarOptions = useMemo<ChartOptions<"bar">>(() => {
     const maxWork = Math.max(
       0,
-      ...chartSummary.map((item) => item.workHours + item.restHours),
+      ...chartSummary.map(
+        (item) => item.workHours + item.paidHolidayHours + item.restHours,
+      ),
     );
     const maxOvertime = Math.max(
       0,
@@ -78,7 +93,10 @@ export function useAttendanceChartData(
         tooltip: {
           callbacks: {
             label: (context) =>
-              `${context.dataset.label}: ${Math.abs(Number(context.parsed.y ?? 0)).toFixed(1)}h`,
+              formatWorkStatusTooltipLabel(
+                context.dataset.label ?? "",
+                context.parsed.y,
+              ),
           },
         },
       },

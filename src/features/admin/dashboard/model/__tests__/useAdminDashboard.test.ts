@@ -77,18 +77,16 @@ function buildWrapper() {
     return React.createElement(
       AuthContext.Provider,
       {
-        value:
-          mockAuthContextValue as unknown as React.ContextType<
-            typeof AuthContext
-          >,
+        value: mockAuthContextValue as unknown as React.ContextType<
+          typeof AuthContext
+        >,
       },
       React.createElement(
         AppConfigContext.Provider,
         {
-          value:
-            mockAppConfigContextValue as unknown as React.ContextType<
-              typeof AppConfigContext
-            >,
+          value: mockAppConfigContextValue as unknown as React.ContextType<
+            typeof AppConfigContext
+          >,
         },
         children,
       ),
@@ -463,8 +461,14 @@ describe("useAdminDashboard", () => {
               data: {
                 listDailyReports: {
                   items: [
-                    makeDailyReportItem({ staffId: "staff-1", reportDate: today }),
-                    makeDailyReportItem({ staffId: "staff-2", reportDate: today }),
+                    makeDailyReportItem({
+                      staffId: "staff-1",
+                      reportDate: today,
+                    }),
+                    makeDailyReportItem({
+                      staffId: "staff-2",
+                      reportDate: today,
+                    }),
                   ],
                   nextToken: null,
                 },
@@ -556,7 +560,9 @@ describe("useAdminDashboard", () => {
 
       const { result } = renderHook(() => useAdminDashboard(), { wrapper });
 
-      await waitFor(() => expect(result.current.isLoadingDailyReportStatus).toBe(false));
+      await waitFor(() =>
+        expect(result.current.isLoadingDailyReportStatus).toBe(false),
+      );
 
       expect(result.current.submittedDailyReportCountLabel).toBe("0件");
       expect(result.current.approvedDailyReportCountLabel).toBe("0件");
@@ -579,7 +585,9 @@ describe("useAdminDashboard", () => {
 
       const { result } = renderHook(() => useAdminDashboard(), { wrapper });
 
-      await waitFor(() => expect(result.current.isLoadingDailyReportStatus).toBe(false));
+      await waitFor(() =>
+        expect(result.current.isLoadingDailyReportStatus).toBe(false),
+      );
 
       expect(result.current.submittedDailyReportCountLabel).toBe("0件");
       expect(result.current.approvedDailyReportCountLabel).toBe("0件");
@@ -613,7 +621,9 @@ describe("useAdminDashboard", () => {
 
       const { result } = renderHook(() => useAdminDashboard(), { wrapper });
 
-      await waitFor(() => expect(result.current.isLoadingDailyReportStatus).toBe(false));
+      await waitFor(() =>
+        expect(result.current.isLoadingDailyReportStatus).toBe(false),
+      );
 
       expect(result.current.submittedDailyReportCountLabel).toBe("0件");
     });
@@ -628,7 +638,9 @@ describe("useAdminDashboard", () => {
 
       const { result } = renderHook(() => useAdminDashboard(), { wrapper });
 
-      await waitFor(() => expect(result.current.isLoadingPeriodAttendances).toBe(false));
+      await waitFor(() =>
+        expect(result.current.isLoadingPeriodAttendances).toBe(false),
+      );
 
       expect(result.current.staffWorkStatusSummary).toHaveLength(0);
     });
@@ -636,7 +648,9 @@ describe("useAdminDashboard", () => {
     it("勤怠データがある場合 staffWorkStatusSummary にスタッフラベルが含まれること", async () => {
       const today = dayjs().format("YYYY-MM-DD");
       mockUseStaffs.mockReturnValue({
-        staffs: [makeStaff({ id: "staff-1", familyName: "山田", givenName: "太郎" })],
+        staffs: [
+          makeStaff({ id: "staff-1", familyName: "山田", givenName: "太郎" }),
+        ],
         loading: false,
       });
 
@@ -671,7 +685,9 @@ describe("useAdminDashboard", () => {
 
       const { result } = renderHook(() => useAdminDashboard(), { wrapper });
 
-      await waitFor(() => expect(result.current.isLoadingPeriodAttendances).toBe(false));
+      await waitFor(() =>
+        expect(result.current.isLoadingPeriodAttendances).toBe(false),
+      );
 
       const labels = result.current.staffWorkStatusSummary.map((s) => s.label);
       expect(labels).toContain("山田 太郎");
@@ -715,7 +731,9 @@ describe("useAdminDashboard", () => {
 
       const { result } = renderHook(() => useAdminDashboard(), { wrapper });
 
-      await waitFor(() => expect(result.current.isLoadingPeriodAttendances).toBe(false));
+      await waitFor(() =>
+        expect(result.current.isLoadingPeriodAttendances).toBe(false),
+      );
 
       const summary = result.current.staffWorkStatusSummary.find(
         (s) => s.label === "山田 太郎",
@@ -731,7 +749,9 @@ describe("useAdminDashboard", () => {
     it("重複勤怠なしの場合 duplicateAttendanceDayCount が 0 であること", async () => {
       const { result } = renderHook(() => useAdminDashboard(), { wrapper });
 
-      await waitFor(() => expect(result.current.isLoadingPeriodAttendances).toBe(false));
+      await waitFor(() =>
+        expect(result.current.isLoadingPeriodAttendances).toBe(false),
+      );
 
       expect(result.current.duplicateAttendanceDayCount).toBe(0);
       expect(result.current.hasDuplicateAttendances).toBe(false);
@@ -770,7 +790,9 @@ describe("useAdminDashboard", () => {
 
       const { result } = renderHook(() => useAdminDashboard(), { wrapper });
 
-      await waitFor(() => expect(result.current.isLoadingPeriodAttendances).toBe(false));
+      await waitFor(() =>
+        expect(result.current.isLoadingPeriodAttendances).toBe(false),
+      );
 
       expect(result.current.hasDuplicateAttendances).toBe(true);
       expect(result.current.duplicateAttendanceDayCount).toBe(1);
@@ -789,8 +811,14 @@ describe("useAdminDashboard", () => {
               data: {
                 listAttendances: {
                   items: [
-                    makeAttendanceItem({ staffId: "staff-1", workDate: "2024-06-01" }),
-                    makeAttendanceItem({ staffId: "staff-1", workDate: "2024-06-02" }),
+                    makeAttendanceItem({
+                      staffId: "staff-1",
+                      workDate: "2024-06-01",
+                    }),
+                    makeAttendanceItem({
+                      staffId: "staff-1",
+                      workDate: "2024-06-02",
+                    }),
                   ],
                   nextToken: null,
                 },
@@ -808,7 +836,9 @@ describe("useAdminDashboard", () => {
 
       const { result } = renderHook(() => useAdminDashboard(), { wrapper });
 
-      await waitFor(() => expect(result.current.isLoadingPeriodAttendances).toBe(false));
+      await waitFor(() =>
+        expect(result.current.isLoadingPeriodAttendances).toBe(false),
+      );
 
       expect(result.current.hasDuplicateAttendances).toBe(false);
       expect(result.current.duplicateAttendanceDayCount).toBe(0);
@@ -819,22 +849,27 @@ describe("useAdminDashboard", () => {
   // チャートデータ
   // =========================================================================
   describe("staffWorkStatusChartData / staffWorkStatusChartOptions", () => {
-    it("staffWorkStatusChartData.datasets に '勤務時間' と '残業時間' が含まれること", async () => {
+    it("staffWorkStatusChartData.datasets に '勤務時間' '有給休暇' '残業時間' が含まれること", async () => {
       const { result } = renderHook(() => useAdminDashboard(), { wrapper });
 
-      await waitFor(() => expect(result.current.isLoadingPeriodAttendances).toBe(false));
+      await waitFor(() =>
+        expect(result.current.isLoadingPeriodAttendances).toBe(false),
+      );
 
       const labels = result.current.staffWorkStatusChartData.datasets.map(
         (d) => d.label,
       );
       expect(labels).toContain("勤務時間");
+      expect(labels).toContain("有給休暇");
       expect(labels).toContain("残業時間");
     });
 
     it("staffWorkStatusChartOptions が responsive: true を返すこと", async () => {
       const { result } = renderHook(() => useAdminDashboard(), { wrapper });
 
-      await waitFor(() => expect(result.current.isLoadingPeriodAttendances).toBe(false));
+      await waitFor(() =>
+        expect(result.current.isLoadingPeriodAttendances).toBe(false),
+      );
 
       expect(result.current.staffWorkStatusChartOptions.responsive).toBe(true);
     });
@@ -844,7 +879,9 @@ describe("useAdminDashboard", () => {
 
       const { result } = renderHook(() => useAdminDashboard(), { wrapper });
 
-      await waitFor(() => expect(result.current.isLoadingPeriodAttendances).toBe(false));
+      await waitFor(() =>
+        expect(result.current.isLoadingPeriodAttendances).toBe(false),
+      );
 
       expect(result.current.staffWorkStatusChartData.labels).toHaveLength(0);
     });
@@ -869,7 +906,9 @@ describe("useAdminDashboard", () => {
             });
           }
           return {
-            subscribe: jest.fn().mockReturnValue({ unsubscribe: mockUnsubscribe }),
+            subscribe: jest
+              .fn()
+              .mockReturnValue({ unsubscribe: mockUnsubscribe }),
           };
         },
       );
@@ -899,10 +938,9 @@ describe("useAdminDashboard", () => {
           React.createElement(
             AppConfigContext.Provider,
             {
-              value:
-                mockAppConfigContextValue as unknown as React.ContextType<
-                  typeof AppConfigContext
-                >,
+              value: mockAppConfigContextValue as unknown as React.ContextType<
+                typeof AppConfigContext
+              >,
             },
             children,
           ),
@@ -910,7 +948,9 @@ describe("useAdminDashboard", () => {
       }
       unauthWrapper.displayName = "UnauthTestWrapper";
 
-      const mockSubscribe = jest.fn().mockReturnValue({ unsubscribe: jest.fn() });
+      const mockSubscribe = jest
+        .fn()
+        .mockReturnValue({ unsubscribe: jest.fn() });
       (graphqlClient.graphql as jest.Mock).mockImplementation(
         ({ query }: { query: unknown }) => {
           if (query === listAttendances) {
@@ -942,7 +982,13 @@ describe("useAdminDashboard", () => {
     it("nextToken がある場合、複数ページ分の勤怠を取得すること", async () => {
       const today = dayjs().format("YYYY-MM-DD");
       (graphqlClient.graphql as jest.Mock).mockImplementation(
-        ({ query, variables }: { query: unknown; variables?: { nextToken?: string | null } }) => {
+        ({
+          query,
+          variables,
+        }: {
+          query: unknown;
+          variables?: { nextToken?: string | null };
+        }) => {
           if (query === listAttendances) {
             if (!variables?.nextToken) {
               // 1ページ目: nextToken あり

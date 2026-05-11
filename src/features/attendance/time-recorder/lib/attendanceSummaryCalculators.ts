@@ -1,9 +1,7 @@
 import type { DateRange } from "@entities/attendance/lib/aggregationDateRange";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
-import {
-  calcTotalRestTime,
-  calcTotalWorkTime,
-} from "@entities/attendance/lib/time";
+import { calcTotalRestTime, calcTotalWorkTime } from "@entities/attendance/lib/time";
+import { toAttendanceWorkStatusHours } from "@entities/attendance/lib/workStatusChartAggregation";
 import type { Attendance } from "@shared/api/graphql/types";
 import dayjs from "dayjs";
 
@@ -15,6 +13,7 @@ export type AttendanceSummary = {
 export type AttendanceChartEntry = {
   label: string;
   workHours: number;
+  paidHolidayHours: number;
   restHours: number;
   overtimeHours: number;
   workDateValue: number;
@@ -53,33 +52,43 @@ export function calcAttendanceChartSummary(
   const clampedStandardWorkHours = Math.max(standardWorkHours, 0);
 
   const workStatusHoursByDate = filteredAttendances.reduce<
-    Record<string, { netWorkHours: number; restHours: number }>
+    Record<
+      string,
+      {
+        workHours: number;
+        paidHolidayHours: number;
+        restHours: number;
+        overtimeHours: number;
+      }
+    >
   >((acc, attendance) => {
-    if (
-      !attendance.workDate ||
-      !attendance.startTime ||
-      !attendance.endTime
-    ) {
+    if (!attendance.workDate || !attendance.startTime || !attendance.endTime) {
       return acc;
     }
-    const totalWorkHours = calcTotalWorkTime(
-      attendance.startTime,
-      attendance.endTime,
-    );
-    const totalRestHours = (attendance.rests ?? [])
-      .filter((item): item is NonNullable<typeof item> => !!item)
-      .reduce((restAcc, rest) => {
-        if (!rest.startTime || !rest.endTime) return restAcc;
-        return restAcc + calcTotalRestTime(rest.startTime, rest.endTime);
-      }, 0);
-    const netWorkHours = Math.max(totalWorkHours - totalRestHours, 0);
+    const {
+      workHours,
+      paidHolidayHours,
+      restHours,
+      overtimeHours,
+    } = toAttendanceWorkStatusHours({
+      attendance,
+      standardWorkHours: clampedStandardWorkHours,
+      hideRestHoursOnPaidHoliday: true,
+    });
     const workDateKey = dayjs(attendance.workDate).format(
       AttendanceDate.DataFormat,
     );
-    const existing = acc[workDateKey] ?? { netWorkHours: 0, restHours: 0 };
+    const existing = acc[workDateKey] ?? {
+      workHours: 0,
+      paidHolidayHours: 0,
+      restHours: 0,
+      overtimeHours: 0,
+    };
     acc[workDateKey] = {
-      netWorkHours: existing.netWorkHours + netWorkHours,
-      restHours: existing.restHours + totalRestHours,
+      workHours: existing.workHours + workHours,
+      paidHolidayHours: existing.paidHolidayHours + paidHolidayHours,
+      restHours: existing.restHours + restHours,
+      overtimeHours: existing.overtimeHours + overtimeHours,
     };
     return acc;
   }, {});
@@ -95,22 +104,17 @@ export function calcAttendanceChartSummary(
   return periodDays.map((workDate) => {
     const workDateKey = workDate.format(AttendanceDate.DataFormat);
     const workStatusHours = workStatusHoursByDate[workDateKey] ?? {
-      netWorkHours: 0,
+      workHours: 0,
+      paidHolidayHours: 0,
       restHours: 0,
+      overtimeHours: 0,
     };
-    const netWorkHours = Number(workStatusHours.netWorkHours.toFixed(2));
-    const restHours = Number(workStatusHours.restHours.toFixed(2));
-    const overtimeHours = Number(
-      Math.max(netWorkHours - clampedStandardWorkHours, 0).toFixed(2),
-    );
-    const regularWorkHours = Number(
-      Math.max(netWorkHours - overtimeHours, 0).toFixed(2),
-    );
     return {
       label: workDate.format("M/D"),
-      workHours: regularWorkHours,
-      restHours,
-      overtimeHours,
+      workHours: Number(workStatusHours.workHours.toFixed(2)),
+      paidHolidayHours: Number(workStatusHours.paidHolidayHours.toFixed(2)),
+      restHours: Number(workStatusHours.restHours.toFixed(2)),
+      overtimeHours: Number(workStatusHours.overtimeHours.toFixed(2)),
       workDateValue: workDate.valueOf(),
     };
   });

@@ -136,7 +136,7 @@ describe("RegisterAttendanceSummaryCard", () => {
       screen.getByTestId("register-dashboard-work-status-chart-info"),
     ).toHaveAttribute(
       "aria-label",
-      "勤務状況チャートの算出根拠: 勤務時間=退勤時刻-出勤時刻-休憩時間、残業時間=max(勤務時間-所定労働時間,0)、休憩時間=休憩終了時刻-休憩開始時刻の合計",
+      "勤務状況チャートの算出根拠: 勤務時間=退勤時刻-出勤時刻-休憩時間（通常勤務）、有給休暇=有給フラグ付きの勤務時間（休憩時間は表示しない）、残業時間=max(勤務時間-所定労働時間,0)、休憩時間=休憩終了時刻-休憩開始時刻の合計（通常勤務のみ）",
     );
     expect(screen.getByText("打刻エラー件数")).toBeInTheDocument();
     expect(
@@ -174,7 +174,11 @@ describe("RegisterAttendanceSummaryCard", () => {
     const restDataset = barProps.data.datasets.find(
       (dataset) => dataset.label === "休憩時間",
     );
+    const paidHolidayDataset = barProps.data.datasets.find(
+      (dataset) => dataset.label === "有給休暇",
+    );
     expect(overtimeDataset?.data).toContain(-1);
+    expect(paidHolidayDataset?.data.every((value) => value === 0)).toBe(true);
     expect(workDataset?.data[10]).toBe(8);
     expect(restDataset?.data[9]).toBe(1);
     expect(restDataset?.data[10]).toBe(1);
@@ -218,7 +222,11 @@ describe("RegisterAttendanceSummaryCard", () => {
     const restDataset = capturedBarProps.data.datasets.find(
       (dataset) => dataset.label === "休憩時間",
     );
+    const paidHolidayDataset = capturedBarProps.data.datasets.find(
+      (dataset) => dataset.label === "有給休暇",
+    );
     expect(workDataset?.data.every((value) => value === 0)).toBe(true);
+    expect(paidHolidayDataset?.data.every((value) => value === 0)).toBe(true);
     expect(overtimeDataset?.data.every((value) => value === 0)).toBe(true);
     expect(restDataset?.data.every((value) => value === 0)).toBe(true);
   });
