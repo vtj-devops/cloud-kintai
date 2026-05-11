@@ -8,7 +8,10 @@ import {
   AttendanceStatus,
 } from "@entities/attendance/lib/AttendanceState";
 import { CompanyHoliday } from "@entities/attendance/lib/CompanyHoliday";
-import { Holiday } from "@entities/attendance/lib/Holiday";
+import {
+  Holiday,
+  normalizeHolidayName,
+} from "@entities/attendance/lib/Holiday";
 import {
   calcTotalRestTime,
   calcTotalWorkTime,
@@ -106,7 +109,7 @@ export function getHolidayNames(
   ).getHoliday();
 
   return {
-    holidayName: holiday?.name,
+    holidayName: holiday?.name ? normalizeHolidayName(holiday.name) : undefined,
     companyHolidayName: companyHoliday?.name,
   };
 }

@@ -77,6 +77,4 @@ type AttendanceMaybePromise<T> = T | PromiseLike<T>;
 
 export type AttendanceBaseQuery = (
   arg: GraphQLBaseQueryArgs,
-) => AttendanceMaybePromise<
-  QueryReturnValue<unknown, GraphQLBaseQueryError, {}>
->;
+) => AttendanceMaybePromise<QueryReturnValue<unknown, GraphQLBaseQueryError>>;

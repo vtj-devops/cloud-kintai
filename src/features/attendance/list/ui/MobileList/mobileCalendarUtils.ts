@@ -1,4 +1,5 @@
 import { AttendanceStatus } from "@entities/attendance/lib/AttendanceState";
+import { normalizeHolidayName } from "@entities/attendance/lib/Holiday";
 import {
   Attendance,
   CloseDate,
@@ -91,7 +92,10 @@ export const getHolidayInfoByDate = (
 
   const holiday = holidayCalendars.find((h) => h.holidayDate === dateStr);
   if (holiday) {
-    return { name: holiday.name || "祝日", type: "holiday" };
+    return {
+      name: normalizeHolidayName(holiday.name || "祝日"),
+      type: "holiday",
+    };
   }
 
   const companyHoliday = companyHolidayCalendars.find(
