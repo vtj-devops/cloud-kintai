@@ -37,6 +37,21 @@ describe("attendanceStatusUtils.getStatus", () => {
     },
   ];
 
+  const buildAttendance = (overrides: Partial<Attendance> = {}): Attendance =>
+    ({
+      __typename: "Attendance",
+      id: "attendance-1",
+      staffId: "staff-shift",
+      workDate: "2020-01-02",
+      startTime: "2020-01-02T09:00:00.000Z",
+      endTime: "2020-01-02T18:00:00.000Z",
+      changeRequests: [],
+      systemComments: [],
+      createdAt: "2020-01-02T00:00:00.000Z",
+      updatedAt: "2020-01-02T00:00:00.000Z",
+      ...overrides,
+    }) as Attendance;
+
   it("treats shift worker as evaluation target on holidays when attendance is missing", () => {
     const status = getStatus(
       undefined,
@@ -60,6 +75,27 @@ describe("attendanceStatusUtils.getStatus", () => {
 
     expect(status).toBe(AttendanceStatus.None);
   });
+
+  it("returns error when attendance has system comments", () => {
+    const status = getStatus(
+      buildAttendance({
+        systemComments: [
+          {
+            __typename: "SystemComment",
+            comment: "自動補正が未完了です",
+            confirmed: false,
+            createdAt: "2020-01-02T00:00:00.000Z",
+          },
+        ],
+      }),
+      buildStaff("weekday"),
+      [],
+      [],
+      dayjs("2020-01-02"),
+    );
+
+    expect(status).toBe(AttendanceStatus.Error);
+  });
 });
 
 describe("buildWeeks", () => {
@@ -67,8 +103,12 @@ describe("buildWeeks", () => {
     const weeks = buildWeeks(dayjs("2024-01-01"));
     weeks.forEach((week) => expect(week).toHaveLength(7));
     const allDays = weeks.flat();
-    expect(allDays.some((d) => d.format("YYYY-MM-DD") === "2024-01-01")).toBe(true);
-    expect(allDays.some((d) => d.format("YYYY-MM-DD") === "2024-01-31")).toBe(true);
+    expect(allDays.some((d) => d.format("YYYY-MM-DD") === "2024-01-01")).toBe(
+      true,
+    );
+    expect(allDays.some((d) => d.format("YYYY-MM-DD") === "2024-01-31")).toBe(
+      true,
+    );
   });
 });
 
@@ -99,16 +139,26 @@ describe("getTotalRestHours", () => {
       getTotalRestHours(
         makeAttendance({
           endTime: null,
-          rests: [{ __typename: "Rest", startTime: "2024-01-01T12:00:00Z", endTime: "2024-01-01T13:00:00Z" }],
-        })
-      )
+          rests: [
+            {
+              __typename: "Rest",
+              startTime: "2024-01-01T12:00:00Z",
+              endTime: "2024-01-01T13:00:00Z",
+            },
+          ],
+        }),
+      ),
     ).toBe(0);
   });
 
   it("returns correct total rest hours", () => {
     const attendance = makeAttendance({
       rests: [
-        { __typename: "Rest", startTime: "2024-01-01T12:00:00Z", endTime: "2024-01-01T13:00:00Z" },
+        {
+          __typename: "Rest",
+          startTime: "2024-01-01T12:00:00Z",
+          endTime: "2024-01-01T13:00:00Z",
+        },
       ],
     });
     expect(getTotalRestHours(attendance)).toBeCloseTo(1);
@@ -134,7 +184,9 @@ describe("getNetWorkingHours", () => {
   });
 
   it("returns 0 when startTime is missing", () => {
-    expect(getNetWorkingHours(makeAttendance({ endTime: "2024-01-01T18:00:00Z" }))).toBe(0);
+    expect(
+      getNetWorkingHours(makeAttendance({ endTime: "2024-01-01T18:00:00Z" })),
+    ).toBe(0);
   });
 
   it("returns correct net hours without rest", () => {
@@ -150,7 +202,11 @@ describe("getNetWorkingHours", () => {
       startTime: "2024-01-01T09:00:00Z",
       endTime: "2024-01-01T18:00:00Z",
       rests: [
-        { __typename: "Rest", startTime: "2024-01-01T12:00:00Z", endTime: "2024-01-01T13:00:00Z" },
+        {
+          __typename: "Rest",
+          startTime: "2024-01-01T12:00:00Z",
+          endTime: "2024-01-01T13:00:00Z",
+        },
       ],
     });
     expect(getNetWorkingHours(attendance)).toBeCloseTo(8);
@@ -250,7 +306,11 @@ describe("isHolidayLike", () => {
 
   it("returns true for both worker types on a national holiday", () => {
     const holiday = dayjs("2024-01-01");
-    expect(isHolidayLike(holiday, makeStaff("shift"), holidayCalendars, [])).toBe(true);
-    expect(isHolidayLike(holiday, makeStaff("weekday"), holidayCalendars, [])).toBe(true);
+    expect(
+      isHolidayLike(holiday, makeStaff("shift"), holidayCalendars, []),
+    ).toBe(true);
+    expect(
+      isHolidayLike(holiday, makeStaff("weekday"), holidayCalendars, []),
+    ).toBe(true);
   });
 });

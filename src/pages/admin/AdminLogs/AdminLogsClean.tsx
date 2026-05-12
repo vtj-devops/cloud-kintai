@@ -13,7 +13,6 @@ import {
   Autocomplete,
   Box,
   Chip,
-  CircularProgress,
   List,
   ListItem,
   Stack,
@@ -35,6 +34,7 @@ import {
   Staff,
 } from "@shared/api/graphql/types";
 import { AppIconButton } from "@shared/ui/button";
+import { CenteredSpinner } from "@shared/ui/feedback";
 import { PageContent } from "@shared/ui/layout";
 import dayjs from "dayjs";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -516,11 +516,7 @@ export default function AdminLogsClean() {
               </TableContainer>
             )}
 
-            {loading && (
-              <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
-                <CircularProgress size={24} />
-              </Box>
-            )}
+            {loading && <CenteredSpinner size={24} />}
 
             {error && <Typography color="error">{error.message}</Typography>}
 

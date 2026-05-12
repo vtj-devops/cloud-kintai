@@ -3,6 +3,8 @@ import { listAttendances } from "@shared/api/graphql/documents/queries";
 import { renderHook, waitFor } from "@testing-library/react";
 import dayjs from "dayjs";
 
+import { useAdminStaffWorkStatusChart } from "../useAdminStaffWorkStatusChart";
+
 // ---------------------------------------------------------------------------
 // モック定義（ファイルレベル）
 // ---------------------------------------------------------------------------
@@ -55,10 +57,6 @@ const makeAttendanceItem = (overrides: Record<string, unknown> = {}) => ({
 // ---------------------------------------------------------------------------
 // テスト
 // ---------------------------------------------------------------------------
-// ここで遅延インポートを使って、モック後にフックを読み込む
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { useAdminStaffWorkStatusChart } = require("../useAdminStaffWorkStatusChart");
-
 describe("useAdminStaffWorkStatusChart", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -196,7 +194,7 @@ describe("useAdminStaffWorkStatusChart", () => {
     expect(result.current.duplicateAttendanceDayCount).toBe(1);
   });
 
-  it("chartData.datasets に '勤務時間' と '残業時間' が含まれること", async () => {
+  it("chartData.datasets に '勤務時間' '有給休暇' '残業時間' が含まれること", async () => {
     const { result } = renderHook(() => useAdminStaffWorkStatusChart());
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -205,6 +203,7 @@ describe("useAdminStaffWorkStatusChart", () => {
       (d: { label: string }) => d.label,
     );
     expect(labels).toContain("勤務時間");
+    expect(labels).toContain("有給休暇");
     expect(labels).toContain("残業時間");
   });
 
@@ -237,7 +236,9 @@ describe("useAdminStaffWorkStatusChart", () => {
           });
         }
         return {
-          subscribe: jest.fn().mockReturnValue({ unsubscribe: mockUnsubscribe }),
+          subscribe: jest
+            .fn()
+            .mockReturnValue({ unsubscribe: mockUnsubscribe }),
         };
       },
     );

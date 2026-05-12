@@ -3,12 +3,18 @@ import { extractExistingWorkflowComments } from "@features/workflow/comment-thre
 import { useWorkflowEditLoaderState } from "@features/workflow/hooks/useWorkflowEditLoaderState";
 import type { WorkflowEntity } from "@features/workflow/hooks/useWorkflowLoaderWorkflow";
 import { WorkflowCategory, WorkflowStatus } from "@shared/api/graphql/types";
-import { createMockStaff, createMockWorkflow } from "@shared/test-utils/mockFactories";
+import {
+  createMockStaff,
+  createMockWorkflow,
+} from "@shared/test-utils/mockFactories";
 import { act, renderHook } from "@testing-library/react";
 
-jest.mock("@features/workflow/application-form/model/initDynamicFields", () => ({
-  initDynamicFieldsFromWorkflow: jest.fn(() => ({ note: "" })),
-}));
+jest.mock(
+  "@features/workflow/application-form/model/initDynamicFields",
+  () => ({
+    initDynamicFieldsFromWorkflow: jest.fn(() => ({ note: "" })),
+  }),
+);
 jest.mock("@features/workflow/application-form/model/useDynamicWorkflowForm");
 jest.mock("@features/workflow/comment-thread/model/workflowCommentBuilder");
 jest.mock("@entities/workflow/lib/workflowLabels", () => ({
@@ -16,6 +22,11 @@ jest.mock("@entities/workflow/lib/workflowLabels", () => ({
   resolveClockCorrectionLabel: jest.fn(() => "時刻修正"),
 }));
 jest.mock("@shared/lib/time", () => ({
+  buildClockTimeDayjs: jest.fn(
+    (time: string | null | undefined, fallback?: string) => ({
+      format: jest.fn(() => time ?? fallback ?? "00:00"),
+    }),
+  ),
   formatDateSlash: jest.fn((d: string) => d?.replace(/-/g, "/") ?? ""),
   isoDateFromTimestamp: jest.fn((ts: string) => ts ?? ""),
 }));
@@ -37,7 +48,9 @@ beforeEach(() => {
   });
 });
 
-const makeWorkflow = (overrides: Partial<WorkflowEntity> = {}): WorkflowEntity =>
+const makeWorkflow = (
+  overrides: Partial<WorkflowEntity> = {},
+): WorkflowEntity =>
   createMockWorkflow({
     id: "wf-1",
     staffId: "staff-1",
@@ -127,7 +140,9 @@ describe("useWorkflowEditLoaderState", () => {
   });
 
   it("extractExistingWorkflowComments の結果が existingComments に設定される", () => {
-    const comments = [{ id: "c1", staffId: "staff-1", text: "hello", createdAt: "" }];
+    const comments = [
+      { id: "c1", staffId: "staff-1", text: "hello", createdAt: "" },
+    ];
     mockExtractComments.mockReturnValue(comments);
     const workflow = makeWorkflow();
     const { result } = renderHook(() =>
@@ -141,7 +156,9 @@ describe("useWorkflowEditLoaderState", () => {
     const { result } = renderHook(() =>
       useWorkflowEditLoaderState(workflow, STAFFS),
     );
-    const newComments = [{ id: "c2", staffId: "staff-1", text: "new", createdAt: "" }];
+    const newComments = [
+      { id: "c2", staffId: "staff-1", text: "new", createdAt: "" },
+    ];
     act(() => {
       result.current.setExistingComments(newComments);
     });
@@ -149,7 +166,9 @@ describe("useWorkflowEditLoaderState", () => {
   });
 
   it("CLOCK_CORRECTION カテゴリは resolveClockCorrectionLabel を使う", () => {
-    const workflow = makeWorkflow({ category: WorkflowCategory.CLOCK_CORRECTION });
+    const workflow = makeWorkflow({
+      category: WorkflowCategory.CLOCK_CORRECTION,
+    });
     const { result } = renderHook(() =>
       useWorkflowEditLoaderState(workflow, STAFFS),
     );

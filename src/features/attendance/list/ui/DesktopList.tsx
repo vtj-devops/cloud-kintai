@@ -12,6 +12,8 @@ import {
   getAttendanceRowVariant,
 } from "@entities/attendance/ui/rowVariant";
 import EditIcon from "@mui/icons-material/Edit";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   Alert,
   AlertTitle,
@@ -25,14 +27,17 @@ import {
   Typography,
 } from "@mui/material";
 import { Attendance } from "@shared/api/graphql/types";
-import { AppIconButton } from "@shared/ui/button";
+import { AppButton, AppIconButton } from "@shared/ui/button";
 import dayjs from "dayjs";
+import { useMemo, useState } from "react";
 
 import { useAttendanceListContext } from "./AttendanceListContext";
 import { MONTH_QUERY_KEY } from "./attendanceListUtils";
 import { AttendanceStatusTooltip } from "./AttendanceStatusTooltip";
 import DesktopCalendarView from "./DesktopCalendarView";
 import { useErrorAttendances } from "./useErrorAttendances";
+
+const MAX_VISIBLE_ERROR_ATTENDANCES = 5;
 
 export default function DesktopList() {
   const {
@@ -52,6 +57,19 @@ export default function DesktopList() {
     companyHolidayCalendars,
     effectiveDateRange,
   });
+  const [isErrorListExpanded, setIsErrorListExpanded] = useState(false);
+
+  const hasHiddenErrorAttendances =
+    errorAttendances.length > MAX_VISIBLE_ERROR_ATTENDANCES;
+  const visibleErrorAttendances = useMemo(
+    () =>
+      hasHiddenErrorAttendances && !isErrorListExpanded
+        ? errorAttendances.slice(0, MAX_VISIBLE_ERROR_ATTENDANCES)
+        : errorAttendances,
+    [errorAttendances, hasHiddenErrorAttendances, isErrorListExpanded],
+  );
+  const hiddenErrorAttendanceCount =
+    errorAttendances.length - MAX_VISIBLE_ERROR_ATTENDANCES;
 
   const getRowVariant = (attendance: Attendance): AttendanceRowVariant => {
     if (staff?.workType === "shift" && attendance.isDeemedHoliday) {
@@ -123,6 +141,28 @@ export default function DesktopList() {
               </AlertTitle>
               打刻エラーがあります
             </Alert>
+            {hasHiddenErrorAttendances && (
+              <Box sx={{ mb: 2, display: "flex", justifyContent: "flex-end" }}>
+                <AppButton
+                  variant="outline"
+                  tone="neutral"
+                  size="sm"
+                  aria-expanded={isErrorListExpanded}
+                  onClick={() => setIsErrorListExpanded((current) => !current)}
+                  endIcon={
+                    isErrorListExpanded ? (
+                      <ExpandLessIcon fontSize="small" />
+                    ) : (
+                      <ExpandMoreIcon fontSize="small" />
+                    )
+                  }
+                >
+                  {isErrorListExpanded
+                    ? "5件表示に戻す"
+                    : `残り${hiddenErrorAttendanceCount}件を表示`}
+                </AppButton>
+              </Box>
+            )}
             <TableContainer
               sx={{
                 borderRadius: "18px",
@@ -193,7 +233,7 @@ export default function DesktopList() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {errorAttendances.map((attendance, index) => {
+                  {visibleErrorAttendances.map((attendance, index) => {
                     const rowVariant = getRowVariant(attendance);
                     return (
                       <TableRow
@@ -212,7 +252,11 @@ export default function DesktopList() {
                               holidayCalendars={holidayCalendars}
                               companyHolidayCalendars={companyHolidayCalendars}
                             />
-                            <AppIconButton onClick={() => handleEdit(attendance)} aria-label="編集" size="sm">
+                            <AppIconButton
+                              onClick={() => handleEdit(attendance)}
+                              aria-label="編集"
+                              size="sm"
+                            >
                               <EditIcon fontSize="small" />
                             </AppIconButton>
                           </Stack>

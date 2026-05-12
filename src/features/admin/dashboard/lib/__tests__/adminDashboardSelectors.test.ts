@@ -74,7 +74,10 @@ const makeStaff = (overrides: Record<string, unknown> = {}) => ({
 // ---------------------------------------------------------------------------
 describe("isAttendanceCurrentWorking", () => {
   it("startTime があり endTime がない場合（勤務中）、true を返すこと", () => {
-    const att = makeAttendance({ startTime: "2024-06-10T09:00:00+09:00", endTime: null });
+    const att = makeAttendance({
+      startTime: "2024-06-10T09:00:00+09:00",
+      endTime: null,
+    });
     expect(isAttendanceCurrentWorking(att)).toBe(true);
   });
 
@@ -113,7 +116,8 @@ describe("buildStaffIdentityMaps", () => {
 
   it("cognitoUserId も canonicalStaffId にマップすること", () => {
     const staffs = [makeStaff()];
-    const { canonicalStaffIdByAttendanceStaffId } = buildStaffIdentityMaps(staffs);
+    const { canonicalStaffIdByAttendanceStaffId } =
+      buildStaffIdentityMaps(staffs);
     expect(canonicalStaffIdByAttendanceStaffId["staff-1"]).toBe("staff-1");
     expect(canonicalStaffIdByAttendanceStaffId["cognito-1"]).toBe("staff-1");
   });
@@ -139,7 +143,12 @@ describe("buildStaffIdentityMaps", () => {
   it("複数スタッフを正しくマップすること", () => {
     const staffs = [
       makeStaff({ id: "staff-1", familyName: "山田", givenName: "太郎" }),
-      makeStaff({ id: "staff-2", cognitoUserId: "cognito-2", familyName: "佐藤", givenName: "花子" }),
+      makeStaff({
+        id: "staff-2",
+        cognitoUserId: "cognito-2",
+        familyName: "佐藤",
+        givenName: "花子",
+      }),
     ];
     const { staffLabelsById, canonicalStaffIdByAttendanceStaffId } =
       buildStaffIdentityMaps(staffs);
@@ -163,6 +172,7 @@ describe("buildStaffWorkStatusSummary", () => {
     expect(result).toHaveLength(1);
     expect(result[0].label).toBe("山田 太郎");
     expect(result[0].workHours).toBe(0);
+    expect(result[0].paidHolidayHours).toBe(0);
     expect(result[0].overtimeHours).toBe(0);
   });
 
@@ -182,7 +192,56 @@ describe("buildStaffWorkStatusSummary", () => {
       standardWorkHours: 8,
     });
     expect(result[0].workHours).toBe(9);
+    expect(result[0].paidHolidayHours).toBe(0);
     expect(result[0].overtimeHours).toBe(1); // 9 - 8 = 1h残業
+  });
+
+  it("有給休暇フラグ付き勤怠は有給休暇時間に計上され、通常勤務と残業に含まれないこと", () => {
+    const staffs = [makeStaff()];
+    const periodAttendances = [
+      makeAttendance({
+        staffId: "staff-1",
+        startTime: "2024-06-10T09:00:00+09:00",
+        endTime: "2024-06-10T18:00:00+09:00",
+        rests: [],
+        paidHolidayFlag: true,
+      }),
+    ];
+    const result = buildStaffWorkStatusSummary({
+      staffs,
+      periodAttendances,
+      standardWorkHours: 8,
+    });
+
+    expect(result[0].workHours).toBe(0);
+    expect(result[0].paidHolidayHours).toBe(9);
+    expect(result[0].overtimeHours).toBe(0);
+  });
+
+  it("有給休暇フラグ付き勤怠は休憩時間を差し引かず有給休暇時間に計上すること", () => {
+    const staffs = [makeStaff()];
+    const periodAttendances = [
+      makeAttendance({
+        staffId: "staff-1",
+        startTime: "2024-06-10T09:00:00+09:00",
+        endTime: "2024-06-10T18:00:00+09:00",
+        paidHolidayFlag: true,
+        rests: [
+          {
+            startTime: "2024-06-10T12:00:00+09:00",
+            endTime: "2024-06-10T13:00:00+09:00",
+          },
+        ],
+      }),
+    ];
+    const result = buildStaffWorkStatusSummary({
+      staffs,
+      periodAttendances,
+      standardWorkHours: 8,
+    });
+
+    expect(result[0].paidHolidayHours).toBe(9);
+    expect(result[0].workHours).toBe(0);
   });
 
   it("休憩時間を差し引いた実働時間を返すこと", () => {
@@ -193,7 +252,10 @@ describe("buildStaffWorkStatusSummary", () => {
         startTime: "2024-06-10T09:00:00+09:00",
         endTime: "2024-06-10T18:00:00+09:00",
         rests: [
-          { startTime: "2024-06-10T12:00:00+09:00", endTime: "2024-06-10T13:00:00+09:00" },
+          {
+            startTime: "2024-06-10T12:00:00+09:00",
+            endTime: "2024-06-10T13:00:00+09:00",
+          },
         ],
       }),
     ];
@@ -280,7 +342,12 @@ describe("buildStaffWorkStatusSummary", () => {
   it("勤務時間の降順でソートされること", () => {
     const staffs = [
       makeStaff({ id: "staff-1", familyName: "山田", givenName: "太郎" }),
-      makeStaff({ id: "staff-2", cognitoUserId: "cognito-2", familyName: "佐藤", givenName: "花子" }),
+      makeStaff({
+        id: "staff-2",
+        cognitoUserId: "cognito-2",
+        familyName: "佐藤",
+        givenName: "花子",
+      }),
     ];
     const periodAttendances = [
       makeAttendance({
@@ -313,15 +380,25 @@ describe("buildStaffWorkStatusSummary", () => {
 describe("countDuplicateAttendanceDays", () => {
   it("重複なしの場合、0 を返すこと", () => {
     const staffs = [makeStaff()];
-    const periodAttendances = [makeAttendance({ staffId: "staff-1", workDate: "2024-06-10" })];
+    const periodAttendances = [
+      makeAttendance({ staffId: "staff-1", workDate: "2024-06-10" }),
+    ];
     expect(countDuplicateAttendanceDays({ staffs, periodAttendances })).toBe(0);
   });
 
   it("同一スタッフ同日に 2 件ある場合、1 を返すこと", () => {
     const staffs = [makeStaff()];
     const periodAttendances = [
-      makeAttendance({ id: "att-1", staffId: "staff-1", workDate: "2024-06-10" }),
-      makeAttendance({ id: "att-2", staffId: "staff-1", workDate: "2024-06-10" }),
+      makeAttendance({
+        id: "att-1",
+        staffId: "staff-1",
+        workDate: "2024-06-10",
+      }),
+      makeAttendance({
+        id: "att-2",
+        staffId: "staff-1",
+        workDate: "2024-06-10",
+      }),
     ];
     expect(countDuplicateAttendanceDays({ staffs, periodAttendances })).toBe(1);
   });
@@ -329,8 +406,16 @@ describe("countDuplicateAttendanceDays", () => {
   it("同一スタッフ異なる日は重複としないこと", () => {
     const staffs = [makeStaff()];
     const periodAttendances = [
-      makeAttendance({ id: "att-1", staffId: "staff-1", workDate: "2024-06-10" }),
-      makeAttendance({ id: "att-2", staffId: "staff-1", workDate: "2024-06-11" }),
+      makeAttendance({
+        id: "att-1",
+        staffId: "staff-1",
+        workDate: "2024-06-10",
+      }),
+      makeAttendance({
+        id: "att-2",
+        staffId: "staff-1",
+        workDate: "2024-06-11",
+      }),
     ];
     expect(countDuplicateAttendanceDays({ staffs, periodAttendances })).toBe(0);
   });
@@ -338,11 +423,24 @@ describe("countDuplicateAttendanceDays", () => {
   it("異なるスタッフ同日は重複としないこと", () => {
     const staffs = [
       makeStaff({ id: "staff-1", familyName: "山田", givenName: "太郎" }),
-      makeStaff({ id: "staff-2", cognitoUserId: "cognito-2", familyName: "佐藤", givenName: "花子" }),
+      makeStaff({
+        id: "staff-2",
+        cognitoUserId: "cognito-2",
+        familyName: "佐藤",
+        givenName: "花子",
+      }),
     ];
     const periodAttendances = [
-      makeAttendance({ id: "att-1", staffId: "staff-1", workDate: "2024-06-10" }),
-      makeAttendance({ id: "att-2", staffId: "staff-2", workDate: "2024-06-10" }),
+      makeAttendance({
+        id: "att-1",
+        staffId: "staff-1",
+        workDate: "2024-06-10",
+      }),
+      makeAttendance({
+        id: "att-2",
+        staffId: "staff-2",
+        workDate: "2024-06-10",
+      }),
     ];
     expect(countDuplicateAttendanceDays({ staffs, periodAttendances })).toBe(0);
   });
@@ -350,8 +448,16 @@ describe("countDuplicateAttendanceDays", () => {
   it("cognitoUserId と staffId が同一スタッフを指す場合、重複としてカウントすること", () => {
     const staffs = [makeStaff()]; // cognitoUserId: "cognito-1"
     const periodAttendances = [
-      makeAttendance({ id: "att-1", staffId: "staff-1", workDate: "2024-06-10" }),
-      makeAttendance({ id: "att-2", staffId: "cognito-1", workDate: "2024-06-10" }),
+      makeAttendance({
+        id: "att-1",
+        staffId: "staff-1",
+        workDate: "2024-06-10",
+      }),
+      makeAttendance({
+        id: "att-2",
+        staffId: "cognito-1",
+        workDate: "2024-06-10",
+      }),
     ];
     expect(countDuplicateAttendanceDays({ staffs, periodAttendances })).toBe(1);
   });
@@ -371,22 +477,62 @@ describe("countDuplicateAttendanceDays", () => {
 describe("buildStaffWorkStatusChartData", () => {
   it("labels が各スタッフ名であること", () => {
     const summary = [
-      { label: "山田 太郎", workHours: 9, overtimeHours: 1 },
-      { label: "佐藤 花子", workHours: 8, overtimeHours: 0 },
+      {
+        label: "山田 太郎",
+        workHours: 9,
+        paidHolidayHours: 0,
+        overtimeHours: 1,
+      },
+      {
+        label: "佐藤 花子",
+        workHours: 8,
+        paidHolidayHours: 0,
+        overtimeHours: 0,
+      },
     ];
     const result = buildStaffWorkStatusChartData(summary);
     expect(result.labels).toEqual(["山田 太郎", "佐藤 花子"]);
   });
 
   it("勤務時間データセットの data が workHours と一致すること", () => {
-    const summary = [{ label: "山田 太郎", workHours: 9, overtimeHours: 1 }];
+    const summary = [
+      {
+        label: "山田 太郎",
+        workHours: 9,
+        paidHolidayHours: 0,
+        overtimeHours: 1,
+      },
+    ];
     const result = buildStaffWorkStatusChartData(summary);
     const workDataset = result.datasets.find((d) => d.label === "勤務時間");
     expect(workDataset?.data).toEqual([9]);
   });
 
+  it("有給休暇データセットの data が paidHolidayHours と一致すること", () => {
+    const summary = [
+      {
+        label: "山田 太郎",
+        workHours: 0,
+        paidHolidayHours: 8,
+        overtimeHours: 0,
+      },
+    ];
+    const result = buildStaffWorkStatusChartData(summary);
+    const paidHolidayDataset = result.datasets.find(
+      (d) => d.label === "有給休暇",
+    );
+    expect(paidHolidayDataset?.data).toEqual([8]);
+  });
+
   it("残業時間データセットの data が -overtimeHours であること（グラフ反転用）", () => {
-    const summary = [{ label: "山田 太郎", workHours: 9, overtimeHours: 1 }];
+    const summary = [
+      {
+        label: "山田 太郎",
+        workHours: 9,
+        paidHolidayHours: 0,
+        overtimeHours: 1,
+      },
+    ];
     const result = buildStaffWorkStatusChartData(summary);
     const overtimeDataset = result.datasets.find((d) => d.label === "残業時間");
     expect(overtimeDataset?.data).toEqual([-1]);
@@ -399,7 +545,14 @@ describe("buildStaffWorkStatusChartData", () => {
   });
 
   it("datasets の stack がすべて 'work-status' であること", () => {
-    const summary = [{ label: "スタッフ", workHours: 8, overtimeHours: 0 }];
+    const summary = [
+      {
+        label: "スタッフ",
+        workHours: 8,
+        paidHolidayHours: 0,
+        overtimeHours: 0,
+      },
+    ];
     const result = buildStaffWorkStatusChartData(summary);
     expect(result.datasets.every((d) => d.stack === "work-status")).toBe(true);
   });
@@ -410,29 +563,54 @@ describe("buildStaffWorkStatusChartData", () => {
 // ---------------------------------------------------------------------------
 describe("buildStaffWorkStatusChartOptions", () => {
   it("suggestedMax が maxWorkHours より大きくなること", () => {
-    const summary = [{ label: "山田 太郎", workHours: 10, overtimeHours: 2 }];
+    const summary = [
+      {
+        label: "山田 太郎",
+        workHours: 10,
+        paidHolidayHours: 0,
+        overtimeHours: 2,
+      },
+    ];
     const options = buildStaffWorkStatusChartOptions(summary);
-    const suggestedMax = (options.scales?.y as { suggestedMax?: number })?.suggestedMax;
+    const suggestedMax = (options.scales?.y as { suggestedMax?: number })
+      ?.suggestedMax;
     expect(suggestedMax).toBeGreaterThan(10);
   });
 
   it("残業がない場合 suggestedMin が 0 であること", () => {
-    const summary = [{ label: "山田 太郎", workHours: 8, overtimeHours: 0 }];
+    const summary = [
+      {
+        label: "山田 太郎",
+        workHours: 8,
+        paidHolidayHours: 0,
+        overtimeHours: 0,
+      },
+    ];
     const options = buildStaffWorkStatusChartOptions(summary);
-    const suggestedMin = (options.scales?.y as { suggestedMin?: number })?.suggestedMin;
+    const suggestedMin = (options.scales?.y as { suggestedMin?: number })
+      ?.suggestedMin;
     expect(suggestedMin).toBe(0);
   });
 
   it("残業がある場合 suggestedMin が負の値になること", () => {
-    const summary = [{ label: "山田 太郎", workHours: 10, overtimeHours: 2 }];
+    const summary = [
+      {
+        label: "山田 太郎",
+        workHours: 10,
+        paidHolidayHours: 0,
+        overtimeHours: 2,
+      },
+    ];
     const options = buildStaffWorkStatusChartOptions(summary);
-    const suggestedMin = (options.scales?.y as { suggestedMin?: number })?.suggestedMin;
+    const suggestedMin = (options.scales?.y as { suggestedMin?: number })
+      ?.suggestedMin;
     expect(suggestedMin).toBeLessThan(0);
   });
 
   it("summary が空の場合 suggestedMax が最小でも 1 であること", () => {
     const options = buildStaffWorkStatusChartOptions([]);
-    const suggestedMax = (options.scales?.y as { suggestedMax?: number })?.suggestedMax;
+    const suggestedMax = (options.scales?.y as { suggestedMax?: number })
+      ?.suggestedMax;
     expect(suggestedMax).toBeGreaterThanOrEqual(1);
   });
 

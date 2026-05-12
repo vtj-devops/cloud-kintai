@@ -2,10 +2,13 @@ import {
   getWorkStatus,
   WorkStatusCodes,
 } from "@entities/attendance/lib/actions/workStatus";
-import { calcTotalRestTime, calcTotalWorkTime } from "@entities/attendance/lib/time";
 import {
-  type StaffType,
-} from "@entities/staff/model/useStaffs/useStaffs";
+  formatWorkStatusTooltipLabel,
+  WORK_STATUS_CHART_STACK,
+  WORK_STATUS_DATASET_META,
+} from "@entities/attendance/lib/workStatusChart";
+import { toAttendanceWorkStatusHours } from "@entities/attendance/lib/workStatusChartAggregation";
+import { type StaffType } from "@entities/staff/model/useStaffs/useStaffs";
 import { Attendance } from "@shared/api/graphql/types";
 import { type ChartOptions } from "chart.js";
 import dayjs from "dayjs";
@@ -13,6 +16,7 @@ import dayjs from "dayjs";
 export type StaffWorkStatusSummaryItem = {
   label: string;
   workHours: number;
+  paidHolidayHours: number;
   overtimeHours: number;
 };
 
@@ -77,48 +81,70 @@ export const buildStaffWorkStatusSummary = ({
     buildStaffIdentityMaps(staffs);
   const staffIds = Object.keys(staffLabelsById);
   const totalsByStaff = periodAttendances.reduce<
-    Record<string, { workHours: number; overtimeHours: number }>
+    Record<
+      string,
+      { workHours: number; paidHolidayHours: number; overtimeHours: number }
+    >
   >((acc, attendance) => {
-    if (!attendance.staffId || !attendance.startTime || !attendance.endTime) return acc;
-    const canonicalStaffId = canonicalStaffIdByAttendanceStaffId[attendance.staffId];
+    if (!attendance.staffId || !attendance.startTime || !attendance.endTime)
+      return acc;
+    const canonicalStaffId =
+      canonicalStaffIdByAttendanceStaffId[attendance.staffId];
     if (!canonicalStaffId) return acc;
 
-    const workHours = calcTotalWorkTime(attendance.startTime, attendance.endTime);
-    if (!Number.isFinite(workHours)) return acc;
+    const {
+      workHours: regularWorkHours,
+      paidHolidayHours,
+      overtimeHours,
+    } = toAttendanceWorkStatusHours({
+      attendance,
+      standardWorkHours,
+      hideRestHoursOnPaidHoliday: true,
+    });
 
-    const restHours = (attendance.rests ?? [])
-      .filter((item): item is NonNullable<typeof item> => !!item)
-      .reduce((restAcc, rest) => {
-        if (!rest.startTime || !rest.endTime) return restAcc;
-        return restAcc + calcTotalRestTime(rest.startTime, rest.endTime);
-      }, 0);
-    if (!Number.isFinite(restHours)) return acc;
-
-    const netWorkHours = Math.max(workHours - restHours, 0);
-    if (!Number.isFinite(netWorkHours)) return acc;
-
-    const current = acc[canonicalStaffId] ?? { workHours: 0, overtimeHours: 0 };
-    const dailyOvertimeHours = Math.max(netWorkHours - standardWorkHours, 0);
+    const current = acc[canonicalStaffId] ?? {
+      workHours: 0,
+      paidHolidayHours: 0,
+      overtimeHours: 0,
+    };
+    const totalWorkHours = regularWorkHours + overtimeHours;
     acc[canonicalStaffId] = {
-      workHours: Number((current.workHours + netWorkHours).toFixed(2)),
-      overtimeHours: Number((current.overtimeHours + dailyOvertimeHours).toFixed(2)),
+      workHours: Number((current.workHours + totalWorkHours).toFixed(2)),
+      paidHolidayHours: Number(
+        (current.paidHolidayHours + paidHolidayHours).toFixed(2),
+      ),
+      overtimeHours: Number((current.overtimeHours + overtimeHours).toFixed(2)),
     };
     return acc;
   }, {});
 
   staffIds.forEach((staffId) => {
     if (totalsByStaff[staffId]) return;
-    totalsByStaff[staffId] = { workHours: 0, overtimeHours: 0 };
+    totalsByStaff[staffId] = {
+      workHours: 0,
+      paidHolidayHours: 0,
+      overtimeHours: 0,
+    };
   });
 
   return Object.entries(totalsByStaff)
     .map(([staffId, totals]) => {
       const label = staffLabelsById[staffId];
       if (!label) return null;
-      return { label, workHours: totals.workHours, overtimeHours: totals.overtimeHours };
+      return {
+        label,
+        workHours: totals.workHours,
+        paidHolidayHours: totals.paidHolidayHours,
+        overtimeHours: totals.overtimeHours,
+      };
     })
     .filter((item): item is NonNullable<typeof item> => item !== null)
-    .toSorted((left, right) => right.workHours - left.workHours);
+    .toSorted(
+      (left, right) =>
+        right.workHours +
+        right.paidHolidayHours -
+        (left.workHours + left.paidHolidayHours),
+    );
 };
 
 export const countDuplicateAttendanceDays = ({
@@ -128,20 +154,22 @@ export const countDuplicateAttendanceDays = ({
   staffs: StaffType[];
   periodAttendances: Attendance[];
 }) => {
-  const { canonicalStaffIdByAttendanceStaffId } = buildStaffIdentityMaps(staffs);
-  const attendancesByStaffDate = periodAttendances.reduce<Record<string, number>>(
-    (acc, attendance) => {
-      if (!attendance.staffId || !attendance.workDate) return acc;
-      const canonicalStaffId = canonicalStaffIdByAttendanceStaffId[attendance.staffId];
-      if (!canonicalStaffId) return acc;
-      const key = `${canonicalStaffId}#${attendance.workDate}`;
-      acc[key] = (acc[key] ?? 0) + 1;
-      return acc;
-    },
-    {},
-  );
+  const { canonicalStaffIdByAttendanceStaffId } =
+    buildStaffIdentityMaps(staffs);
+  const attendancesByStaffDate = periodAttendances.reduce<
+    Record<string, number>
+  >((acc, attendance) => {
+    if (!attendance.staffId || !attendance.workDate) return acc;
+    const canonicalStaffId =
+      canonicalStaffIdByAttendanceStaffId[attendance.staffId];
+    if (!canonicalStaffId) return acc;
+    const key = `${canonicalStaffId}#${attendance.workDate}`;
+    acc[key] = (acc[key] ?? 0) + 1;
+    return acc;
+  }, {});
 
-  return Object.values(attendancesByStaffDate).filter((count) => count > 1).length;
+  return Object.values(attendancesByStaffDate).filter((count) => count > 1)
+    .length;
 };
 
 export const buildStaffWorkStatusChartData = (
@@ -150,20 +178,28 @@ export const buildStaffWorkStatusChartData = (
   labels: staffWorkStatusSummary.map((item) => item.label),
   datasets: [
     {
-      label: "勤務時間",
+      label: WORK_STATUS_DATASET_META.regular.label,
       data: staffWorkStatusSummary.map((item) => item.workHours),
-      backgroundColor: "rgba(14,116,144,0.82)",
-      borderColor: "rgba(14,116,144,1)",
+      backgroundColor: WORK_STATUS_DATASET_META.regular.backgroundColor,
+      borderColor: WORK_STATUS_DATASET_META.regular.borderColor,
       borderWidth: 1,
-      stack: "work-status",
+      stack: WORK_STATUS_CHART_STACK,
     },
     {
-      label: "残業時間",
-      data: staffWorkStatusSummary.map((item) => -item.overtimeHours),
-      backgroundColor: "rgba(225,29,72,0.82)",
-      borderColor: "rgba(225,29,72,1)",
+      label: WORK_STATUS_DATASET_META.paidHoliday.label,
+      data: staffWorkStatusSummary.map((item) => item.paidHolidayHours),
+      backgroundColor: WORK_STATUS_DATASET_META.paidHoliday.backgroundColor,
+      borderColor: WORK_STATUS_DATASET_META.paidHoliday.borderColor,
       borderWidth: 1,
-      stack: "work-status",
+      stack: WORK_STATUS_CHART_STACK,
+    },
+    {
+      label: WORK_STATUS_DATASET_META.overtime.label,
+      data: staffWorkStatusSummary.map((item) => -item.overtimeHours),
+      backgroundColor: WORK_STATUS_DATASET_META.overtime.backgroundColor,
+      borderColor: WORK_STATUS_DATASET_META.overtime.borderColor,
+      borderWidth: 1,
+      stack: WORK_STATUS_CHART_STACK,
     },
   ],
 });
@@ -171,7 +207,12 @@ export const buildStaffWorkStatusChartData = (
 export const buildStaffWorkStatusChartOptions = (
   staffWorkStatusSummary: StaffWorkStatusSummaryItem[],
 ): ChartOptions<"bar"> => {
-  const maxWorkHours = Math.max(0, ...staffWorkStatusSummary.map((item) => item.workHours));
+  const maxWorkHours = Math.max(
+    0,
+    ...staffWorkStatusSummary.map(
+      (item) => item.workHours + item.paidHolidayHours,
+    ),
+  );
   const maxOvertimeHours = Math.max(
     0,
     ...staffWorkStatusSummary.map((item) => item.overtimeHours),
@@ -188,7 +229,10 @@ export const buildStaffWorkStatusChartOptions = (
       tooltip: {
         callbacks: {
           label: (context) =>
-            `${context.dataset.label}: ${Math.abs(Number(context.parsed.y ?? 0)).toFixed(1)}h`,
+            formatWorkStatusTooltipLabel(
+              context.dataset.label ?? "",
+              context.parsed.y,
+            ),
         },
       },
     },
@@ -196,11 +240,17 @@ export const buildStaffWorkStatusChartOptions = (
       x: {
         stacked: true,
         grid: { display: false },
-        ticks: { color: "#64748b", autoSkip: false, maxRotation: 90, minRotation: 90 },
+        ticks: {
+          color: "#64748b",
+          autoSkip: false,
+          maxRotation: 90,
+          minRotation: 90,
+        },
       },
       y: {
         stacked: true,
-        suggestedMin: maxOvertimeHours > 0 ? -Math.ceil(maxOvertimeHours + 0.5) : 0,
+        suggestedMin:
+          maxOvertimeHours > 0 ? -Math.ceil(maxOvertimeHours + 0.5) : 0,
         suggestedMax: Math.max(1, Math.ceil(maxWorkHours + 0.5)),
         ticks: { color: "#64748b", callback: (value) => `${value}h` },
         grid: { color: "rgba(148,163,184,0.22)" },

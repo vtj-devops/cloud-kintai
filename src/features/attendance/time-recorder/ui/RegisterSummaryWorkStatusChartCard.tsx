@@ -27,12 +27,13 @@ export default function RegisterSummaryWorkStatusChartCard({
   workStatusDataCount,
 }: RegisterSummaryWorkStatusChartCardProps) {
   const chartInfoAriaLabel =
-    "勤務状況チャートの算出根拠: 勤務時間=退勤時刻-出勤時刻-休憩時間、残業時間=max(勤務時間-所定労働時間,0)、休憩時間=休憩終了時刻-休憩開始時刻の合計";
+    "勤務状況チャートの算出根拠: 勤務時間=退勤時刻-出勤時刻-休憩時間（通常勤務）、有給休暇=有給フラグ付きの勤務時間（休憩時間は表示しない）、残業時間=max(勤務時間-所定労働時間,0)、休憩時間=休憩終了時刻-休憩開始時刻の合計（通常勤務のみ）";
   const chartInfoTooltip = (
     <div className="text-xs leading-relaxed">
-      <div>勤務時間: 退勤時刻 - 出勤時刻 - 休憩時間</div>
+      <div>勤務時間: 退勤時刻 - 出勤時刻 - 休憩時間（通常勤務）</div>
+      <div>有給休暇: 有給フラグ付きの勤務時間（休憩時間は表示しない）</div>
       <div>残業時間: max(勤務時間 - 所定労働時間, 0)</div>
-      <div>休憩時間: 休憩終了時刻 - 休憩開始時刻 の合計</div>
+      <div>休憩時間: 休憩終了時刻 - 休憩開始時刻 の合計（通常勤務のみ）</div>
     </div>
   );
 

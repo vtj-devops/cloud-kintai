@@ -1,10 +1,6 @@
 import "./styles.scss";
 
-import { AuthContext } from "@app/providers/auth/AuthContext";
 import { logDailyReportMutation } from "@entities/operation-log/model/dailyReportOperationLog";
-import useCognitoUser from "@entities/staff/model/useCognitoUser";
-import fetchStaff from "@entities/staff/model/useStaff/fetchStaff";
-import { useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import {
   DailyReportCalendar,
   DailyReportFormChangeHandler,
@@ -20,17 +16,12 @@ import {
   createDailyReport,
   updateDailyReport,
 } from "@shared/api/graphql/documents/mutations";
-import { dailyReportsByStaffId } from "@shared/api/graphql/documents/queries";
 import type {
   CreateDailyReportMutation,
   DailyReport as DailyReportModel,
-  DailyReportsByStaffIdQuery,
   UpdateDailyReportMutation,
 } from "@shared/api/graphql/types";
-import {
-  DailyReportStatus,
-  ModelSortDirection,
-} from "@shared/api/graphql/types";
+import { DailyReportStatus } from "@shared/api/graphql/types";
 import { useAppNotification } from "@shared/lib/useAppNotification";
 import {
   DashboardInnerSurface,
@@ -38,16 +29,9 @@ import {
   PageSection,
 } from "@shared/ui/layout";
 import Page from "@shared/ui/page/Page";
-import { GraphQLResult } from "aws-amplify/api";
+import type { GraphQLResult } from "aws-amplify/api";
 import dayjs, { type Dayjs } from "dayjs";
-import {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import {
@@ -74,22 +58,15 @@ import type {
   DailyReportItem,
   EditableStatus,
 } from "./dailyReportTypes";
+import { useDailyReportData } from "./hooks/useDailyReportData";
 
 const AUTO_SAVE_DELAY = 1000;
 const DATE_FORMAT = "YYYY-MM-DD";
-const buildDisplayName = (family?: string | null, given?: string | null) =>
-  [family, given]
-    .filter((part): part is string => Boolean(part && part.trim()))
-    .join(" ");
+const DEFAULT_AUTHOR_NAME = "スタッフ";
 
 export default function DailyReport() {
   const { notify } = useAppNotification();
-  const { cognitoUser, loading: isCognitoUserLoading } = useCognitoUser();
-  const { authStatus } = useContext(AuthContext);
-  const isAuthenticated = authStatus === "authenticated";
-  const { staffs } = useStaffs({ isAuthenticated });
   const [searchParams, setSearchParams] = useSearchParams();
-  const [reports, setReports] = useState<DailyReportItem[]>([]);
   const [createForm, setCreateForm] = useState<DailyReportForm>(() =>
     emptyForm(),
   );
@@ -104,10 +81,6 @@ export default function DailyReport() {
   const [selectedReportId, setSelectedReportId] = useState<
     string | "create" | null
   >(null);
-  const [authorName, setAuthorName] = useState<string>("");
-  const [staffId, setStaffId] = useState<string | null>(null);
-  const [isInitialViewPending, setIsInitialViewPending] = useState(true);
-  const [requestError, setRequestError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -125,7 +98,16 @@ export default function DailyReport() {
   const [editDraftSavedState, setEditDraftSavedState] =
     useState<DailyReportForm | null>(null);
   const createdReportIdRef = useRef<string | null>(null);
-  const processedUserIdRef = useRef<string | null>(null);
+  const {
+    authorName,
+    staffId,
+    staffs,
+    reports,
+    setReports,
+    requestError,
+    setRequestError,
+    isInitialViewPending,
+  } = useDailyReportData(DEFAULT_AUTHOR_NAME);
   const {
     dateMap: reportsByDate,
     dateSet: reportedDateSet,
@@ -144,7 +126,7 @@ export default function DailyReport() {
     return { dateMap, dateSet, idMap };
   }, [reports]);
   const isCreateMode = selectedReportId === "create";
-  const resolvedAuthorName = authorName || "スタッフ";
+  const resolvedAuthorName = authorName || DEFAULT_AUTHOR_NAME;
   const notifyAdminsForSubmission = useCallback(
     async (report: DailyReportModel) => {
       try {
@@ -231,63 +213,6 @@ export default function DailyReport() {
   }, [selectedReport, searchParams]);
 
   useEffect(() => {
-    if (isCognitoUserLoading) {
-      return;
-    }
-
-    if (!cognitoUser?.id) {
-      setAuthorName("スタッフ");
-      setStaffId(null);
-      setIsInitialViewPending(false);
-      processedUserIdRef.current = null;
-      return;
-    }
-
-    if (processedUserIdRef.current !== cognitoUser.id) {
-      setIsInitialViewPending(true);
-      processedUserIdRef.current = cognitoUser.id;
-    }
-
-    const currentUser = cognitoUser;
-
-    let mounted = true;
-
-    async function load() {
-      try {
-        const staff = await fetchStaff(currentUser.id);
-        if (!mounted) return;
-        const staffName = buildDisplayName(
-          staff?.familyName ?? null,
-          staff?.givenName ?? null,
-        );
-        const fallback = buildDisplayName(
-          currentUser.familyName ?? null,
-          currentUser.givenName ?? null,
-        );
-        setAuthorName(staffName || fallback || "スタッフ");
-        setStaffId(staff?.id ?? null);
-        if (!staff?.id) {
-          setIsInitialViewPending(false);
-        }
-      } catch {
-        if (!mounted) return;
-        const fallback = buildDisplayName(
-          currentUser.familyName ?? null,
-          currentUser.givenName ?? null,
-        );
-        setAuthorName(fallback || "スタッフ");
-        setStaffId(null);
-        setIsInitialViewPending(false);
-      }
-    }
-
-    void load();
-    return () => {
-      mounted = false;
-    };
-  }, [cognitoUser, isCognitoUserLoading]);
-
-  useEffect(() => {
     if (!authorName) return;
     setCreateForm((prev) =>
       prev.author === resolvedAuthorName
@@ -298,63 +223,6 @@ export default function DailyReport() {
       prev.map((report) => ({ ...report, author: resolvedAuthorName })),
     );
   }, [authorName, resolvedAuthorName]);
-
-  const fetchReports = useCallback(async () => {
-    if (!staffId) {
-      setReports([]);
-      setRequestError(null);
-      setIsInitialViewPending(false);
-      return;
-    }
-
-    setRequestError(null);
-    try {
-      const aggregated: DailyReportItem[] = [];
-      let nextToken: string | null | undefined = undefined;
-
-      do {
-        const response = (await graphqlClient.graphql({
-          query: dailyReportsByStaffId,
-          variables: {
-            staffId,
-            sortDirection: ModelSortDirection.DESC,
-            limit: 50,
-            nextToken,
-          },
-          authMode: "userPool",
-        })) as GraphQLResult<DailyReportsByStaffIdQuery>;
-
-        if (response.errors?.length) {
-          throw new Error(
-            response.errors.map((error) => error.message).join("\n"),
-          );
-        }
-
-        const items =
-          response.data?.dailyReportsByStaffId?.items?.filter(
-            (item): item is NonNullable<typeof item> => item !== null,
-          ) ?? [];
-
-        items.forEach((item) => {
-          aggregated.push(mapDailyReport(item, resolvedAuthorName));
-        });
-
-        nextToken = response.data?.dailyReportsByStaffId?.nextToken;
-      } while (nextToken);
-
-      setReports(sortReports(aggregated));
-    } catch (error) {
-      setRequestError(
-        error instanceof Error ? error.message : "日報の取得に失敗しました。",
-      );
-    } finally {
-      setIsInitialViewPending(false);
-    }
-  }, [resolvedAuthorName, staffId]);
-
-  useEffect(() => {
-    void fetchReports();
-  }, [fetchReports]);
 
   useEffect(() => {
     if (selectedReportId === "create") {
