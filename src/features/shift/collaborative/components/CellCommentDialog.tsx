@@ -1,5 +1,3 @@
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import EditIcon from "@mui/icons-material/Edit";
 import ReplyIcon from "@mui/icons-material/Reply";
 import {
   Autocomplete,
@@ -21,7 +19,10 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { AppIconButton } from "@shared/ui/button";
+import {
+  AppDeleteOutlineIconButton,
+  AppEditIconButton,
+} from "@shared/ui/button/AppActionIconButton";
 import React, { useCallback, useMemo, useState } from "react";
 
 import { useShiftComments } from "../hooks/useShiftComments";
@@ -283,24 +284,19 @@ export const CellCommentDialog: React.FC<CellCommentDialogProps> = ({
                       currentUserId === comment.userId && (
                         <ListItemSecondaryAction>
                           <Tooltip title="編集">
-                            <AppIconButton
+                            <AppEditIconButton
                               size="sm"
                               aria-label="編集"
                               onClick={() => handleStartEditComment(comment)}
                               style={{ marginRight: 4 }}
-                            >
-                              <EditIcon fontSize="small" />
-                            </AppIconButton>
+                            />
                           </Tooltip>
                           <Tooltip title="削除">
-                            <AppIconButton
+                            <AppDeleteOutlineIconButton
                               size="sm"
                               aria-label="削除"
-                              tone="danger"
                               onClick={() => onDeleteComment(comment.id)}
-                            >
-                              <DeleteOutlineIcon fontSize="small" />
-                            </AppIconButton>
+                            />
                           </Tooltip>
                         </ListItemSecondaryAction>
                       )}
@@ -356,16 +352,13 @@ export const CellCommentDialog: React.FC<CellCommentDialogProps> = ({
                           {currentUserId === reply.userId && (
                             <ListItemSecondaryAction>
                               <Tooltip title="削除">
-                                <AppIconButton
+                                <AppDeleteOutlineIconButton
                                   size="sm"
                                   aria-label="削除"
-                                  tone="danger"
                                   onClick={() =>
                                     onDeleteReply(comment.id, reply.id)
                                   }
-                                >
-                                  <DeleteOutlineIcon fontSize="small" />
-                                </AppIconButton>
+                                />
                               </Tooltip>
                             </ListItemSecondaryAction>
                           )}

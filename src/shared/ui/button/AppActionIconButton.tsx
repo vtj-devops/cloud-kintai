@@ -1,5 +1,6 @@
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditIcon from "@mui/icons-material/Edit";
 
 import AppIconButton, { type AppIconButtonProps } from "./AppIconButton";
@@ -19,6 +20,18 @@ export function AppDeleteIconButton({
   return (
     <AppIconButton {...props} aria-label={ariaLabel} tone="danger">
       <DeleteIcon fontSize="small" />
+    </AppIconButton>
+  );
+}
+
+export type AppDeleteOutlineIconButtonProps = BaseActionIconButtonProps;
+export function AppDeleteOutlineIconButton({
+  "aria-label": ariaLabel = "削除",
+  ...props
+}: AppDeleteOutlineIconButtonProps) {
+  return (
+    <AppIconButton {...props} aria-label={ariaLabel} tone="danger">
+      <DeleteOutlineIcon fontSize="small" />
     </AppIconButton>
   );
 }

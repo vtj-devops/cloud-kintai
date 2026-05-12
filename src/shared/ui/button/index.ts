@@ -1,6 +1,7 @@
 export {
   AppCopyIconButton,
   AppDeleteIconButton,
+  AppDeleteOutlineIconButton,
   AppEditIconButton,
 } from "./AppActionIconButton";
 export { default as AppButton } from "./AppButton";

@@ -1,5 +1,3 @@
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import EditIcon from "@mui/icons-material/Edit";
 import SearchIcon from "@mui/icons-material/Search";
 import {
   Avatar,
@@ -13,7 +11,10 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { AppIconButton } from "@shared/ui/button";
+import {
+  AppDeleteOutlineIconButton,
+  AppEditIconButton,
+} from "@shared/ui/button/AppActionIconButton";
 import React, { useMemo } from "react";
 
 import { CellComment, CommentsMap } from "../types/collaborative.types";
@@ -236,31 +237,26 @@ export const CommentsList: React.FC<CommentsListProps> = ({
                     <Box sx={{ display: "flex", gap: 0.5, ml: 1 }}>
                       {onEditComment && (
                         <Tooltip title="編集">
-                          <AppIconButton
+                          <AppEditIconButton
                             size="sm"
                             aria-label="編集"
                             onClick={(e) => {
                               e.stopPropagation();
                               onEditComment(comment);
                             }}
-                          >
-                            <EditIcon fontSize="small" />
-                          </AppIconButton>
+                          />
                         </Tooltip>
                       )}
                       {onDeleteComment && (
                         <Tooltip title="削除">
-                          <AppIconButton
+                          <AppDeleteOutlineIconButton
                             size="sm"
                             aria-label="削除"
-                            tone="danger"
                             onClick={(e) => {
                               e.stopPropagation();
                               onDeleteComment(comment.id);
                             }}
-                          >
-                            <DeleteOutlineIcon fontSize="small" />
-                          </AppIconButton>
+                          />
                         </Tooltip>
                       )}
                     </Box>
