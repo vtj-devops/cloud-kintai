@@ -1,4 +1,4 @@
-import { useActionButtonState } from "@shared/ui/time-recorder/useActionButtonState";
+import { useActionButtonState } from "@shared/ui/button/time-recorder";
 import { act, renderHook, waitFor } from "@testing-library/react";
 
 describe("useActionButtonState", () => {
