@@ -53,7 +53,7 @@ export function RestTimeItem({
         <RestEndTimeInput index={index} rest={rest} />
         <Box>
           <AppDeleteIconButton
-            aria-label="staff-search"
+            aria-label="休憩時間を削除"
             onClick={() => restRemove(index)}
             disabled={!!readOnly}
           />

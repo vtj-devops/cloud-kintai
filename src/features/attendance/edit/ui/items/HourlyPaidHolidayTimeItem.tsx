@@ -93,7 +93,7 @@ export default function HourlyPaidHolidayTimeItem({
         />
         <Box>
           <AppDeleteIconButton
-            aria-label="delete-hourly-paid-holiday-time"
+            aria-label="時間単位休暇を削除"
             onClick={() => hourlyPaidHolidayTimeRemove(index)}
             disabled={disabled}
             aria-disabled={disabled}
