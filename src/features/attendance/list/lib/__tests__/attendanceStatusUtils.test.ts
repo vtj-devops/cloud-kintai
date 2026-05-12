@@ -3,11 +3,14 @@ import type { Attendance } from "@shared/api/graphql/types";
 import dayjs from "dayjs";
 
 import {
+  buildHolidayLabels,
   buildWeeks,
   formatTimeRange,
+  getCalendarDaySurfaceState,
   getHolidayNames,
   getNetWorkingHours,
   getStatus,
+  getSubstituteHolidayLabel,
   getTotalRestHours,
   isHolidayLike,
 } from "../attendanceStatusUtils";
@@ -312,5 +315,97 @@ describe("isHolidayLike", () => {
     expect(
       isHolidayLike(holiday, makeStaff("weekday"), holidayCalendars, []),
     ).toBe(true);
+  });
+});
+
+describe("getCalendarDaySurfaceState", () => {
+  const weekdayStaff = {
+    __typename: "Staff" as const,
+    id: "s1",
+    cognitoUserId: "c1",
+    mailAddress: "a@b.com",
+    role: "staff",
+    enabled: true,
+    status: "active",
+    workType: "weekday" as const,
+    createdAt: "",
+    updatedAt: "",
+  };
+
+  it("当日を isToday=true で返す", () => {
+    const date = dayjs("2024-01-10");
+    const result = getCalendarDaySurfaceState({
+      date,
+      staff: weekdayStaff,
+      holidayCalendars: [],
+      companyHolidayCalendars: [],
+      today: dayjs("2024-01-10"),
+    });
+
+    expect(result.isToday).toBe(true);
+  });
+
+  it("平日勤務者の土日を holidayLike=true で返す", () => {
+    const sunday = dayjs("2024-01-07");
+    const result = getCalendarDaySurfaceState({
+      date: sunday,
+      staff: weekdayStaff,
+      holidayCalendars: [],
+      companyHolidayCalendars: [],
+      today: dayjs("2024-01-01"),
+    });
+
+    expect(result.isWeekend).toBe(true);
+    expect(result.holidayLike).toBe(true);
+  });
+});
+
+describe("getSubstituteHolidayLabel", () => {
+  it("substituteHolidayDate がある場合は振替休日を返す", () => {
+    const attendance = {
+      substituteHolidayDate: "2024-01-08",
+    } as Attendance;
+
+    expect(getSubstituteHolidayLabel(attendance)).toBe("振替休日");
+  });
+
+  it("substituteHolidayDate がない場合は undefined を返す", () => {
+    const attendance = {} as Attendance;
+
+    expect(getSubstituteHolidayLabel(attendance)).toBeUndefined();
+    expect(getSubstituteHolidayLabel(undefined)).toBeUndefined();
+  });
+});
+
+describe("buildHolidayLabels", () => {
+  it("祝日・会社休日・振替休日をまとめて返す", () => {
+    const labels = buildHolidayLabels({
+      holidayName: "元日",
+      companyHolidayName: "創立記念日",
+      attendance: { substituteHolidayDate: "2024-01-08" } as Attendance,
+    });
+
+    expect(labels).toEqual(["元日", "会社休日 創立記念日", "振替休日"]);
+  });
+
+  it("モバイル向けに会社休日プレフィックスを付けずに返す", () => {
+    const labels = buildHolidayLabels({
+      holidayName: undefined,
+      companyHolidayName: "夏季休業",
+      attendance: undefined,
+      includeCompanyHolidayPrefix: false,
+    });
+
+    expect(labels).toEqual(["夏季休業"]);
+  });
+
+  it("値がない場合は空配列を返す", () => {
+    const labels = buildHolidayLabels({
+      holidayName: undefined,
+      companyHolidayName: undefined,
+      attendance: undefined,
+    });
+
+    expect(labels).toEqual([]);
   });
 });

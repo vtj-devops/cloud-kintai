@@ -10,7 +10,12 @@ import {
 import dayjs, { Dayjs } from "dayjs";
 import { useState } from "react";
 
-import { getStatus } from "../../lib/attendanceStatusUtils";
+import {
+  buildHolidayLabels,
+  getCalendarDaySurfaceState,
+  getHolidayNames,
+  getStatus,
+} from "../../lib/attendanceStatusUtils";
 import { useOptionalAttendanceListContext } from "../AttendanceListContext";
 import { MobileCalendarUIProvider } from "./mobileCalendarContext";
 import { SelectedDateDetails } from "./MobileCalendarDetails";
@@ -87,7 +92,7 @@ export default function MobileCalendar({
     selectedByMonth,
     monthKey,
   )
-    ? selectedByMonth[monthKey] ?? null
+    ? (selectedByMonth[monthKey] ?? null)
     : defaultTodayForMonth;
   const attendanceMap = buildAttendanceMap(attendances);
 
@@ -98,7 +103,11 @@ export default function MobileCalendar({
     "var(--mui-palette-secondary-main)",
   ];
 
-  const monthlyTerms = resolveMonthlyTerms(currentMonth, closeDates, termPalette);
+  const monthlyTerms = resolveMonthlyTerms(
+    currentMonth,
+    closeDates,
+    termPalette,
+  );
 
   const days = createCalendarDays(monthStart, monthEnd);
 
@@ -178,13 +187,30 @@ export default function MobileCalendar({
           {days.map((day) => {
             const dateKey = formatDateKey(day.date);
             const attendance = attendanceMap.get(dateKey);
-            const { status, hasError, holidayInfo, termColor } = getDayCellMeta({
+            const { status, hasError, termColor } = getDayCellMeta({
               date: day.date,
               attendance,
               staff,
               holidayCalendars,
               companyHolidayCalendars,
               monthlyTerms,
+            });
+            const { holidayLike } = getCalendarDaySurfaceState({
+              date: day.date,
+              staff,
+              holidayCalendars,
+              companyHolidayCalendars,
+            });
+            const { holidayName, companyHolidayName } = getHolidayNames(
+              day.date,
+              holidayCalendars,
+              companyHolidayCalendars,
+            );
+            const holidayLabels = buildHolidayLabels({
+              holidayName,
+              companyHolidayName,
+              attendance,
+              includeCompanyHolidayPrefix: false,
             });
 
             return (
@@ -194,6 +220,7 @@ export default function MobileCalendar({
                 hasError={hasError}
                 status={status}
                 isSelected={selectedDate === dateKey}
+                isHolidayLike={holidayLike}
                 termColor={termColor}
                 onClick={() => day.isCurrentMonth && handleDateClick(day.date)}
               >
@@ -207,7 +234,11 @@ export default function MobileCalendar({
                       {statusLabelMap[status]}
                     </p>
                   )}
-                  {holidayInfo && <HolidayName>{holidayInfo.name}</HolidayName>}
+                  {holidayLabels.map((label, index) => (
+                    <HolidayName key={`${dateKey}-${label}-${index}`}>
+                      {label}
+                    </HolidayName>
+                  ))}
                 </div>
               </CalendarDayCell>
             );
