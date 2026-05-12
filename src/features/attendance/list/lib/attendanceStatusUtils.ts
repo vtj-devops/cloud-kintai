@@ -123,6 +123,31 @@ export function getSubstituteHolidayLabel(attendance: Attendance | undefined) {
 }
 
 /**
+ * カレンダー上に表示する休日ラベル群を組み立てる
+ */
+export function buildHolidayLabels({
+  holidayName,
+  companyHolidayName,
+  attendance,
+  includeCompanyHolidayPrefix = true,
+}: {
+  holidayName?: string;
+  companyHolidayName?: string;
+  attendance: Attendance | undefined;
+  includeCompanyHolidayPrefix?: boolean;
+}) {
+  return [
+    holidayName,
+    companyHolidayName
+      ? includeCompanyHolidayPrefix
+        ? `会社休日 ${companyHolidayName}`
+        : companyHolidayName
+      : undefined,
+    getSubstituteHolidayLabel(attendance),
+  ].filter((label): label is string => Boolean(label));
+}
+
+/**
  * 指定日付が祝日・会社休日・週末かどうかを判定
  */
 export const isHolidayLike = (

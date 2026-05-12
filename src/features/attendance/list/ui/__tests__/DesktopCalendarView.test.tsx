@@ -16,6 +16,7 @@ const mockFormatTimeRange = jest.fn();
 const mockIsHolidayLike = jest.fn();
 const mockGetHolidayNames = jest.fn();
 const mockGetSubstituteHolidayLabel = jest.fn();
+const mockBuildHolidayLabels = jest.fn();
 const mockResolveMonthlyTerms = jest.fn();
 const mockUseOptionalAttendanceListContext = jest.fn();
 
@@ -30,6 +31,7 @@ jest.mock("../../lib/attendanceStatusUtils", () => ({
   getHolidayNames: (...args: unknown[]) => mockGetHolidayNames(...args),
   getSubstituteHolidayLabel: (...args: unknown[]) =>
     mockGetSubstituteHolidayLabel(...args),
+  buildHolidayLabels: (...args: unknown[]) => mockBuildHolidayLabels(...args),
 }));
 
 jest.mock("../../lib/monthlyTermUtils", () => ({
@@ -100,6 +102,30 @@ beforeEach(() => {
     companyHolidayName: undefined,
   });
   mockGetSubstituteHolidayLabel.mockReturnValue(undefined);
+  mockBuildHolidayLabels.mockImplementation(
+    ({
+      holidayName,
+      companyHolidayName,
+      attendance,
+      includeCompanyHolidayPrefix = true,
+    }: {
+      holidayName?: string;
+      companyHolidayName?: string;
+      attendance?: unknown;
+      includeCompanyHolidayPrefix?: boolean;
+    }) => {
+      const companyLabel = companyHolidayName
+        ? includeCompanyHolidayPrefix
+          ? `会社休日 ${companyHolidayName}`
+          : companyHolidayName
+        : undefined;
+      return [
+        holidayName,
+        companyLabel,
+        mockGetSubstituteHolidayLabel(attendance),
+      ].filter(Boolean);
+    },
+  );
   mockResolveMonthlyTerms.mockReturnValue([DEFAULT_TERM]);
 });
 

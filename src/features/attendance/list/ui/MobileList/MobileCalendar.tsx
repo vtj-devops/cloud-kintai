@@ -11,8 +11,9 @@ import dayjs, { Dayjs } from "dayjs";
 import { useState } from "react";
 
 import {
+  buildHolidayLabels,
+  getHolidayNames,
   getStatus,
-  getSubstituteHolidayLabel,
 } from "../../lib/attendanceStatusUtils";
 import { useOptionalAttendanceListContext } from "../AttendanceListContext";
 import { MobileCalendarUIProvider } from "./mobileCalendarContext";
@@ -185,20 +186,25 @@ export default function MobileCalendar({
           {days.map((day) => {
             const dateKey = formatDateKey(day.date);
             const attendance = attendanceMap.get(dateKey);
-            const { status, hasError, holidayInfo, termColor } = getDayCellMeta(
-              {
-                date: day.date,
-                attendance,
-                staff,
-                holidayCalendars,
-                companyHolidayCalendars,
-                monthlyTerms,
-              },
+            const { status, hasError, termColor } = getDayCellMeta({
+              date: day.date,
+              attendance,
+              staff,
+              holidayCalendars,
+              companyHolidayCalendars,
+              monthlyTerms,
+            });
+            const { holidayName, companyHolidayName } = getHolidayNames(
+              day.date,
+              holidayCalendars,
+              companyHolidayCalendars,
             );
-            const holidayLabels = [
-              holidayInfo?.name,
-              getSubstituteHolidayLabel(attendance),
-            ].filter((label): label is string => Boolean(label));
+            const holidayLabels = buildHolidayLabels({
+              holidayName,
+              companyHolidayName,
+              attendance,
+              includeCompanyHolidayPrefix: false,
+            });
 
             return (
               <CalendarDayCell

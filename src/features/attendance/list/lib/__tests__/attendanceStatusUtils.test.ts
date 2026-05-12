@@ -3,6 +3,7 @@ import type { Attendance } from "@shared/api/graphql/types";
 import dayjs from "dayjs";
 
 import {
+  buildHolidayLabels,
   buildWeeks,
   formatTimeRange,
   getHolidayNames,
@@ -330,5 +331,38 @@ describe("getSubstituteHolidayLabel", () => {
 
     expect(getSubstituteHolidayLabel(attendance)).toBeUndefined();
     expect(getSubstituteHolidayLabel(undefined)).toBeUndefined();
+  });
+});
+
+describe("buildHolidayLabels", () => {
+  it("祝日・会社休日・振替休日をまとめて返す", () => {
+    const labels = buildHolidayLabels({
+      holidayName: "元日",
+      companyHolidayName: "創立記念日",
+      attendance: { substituteHolidayDate: "2024-01-08" } as Attendance,
+    });
+
+    expect(labels).toEqual(["元日", "会社休日 創立記念日", "振替休日"]);
+  });
+
+  it("モバイル向けに会社休日プレフィックスを付けずに返す", () => {
+    const labels = buildHolidayLabels({
+      holidayName: undefined,
+      companyHolidayName: "夏季休業",
+      attendance: undefined,
+      includeCompanyHolidayPrefix: false,
+    });
+
+    expect(labels).toEqual(["夏季休業"]);
+  });
+
+  it("値がない場合は空配列を返す", () => {
+    const labels = buildHolidayLabels({
+      holidayName: undefined,
+      companyHolidayName: undefined,
+      attendance: undefined,
+    });
+
+    expect(labels).toEqual([]);
   });
 });

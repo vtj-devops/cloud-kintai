@@ -18,12 +18,12 @@ import dayjs, { Dayjs } from "dayjs";
 import { useMemo } from "react";
 
 import {
+  buildHolidayLabels,
   buildWeeks,
   formatTimeRange,
   getHolidayNames,
   getNetWorkingHours,
   getStatus,
-  getSubstituteHolidayLabel,
   getTotalRestHours,
   isHolidayLike,
 } from "../lib/attendanceStatusUtils";
@@ -306,13 +306,11 @@ export default function DesktopCalendarView({
                 holidayCalendars,
                 companyHolidayCalendars,
               );
-              const holidayLabels = [
+              const holidayLabels = buildHolidayLabels({
                 holidayName,
-                companyHolidayName
-                  ? `会社休日 ${companyHolidayName}`
-                  : undefined,
-                getSubstituteHolidayLabel(attendance),
-              ].filter((label): label is string => Boolean(label));
+                companyHolidayName,
+                attendance,
+              });
 
               const termsForDay = monthlyTerms.filter(
                 (term) =>
