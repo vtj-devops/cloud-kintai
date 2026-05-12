@@ -1,6 +1,5 @@
 import { useAppDispatchV2 } from "@app/hooks";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
-import EditIcon from "@mui/icons-material/Edit";
 import { Stack, TextField } from "@mui/material";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -12,7 +11,8 @@ import { EventCalendar } from "@shared/api/graphql/types";
 import { EventCalendarMessage } from "@shared/lib/message/EventCalendarMessage";
 import { MessageStatus } from "@shared/lib/message/Message";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
-import { AppButton, AppIconButton } from "@shared/ui/button";
+import { AppButton } from "@shared/ui/button";
+import { AppEditIconButton } from "@shared/ui/button/AppActionIconButton";
 import { useDialogCloseGuard } from "@shared/ui/feedback/useDialogCloseGuard";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
@@ -98,14 +98,11 @@ export default function EventCalendarEdit({
   };
   return (
     <>
-      <AppIconButton
+      <AppEditIconButton
         onClick={() => {
           setEditRow(eventCalendar);
         }}
-        aria-label="編集"
-      >
-        <EditIcon fontSize="small" />
-      </AppIconButton>
+      />
       {dialog}
       <Dialog open={Boolean(editRow)} onClose={requestClose}>
         <DialogTitle>イベントを編集</DialogTitle>

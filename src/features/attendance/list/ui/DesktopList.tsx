@@ -11,7 +11,6 @@ import {
   attendanceRowVariantStyles,
   getAttendanceRowVariant,
 } from "@entities/attendance/ui/rowVariant";
-import EditIcon from "@mui/icons-material/Edit";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
@@ -27,7 +26,8 @@ import {
   Typography,
 } from "@mui/material";
 import { Attendance } from "@shared/api/graphql/types";
-import { AppButton, AppIconButton } from "@shared/ui/button";
+import { AppButton } from "@shared/ui/button";
+import { AppEditIconButton } from "@shared/ui/button/AppActionIconButton";
 import dayjs from "dayjs";
 import { useMemo, useState } from "react";
 
@@ -252,13 +252,11 @@ export default function DesktopList() {
                               holidayCalendars={holidayCalendars}
                               companyHolidayCalendars={companyHolidayCalendars}
                             />
-                            <AppIconButton
+                            <AppEditIconButton
                               onClick={() => handleEdit(attendance)}
                               aria-label="編集"
                               size="sm"
-                            >
-                              <EditIcon fontSize="small" />
-                            </AppIconButton>
+                            />
                           </Stack>
                         </TableCell>
 

@@ -1,8 +1,7 @@
 import { AttendanceEditContext } from "@features/attendance/edit/model/AttendanceEditProvider";
 import { AttendanceEditInputs } from "@features/attendance/edit/model/common";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { Box, Stack, Typography } from "@mui/material";
-import { AppIconButton } from "@shared/ui/button";
+import { AppDeleteIconButton } from "@shared/ui/button/AppActionIconButton";
 import { TimeRangeInput } from "@shared/ui/form";
 import dayjs from "dayjs";
 import { useContext, useMemo } from "react";
@@ -10,7 +9,7 @@ import { Controller, FieldArrayWithId } from "react-hook-form";
 
 export function calcTotalHourlyPaidHolidayTime(
   startTime: string | null | undefined,
-  endTime: string | null | undefined
+  endTime: string | null | undefined,
 ) {
   if (!startTime) return 0;
 
@@ -37,9 +36,13 @@ export default function HourlyPaidHolidayTimeItem({
   time: FieldArrayWithId<AttendanceEditInputs, "hourlyPaidHolidayTimes", "id">;
   index: number;
 }) {
-  const { hourlyPaidHolidayTimeRemove, changeRequests, readOnly, workDate, control } = useContext(
-    AttendanceEditContext
-  );
+  const {
+    hourlyPaidHolidayTimeRemove,
+    changeRequests,
+    readOnly,
+    workDate,
+    control,
+  } = useContext(AttendanceEditContext);
 
   const baseDateStr = workDate ? workDate.format("YYYY-MM-DD") : "";
   const disabled = changeRequests.length > 0 || !!readOnly;
@@ -89,15 +92,12 @@ export default function HourlyPaidHolidayTimeItem({
           )}
         />
         <Box>
-          <AppIconButton
+          <AppDeleteIconButton
             aria-label="delete-hourly-paid-holiday-time"
             onClick={() => hourlyPaidHolidayTimeRemove(index)}
             disabled={disabled}
             aria-disabled={disabled}
-            tone="danger"
-          >
-            <DeleteIcon />
-          </AppIconButton>
+          />
         </Box>
         <Box sx={{ flexGrow: 1 }} textAlign={"right"}>
           <Typography variant="body1">
