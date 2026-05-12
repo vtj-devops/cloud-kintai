@@ -7,7 +7,6 @@ import {
   Box,
   Button,
   Chip,
-  LinearProgress,
   Paper,
   Stack,
   Table,
@@ -20,6 +19,7 @@ import {
   Typography,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
+import { ProgressBar } from "@shared/ui/feedback";
 import { PageContent } from "@shared/ui/layout";
 import Page from "@shared/ui/page/Page";
 import dayjs from "dayjs";
@@ -315,10 +315,9 @@ export default function ShiftCollaborativePrototype() {
                     進捗: {progress.percentage}%
                   </Typography>
                 </Box>
-                <LinearProgress
-                  variant="determinate"
-                  value={progress.percentage}
-                  sx={{ height: 8, borderRadius: 1 }}
+                <ProgressBar
+                  data-testid="shift-progress-bar"
+                  aria-label="Shift progress"
                 />
                 <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
                   <Typography variant="caption">

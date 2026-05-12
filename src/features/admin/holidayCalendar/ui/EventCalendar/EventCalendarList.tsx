@@ -5,11 +5,12 @@ import CreatedAtTableCell from "@features/admin/holidayCalendar/ui/components/Cr
 import EventCalendarDelete from "@features/admin/holidayCalendar/ui/components/EventCalendarDelete";
 import EventDateTableCell from "@features/admin/holidayCalendar/ui/components/EventDateTableCell";
 import EventNameTableCell from "@features/admin/holidayCalendar/ui/components/EventNameTableCell";
-import { FormControl, InputLabel, LinearProgress, MenuItem, Paper, Select, Stack, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, TextField, Typography, } from "@mui/material";
+import { FormControl, InputLabel, MenuItem, Paper, Select, Stack, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, TextField, Typography, } from "@mui/material";
 import { buildVersionOrUpdatedAtCondition, getNextVersion, } from "@shared/api/graphql/concurrency";
 import { EventCalendar } from "@shared/api/graphql/types";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
 import { AppButton } from "@shared/ui/button";
+import { ProgressBar } from "@shared/ui/feedback";
 import { useCallback, useEffect } from "react";
 
 import * as MESSAGE_CODE from "@/errors";
@@ -59,7 +60,7 @@ export default function EventCalendarList() {
         yearOffset: 5,
     });
     if (calendarLoading) {
-        return <LinearProgress sx={{ width: "100%" }}/>;
+        return <ProgressBar className="w-full" />;
     }
     return (<>
       <Stack direction="column" spacing={1}>

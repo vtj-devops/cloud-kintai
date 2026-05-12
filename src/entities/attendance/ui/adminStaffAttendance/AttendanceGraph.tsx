@@ -1,6 +1,7 @@
 import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
-import { calcTotalRestTime, calcTotalWorkTime } from "@entities/attendance/lib/time";
+import { WORK_STATUS_DATASET_META } from "@entities/attendance/lib/workStatusChart";
+import { toAttendanceWorkStatusHours } from "@entities/attendance/lib/workStatusChartAggregation";
 import { Attendance } from "@shared/api/graphql/types";
 import { alphaColor } from "@shared/lib/color";
 import {
@@ -28,19 +29,19 @@ export function AttendanceGraph({
 
   const standardWorkHours = useMemo(
     () => getStandardWorkHours(),
-    [getStandardWorkHours]
+    [getStandardWorkHours],
   );
 
   const targetMonth = useMemo(
     () => (month ? month.startOf("month") : dayjs().startOf("month")),
-    [month]
+    [month],
   );
 
   const attendanceByDate = useMemo(() => {
     return attendances.reduce((map, attendance) => {
       if (attendance.workDate) {
         const key = dayjs(attendance.workDate).format(
-          AttendanceDate.DataFormat
+          AttendanceDate.DataFormat,
         );
         map.set(key, attendance);
       }
@@ -50,77 +51,90 @@ export function AttendanceGraph({
 
   const daysInMonth = useMemo(() => targetMonth.daysInMonth(), [targetMonth]);
 
-  const { workTimeData, restTimeData, overtimeData, labels } = useMemo(() => {
-    const workTime: number[] = [];
-    const restTime: number[] = [];
-    const overtime: number[] = [];
-    const dateLabels: string[] = [];
+  const { workTimeData, paidHolidayData, restTimeData, overtimeData, labels } =
+    useMemo(() => {
+      const workTime: number[] = [];
+      const paidHoliday: number[] = [];
+      const restTime: number[] = [];
+      const overtime: number[] = [];
+      const dateLabels: string[] = [];
 
-    for (let i = 0; i < daysInMonth; i += 1) {
-      const date = targetMonth.add(i, "day");
-      const key = date.format(AttendanceDate.DataFormat);
-      const attendance = attendanceByDate.get(key);
+      for (let i = 0; i < daysInMonth; i += 1) {
+        const date = targetMonth.add(i, "day");
+        const key = date.format(AttendanceDate.DataFormat);
+        const attendance = attendanceByDate.get(key);
 
-      const grossWork = attendance?.startTime
-        ? calcTotalWorkTime(attendance.startTime, attendance.endTime)
-        : 0;
+        const hours = attendance
+          ? toAttendanceWorkStatusHours({
+              attendance,
+              standardWorkHours,
+              hideRestHoursOnPaidHoliday: true,
+            })
+          : {
+              workHours: 0,
+              paidHolidayHours: 0,
+              restHours: 0,
+              overtimeHours: 0,
+            };
 
-      const totalRest = (attendance?.rests ?? [])
-        .filter((item): item is NonNullable<typeof item> => !!item)
-        .reduce((sum, rest) => {
-          if (!rest.startTime || !rest.endTime) return sum;
-          return sum + calcTotalRestTime(rest.startTime, rest.endTime);
-        }, 0);
+        workTime.push(hours.workHours);
+        paidHoliday.push(hours.paidHolidayHours);
+        restTime.push(hours.restHours);
+        overtime.push(hours.overtimeHours);
+        dateLabels.push(date.format("M/D"));
+      }
 
-      const netWork = Math.max(grossWork - totalRest, 0);
-      const overtimeHours = Math.max(netWork - standardWorkHours, 0);
-      const regularWork = Math.max(netWork - overtimeHours, 0);
-
-      workTime.push(regularWork);
-      restTime.push(totalRest);
-      overtime.push(overtimeHours);
-      dateLabels.push(date.format("M/D"));
-    }
-
-    return {
-      workTimeData: workTime,
-      restTimeData: restTime,
-      overtimeData: overtime,
-      labels: dateLabels,
-    };
-  }, [attendanceByDate, daysInMonth, standardWorkHours, targetMonth]);
+      return {
+        workTimeData: workTime,
+        paidHolidayData: paidHoliday,
+        restTimeData: restTime,
+        overtimeData: overtime,
+        labels: dateLabels,
+      };
+    }, [attendanceByDate, daysInMonth, standardWorkHours, targetMonth]);
 
   const chartData = useMemo(
     () => ({
       labels,
       datasets: [
         {
-          label: "勤務時間",
+          label: WORK_STATUS_DATASET_META.regular.label,
           data: workTimeData,
-          backgroundColor: alphaColor("#0FA85E", 0.8),
+          backgroundColor: WORK_STATUS_DATASET_META.regular.backgroundColor,
           borderRadius: 6,
           borderSkipped: false as const,
           stack: "time",
         },
         {
-          label: "休憩時間",
+          label: WORK_STATUS_DATASET_META.paidHoliday.label,
+          data: paidHolidayData,
+          backgroundColor: WORK_STATUS_DATASET_META.paidHoliday.backgroundColor,
+          borderRadius: 6,
+          borderSkipped: false as const,
+          stack: "time",
+        },
+        {
+          label: WORK_STATUS_DATASET_META.rest.label,
           data: restTimeData,
-          backgroundColor: alphaColor("#2ACEDB", 0.75),
+          backgroundColor: WORK_STATUS_DATASET_META.rest.backgroundColor,
           borderRadius: 6,
           borderSkipped: false as const,
           stack: "time",
         },
         {
-          label: "残業時間",
+          label: WORK_STATUS_DATASET_META.overtime.label,
           data: overtimeData,
-          backgroundColor: alphaColor("#F5B700", 0.82),
+          backgroundColor: alphaColor(
+            WORK_STATUS_DATASET_META.overtime.borderColor,
+            0.82,
+          ),
           borderRadius: 6,
           borderSkipped: false as const,
           stack: "time",
         },
       ],
     }),
-    [labels, overtimeData, restTimeData, workTimeData],
+    [labels, overtimeData, paidHolidayData, restTimeData, workTimeData],
   );
 
   const chartOptions = useMemo(

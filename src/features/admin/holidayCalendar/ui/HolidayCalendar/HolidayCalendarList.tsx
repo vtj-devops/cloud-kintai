@@ -5,11 +5,12 @@ import CreatedAtTableCell from "@features/admin/holidayCalendar/ui/components/Cr
 import HolidayCalendarDelete from "@features/admin/holidayCalendar/ui/components/HolidayCalendarDelete";
 import HolidayDateTableCell from "@features/admin/holidayCalendar/ui/components/HolidayDateTableCell";
 import HolidayNameTableCell from "@features/admin/holidayCalendar/ui/components/HolidayNameTableCell";
-import { FormControl, InputLabel, LinearProgress, MenuItem, Paper, Select, Stack, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, TextField, Typography, } from "@mui/material";
+import { FormControl, InputLabel, MenuItem, Paper, Select, Stack, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, TextField, Typography, } from "@mui/material";
 import { buildVersionOrUpdatedAtCondition, getNextVersion, } from "@shared/api/graphql/concurrency";
 import { HolidayCalendar } from "@shared/api/graphql/types";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
 import { AppButton } from "@shared/ui/button";
+import { ProgressBar } from "@shared/ui/feedback";
 import { useCallback, useEffect } from "react";
 
 import * as MESSAGE_CODE from "@/errors";
@@ -58,7 +59,7 @@ export default function HolidayCalendarList() {
         yearOffset: 5,
     });
     if (calendarLoading) {
-        return <LinearProgress sx={{ width: "100%" }}/>;
+        return <ProgressBar className="w-full" />;
     }
     return (<>
       <Stack direction="column" spacing={1}>

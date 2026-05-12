@@ -1,7 +1,5 @@
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
-import {
-  AttendanceStatus,
-} from "@entities/attendance/lib/AttendanceState";
+import { AttendanceStatus } from "@entities/attendance/lib/AttendanceState";
 import { getStatus } from "@features/attendance/list/lib/attendanceStatusUtils";
 import {
   Attendance,
@@ -26,16 +24,6 @@ export const resolveAttendanceSummaryStatus = ({
   staff: Staff;
   baseDate: Dayjs;
 }): AttendanceSummaryStatus => {
-  const hasSystemComment = attendances.some(
-    (attendance) =>
-      Array.isArray(attendance.systemComments) &&
-      attendance.systemComments.length > 0,
-  );
-
-  if (hasSystemComment) {
-    return "error";
-  }
-
   const attendanceMap = attendances.reduce((map, attendance) => {
     if (!attendance.workDate || map.has(attendance.workDate)) {
       return map;

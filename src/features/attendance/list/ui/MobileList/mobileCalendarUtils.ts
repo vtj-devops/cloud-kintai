@@ -1,4 +1,5 @@
 import { AttendanceStatus } from "@entities/attendance/lib/AttendanceState";
+import { normalizeHolidayName } from "@entities/attendance/lib/Holiday";
 import {
   Attendance,
   CloseDate,
@@ -9,7 +10,10 @@ import {
 import dayjs, { Dayjs } from "dayjs";
 
 import { getStatus, isHolidayLike } from "../../lib/attendanceStatusUtils";
-import { MonthTerm, resolveMonthlyTerms as resolveMonthlyTermsBase } from "../../lib/monthlyTermUtils";
+import {
+  MonthTerm,
+  resolveMonthlyTerms as resolveMonthlyTermsBase,
+} from "../../lib/monthlyTermUtils";
 
 export type { MonthTerm };
 
@@ -88,7 +92,10 @@ export const getHolidayInfoByDate = (
 
   const holiday = holidayCalendars.find((h) => h.holidayDate === dateStr);
   if (holiday) {
-    return { name: holiday.name || "祝日", type: "holiday" };
+    return {
+      name: normalizeHolidayName(holiday.name || "祝日"),
+      type: "holiday",
+    };
   }
 
   const companyHoliday = companyHolidayCalendars.find(
@@ -101,17 +108,8 @@ export const getHolidayInfoByDate = (
   return null;
 };
 
-const hasDayError = (
-  attendance: Attendance | undefined,
-  status: AttendanceStatus,
-) => {
-  return (
-    (Array.isArray(attendance?.systemComments) &&
-      attendance.systemComments.length > 0) ||
-    status === AttendanceStatus.Error ||
-    status === AttendanceStatus.Late
-  );
-};
+const hasDayError = (status: AttendanceStatus) =>
+  status === AttendanceStatus.Error || status === AttendanceStatus.Late;
 
 const resolveDayTermColor = ({
   date,
@@ -170,7 +168,7 @@ export const getDayCellMeta = ({
 
   return {
     status,
-    hasError: hasDayError(attendance, status),
+    hasError: hasDayError(status),
     holidayInfo: getHolidayInfoByDate(
       date,
       holidayCalendars,

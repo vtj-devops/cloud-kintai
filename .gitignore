@@ -91,8 +91,8 @@ amplify-gradle-config.json
 amplifytools.xcconfig
 .secret-*
 **.sample
-#amplify-do-not-edit-end
-.claude/settings.local.json
-.claude/settings.json
+.claude/
 .mcp.json
-.continue/mcpServers/new-mcp-server.yaml
+.continue/
+.copilot/
+.agents/

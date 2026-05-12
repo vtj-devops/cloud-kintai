@@ -1,4 +1,4 @@
-import { AttendanceState, AttendanceStatus } from "@entities/attendance/lib/AttendanceState";
+import { AttendanceStatus } from "@entities/attendance/lib/AttendanceState";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ErrorIcon from "@mui/icons-material/Error";
 import HourglassTopIcon from "@mui/icons-material/HourglassTop";
@@ -9,6 +9,9 @@ import {
   HolidayCalendar,
   Staff,
 } from "@shared/api/graphql/types";
+import dayjs from "dayjs";
+
+import { getStatus, hasSystemComment } from "../lib/attendanceStatusUtils";
 
 export function AttendanceStatusTooltip({
   staff,
@@ -25,11 +28,7 @@ export function AttendanceStatusTooltip({
     return <DefaultTooltip />;
   }
 
-  // systemCommentsがある場合の判定
-  const hasSystemComment =
-    Array.isArray(attendance.systemComments) &&
-    attendance.systemComments.length > 0;
-  if (hasSystemComment) {
+  if (hasSystemComment(attendance)) {
     return (
       <Tooltip title="システムコメントがあります">
         <ErrorIcon color="error" />
@@ -37,12 +36,13 @@ export function AttendanceStatusTooltip({
     );
   }
 
-  const attendanceState = new AttendanceState(
-    staff,
+  const attendanceState = getStatus(
     attendance,
+    staff,
     holidayCalendars,
-    companyHolidayCalendars
-  ).get();
+    companyHolidayCalendars,
+    dayjs(attendance.workDate),
+  );
 
   if (attendanceState === "") {
     return <DefaultTooltip />;

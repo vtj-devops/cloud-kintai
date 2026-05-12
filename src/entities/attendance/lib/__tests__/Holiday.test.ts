@@ -1,6 +1,6 @@
 import { HolidayCalendar } from "@shared/api/graphql/types";
 
-import { Holiday } from "../Holiday";
+import { Holiday, normalizeHolidayName } from "../Holiday";
 
 describe("Holiday", () => {
   const mockHolidayCalendars: HolidayCalendar[] = [
@@ -87,7 +87,7 @@ describe("Holiday", () => {
     it("ISO形式の日付をYYYY-MM-DD形式に変換できる", () => {
       const holiday = new Holiday([], "2024-01-01");
       expect(holiday.convertDate("2024-01-01T00:00:00.000Z")).toBe(
-        "2024-01-01"
+        "2024-01-01",
       );
     });
 
@@ -99,8 +99,26 @@ describe("Holiday", () => {
     it("タイムゾーン付きのISO形式の日付を正しく変換できる", () => {
       const holiday = new Holiday([], "2024-01-01");
       expect(holiday.convertDate("2024-01-15T09:30:00+09:00")).toBe(
-        "2024-01-15"
+        "2024-01-15",
       );
     });
+  });
+});
+
+describe("normalizeHolidayName", () => {
+  it("「休日」を「振替休日」に変換する", () => {
+    expect(normalizeHolidayName("休日")).toBe("振替休日");
+  });
+
+  it("「○○振替休日」を「振替休日」に変換する", () => {
+    expect(normalizeHolidayName("憲法記念日振替休日")).toBe("振替休日");
+    expect(normalizeHolidayName("こどもの日振替休日")).toBe("振替休日");
+    expect(normalizeHolidayName("振替休日")).toBe("振替休日");
+  });
+
+  it("通常の祝日名はそのまま返す", () => {
+    expect(normalizeHolidayName("元日")).toBe("元日");
+    expect(normalizeHolidayName("憲法記念日")).toBe("憲法記念日");
+    expect(normalizeHolidayName("祝日")).toBe("祝日");
   });
 });

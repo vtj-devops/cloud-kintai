@@ -9,7 +9,10 @@ import {
 
 function makeAttendance(
   overrides: Partial<
-    Pick<Attendance, "workDate" | "startTime" | "endTime" | "rests">
+    Pick<
+      Attendance,
+      "workDate" | "startTime" | "endTime" | "rests" | "paidHolidayFlag"
+    >
   > & { id?: string },
 ): Attendance {
   return {
@@ -20,6 +23,7 @@ function makeAttendance(
     startTime: overrides.startTime ?? null,
     endTime: overrides.endTime ?? null,
     rests: overrides.rests ?? null,
+    paidHolidayFlag: overrides.paidHolidayFlag ?? null,
     createdAt: "2024-06-01T00:00:00Z",
     updatedAt: "2024-06-01T00:00:00Z",
   };
@@ -115,6 +119,7 @@ describe("calcAttendanceChartSummary", () => {
     expect(result).toHaveLength(3);
     result.forEach((entry) => {
       expect(entry.workHours).toBe(0);
+      expect(entry.paidHolidayHours).toBe(0);
       expect(entry.restHours).toBe(0);
       expect(entry.overtimeHours).toBe(0);
     });
@@ -131,6 +136,7 @@ describe("calcAttendanceChartSummary", () => {
     const result = calcAttendanceChartSummary(attendances, dateRange, 8);
     const june1 = result.find((e) => e.label === "6/1");
     expect(june1?.workHours).toBeCloseTo(8);
+    expect(june1?.paidHolidayHours).toBe(0);
     expect(june1?.restHours).toBe(0);
     expect(june1?.overtimeHours).toBe(0);
   });
@@ -181,7 +187,9 @@ describe("calcAttendanceChartSummary", () => {
   it("label と workDateValue が正しく設定される", () => {
     const result = calcAttendanceChartSummary([], dateRange, 8);
     expect(result[0].label).toBe("6/1");
-    expect(result[0].workDateValue).toBe(dayjs("2024-06-01").startOf("day").valueOf());
+    expect(result[0].workDateValue).toBe(
+      dayjs("2024-06-01").startOf("day").valueOf(),
+    );
   });
 
   it("standardWorkHours が負の値でも 0 として扱われる", () => {
@@ -196,5 +204,47 @@ describe("calcAttendanceChartSummary", () => {
     const june1 = result.find((e) => e.label === "6/1");
     expect(june1?.overtimeHours).toBeCloseTo(8);
     expect(june1?.workHours).toBe(0);
+  });
+
+  it("有給休暇フラグ付き勤怠は paidHolidayHours に計上され、通常勤務や残業に含めない", () => {
+    const attendances = [
+      makeAttendance({
+        workDate: "2024-06-01",
+        startTime: "2024-06-01T09:00:00Z",
+        endTime: "2024-06-01T17:00:00Z",
+        paidHolidayFlag: true,
+      }),
+    ];
+
+    const result = calcAttendanceChartSummary(attendances, dateRange, 8);
+    const june1 = result.find((e) => e.label === "6/1");
+
+    expect(june1?.paidHolidayHours).toBeCloseTo(8);
+    expect(june1?.workHours).toBe(0);
+    expect(june1?.overtimeHours).toBe(0);
+  });
+
+  it("有給休暇フラグ付き勤怠は休憩時間を restHours に計上しない", () => {
+    const attendances = [
+      makeAttendance({
+        workDate: "2024-06-01",
+        startTime: "2024-06-01T09:00:00Z",
+        endTime: "2024-06-01T18:00:00Z",
+        paidHolidayFlag: true,
+        rests: [
+          {
+            __typename: "Rest",
+            startTime: "2024-06-01T12:00:00Z",
+            endTime: "2024-06-01T13:00:00Z",
+          },
+        ],
+      }),
+    ];
+
+    const result = calcAttendanceChartSummary(attendances, dateRange, 8);
+    const june1 = result.find((e) => e.label === "6/1");
+
+    expect(june1?.paidHolidayHours).toBeCloseTo(9);
+    expect(june1?.restHours).toBe(0);
   });
 });

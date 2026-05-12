@@ -7,8 +7,10 @@ export function ProgressBar(props: ProgressBarProps) {
   return (
     <div
       {...props}
+      role="progressbar"
       className={[
         "h-1.5 w-full overflow-hidden rounded-full bg-slate-200/80",
+        "MuiLinearProgress-root",
         props.className,
       ]
         .filter(Boolean)

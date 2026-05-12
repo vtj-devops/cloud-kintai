@@ -1,24 +1,55 @@
 # Agents.md
 
-英語で考えて、日本語で説明してください。
+## 基本ルール
 
-## ドキュメントと情報源
+- 英語で考えて、日本語で説明してください。
+- コミットメッセージは英語で書く
+- push 前に `npm run typecheck` が `.githooks` で自動実行される
 
-- **開発ドキュメントサイト**: Docusaurus ベースのサイトがあります。
-  - 開発者向けガイド (`docs-site/docs/developer/`)
-  - 管理者・ユーザー操作マニュアル (`docs-site/docs/admin/`, `docs-site/docs/staff/`)
-  - 用語定義 (`docs-site/docs/terminology.md`)
-  - 勤務ステータス・タイプ仕様 (`docs-site/docs/work-status-overview.md`, `docs-site/docs/work-type-overview.md`)
+## 実装時の重要制約
+
+- `src/shared/api/graphql/` と `src/ui-components/` は Amplify 自動生成のため手動編集禁止
+- MUI コンポーネントの新規直接 import は禁止（`src/shared/ui/` の共通 UI を使う）
+- スタイリングは MUI `sx` を主軸、Tailwind は補助、新規 SCSS は作らない
+- デザイントークンは `designTokenVar()` 経由で参照する
+- フォームは React Hook Form + Zod を基本にする
+
+## Skill 参照
+
+- 開発コマンドと検証手順は `.agents/skills/garaku-dev-commands/SKILL.md` を参照
+- テスト設計・Jest/Playwright 規約は `.agents/skills/garaku-testing-guide/SKILL.md` を参照
+- 配置ルールと依存方向は `.agents/skills/garaku-architecture-map/SKILL.md` を参照
+- 機能配置と修正対象の当たりを付けるときは `.agents/skills/garaku-feature-map/SKILL.md` を参照
+- 勤怠ドメイン全般は `.agents/skills/about-kintai-app/SKILL.md` を参照
+- 権限・ロールは `.agents/skills/about-permissions/SKILL.md` を参照
+
+## Skill 優先順位（競合時）
+
+- 実装場所探索（どこを直すか）と構成判定（レイヤー違反）が同時に出た場合:
+	1) `garaku-feature-map` で候補を特定し、2) `garaku-architecture-map` で正誤判定する
+- 検証コマンド選定とテスト設計が同時に出た場合:
+	1) `garaku-testing-guide` でテスト層を決め、2) `garaku-dev-commands` で実行順を決める
+- 勤怠仕様と権限仕様が同時に出た場合:
+	1) `about-permissions` を優先してアクセス可否を確定し、2) `about-kintai-app` で業務ルールを適用する
+- エラー調査時の開始点:
+	実装場所不明なら `garaku-feature-map`、仕様不明ならドメインSKILL（`about-kintai-app` / `about-permissions`）を先に使う
+
+## 詳細仕様ドキュメント
+
+機能ごとの詳細仕様は `.github/instructions/` に配置：
+
+| ファイル                                  | 対象                                         |
+| ----------------------------------------- | -------------------------------------------- |
+| `attendanceEdit.instructions.md`          | 勤怠編集（定型入力・バリデーションルール等） |
+| `attendanceList.instructions.md`          | 勤怠一覧・ステータス判定                     |
+| `register.instructions.md`                | 打刻ページ・直行直帰                         |
+| `shift.instructions.md`                   | シフト機能全般                               |
+| `shiftCollaborative.instructions.md`      | シフト共同編集のガードレール                 |
+| `dailyReport.instructions.md`             | 日報                                         |
+| `amplifyGraphqlGenerated.instructions.md` | 自動生成ファイルの扱い                       |
 
 ## 自動生成ファイル（編集禁止）
 
-- 以下の領域は Amplify による自動生成コードのため、手動で編集しないこと
-  - `src/ui-components/**`
-  - `src/shared/api/graphql/**`
-- `src/ui-components/**` を変更したい場合は Amplify Studio 側を更新し、`amplify pull` で再生成すること
-- `src/shared/api/graphql/**` を変更したい場合はスキーマや設定を更新し、`amplify codegen` で再生成すること
-- 詳細ルールは `.github/instructions/amplifyGraphqlGenerated.instructions.md` を参照すること
-
-## コミットルール
-
-- コミットメッセージは英語で書くこと
+- `src/shared/api/graphql/**`
+- `src/ui-components/**`
+- `src/aws-exports.js`（`amplify pull` で生成）。ソースツリー（git worktree）使用時はメインリポジトリのファイルをリンクして使用する
