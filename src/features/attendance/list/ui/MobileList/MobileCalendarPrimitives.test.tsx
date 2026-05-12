@@ -6,11 +6,7 @@ import { CalendarDayCell } from "./MobileCalendarPrimitives";
 describe("CalendarDayCell", () => {
   it("要確認日は赤系の背景と枠線で表示する", () => {
     render(
-      <CalendarDayCell
-        isCurrentMonth
-        hasError
-        status={AttendanceStatus.Error}
-      >
+      <CalendarDayCell isCurrentMonth hasError status={AttendanceStatus.Error}>
         <span>1</span>
       </CalendarDayCell>,
     );
@@ -58,5 +54,22 @@ describe("CalendarDayCell", () => {
       backgroundColor: "var(--mui-palette-grey-100)",
       color: "var(--mui-palette-text-secondary)",
     });
+  });
+
+  it("土日祝日相当日は警告系の背景色で表示する", () => {
+    render(
+      <CalendarDayCell
+        isCurrentMonth
+        hasError={false}
+        status={AttendanceStatus.None}
+        isHolidayLike
+      >
+        <span>7</span>
+      </CalendarDayCell>,
+    );
+
+    expect(screen.getByRole("button").getAttribute("style")).toContain(
+      "rgba(237, 108, 2, 0.1)",
+    );
   });
 });

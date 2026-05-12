@@ -6,6 +6,7 @@ import {
   buildHolidayLabels,
   buildWeeks,
   formatTimeRange,
+  getCalendarDaySurfaceState,
   getHolidayNames,
   getNetWorkingHours,
   getStatus,
@@ -314,6 +315,48 @@ describe("isHolidayLike", () => {
     expect(
       isHolidayLike(holiday, makeStaff("weekday"), holidayCalendars, []),
     ).toBe(true);
+  });
+});
+
+describe("getCalendarDaySurfaceState", () => {
+  const weekdayStaff = {
+    __typename: "Staff" as const,
+    id: "s1",
+    cognitoUserId: "c1",
+    mailAddress: "a@b.com",
+    role: "staff",
+    enabled: true,
+    status: "active",
+    workType: "weekday" as const,
+    createdAt: "",
+    updatedAt: "",
+  };
+
+  it("当日を isToday=true で返す", () => {
+    const date = dayjs("2024-01-10");
+    const result = getCalendarDaySurfaceState({
+      date,
+      staff: weekdayStaff,
+      holidayCalendars: [],
+      companyHolidayCalendars: [],
+      today: dayjs("2024-01-10"),
+    });
+
+    expect(result.isToday).toBe(true);
+  });
+
+  it("平日勤務者の土日を holidayLike=true で返す", () => {
+    const sunday = dayjs("2024-01-07");
+    const result = getCalendarDaySurfaceState({
+      date: sunday,
+      staff: weekdayStaff,
+      holidayCalendars: [],
+      companyHolidayCalendars: [],
+      today: dayjs("2024-01-01"),
+    });
+
+    expect(result.isWeekend).toBe(true);
+    expect(result.holidayLike).toBe(true);
   });
 });
 

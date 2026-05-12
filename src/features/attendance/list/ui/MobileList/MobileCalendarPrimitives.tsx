@@ -8,6 +8,7 @@ type CalendarDayCellProps = {
   hasError: boolean;
   status?: AttendanceStatus;
   isSelected?: boolean;
+  isHolidayLike?: boolean;
   termColor?: string;
   children: ReactNode;
   onClick?: () => void;
@@ -34,6 +35,7 @@ export const CalendarDayCell = ({
   hasError,
   status,
   isSelected,
+  isHolidayLike,
   termColor,
   children,
   onClick,
@@ -69,6 +71,9 @@ export const CalendarDayCell = ({
     backgroundColor = "rgba(2, 136, 209, 0.12)";
     borderColor = "rgba(2, 136, 209, 0.34)";
     color = "#0b5f8a";
+  } else if (isHolidayLike) {
+    backgroundColor = "rgba(237, 108, 2, 0.1)";
+    borderColor = "rgba(237, 108, 2, 0.28)";
   }
 
   const classNames = ["mobile-calendar__day-cell"];

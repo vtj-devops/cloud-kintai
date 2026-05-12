@@ -171,6 +171,38 @@ export const isHolidayLike = (
   return isHoliday || isCompanyHoliday || [0, 6].includes(date.day());
 };
 
+/**
+ * カレンダー日セルの背景表示で使う共通状態を返す
+ */
+export const getCalendarDaySurfaceState = ({
+  date,
+  staff,
+  holidayCalendars,
+  companyHolidayCalendars,
+  today = dayjs(),
+}: {
+  date: Dayjs;
+  staff: Staff | null | undefined;
+  holidayCalendars: HolidayCalendar[];
+  companyHolidayCalendars: CompanyHolidayCalendar[];
+  today?: Dayjs;
+}) => {
+  const isToday = date.isSame(today, "day");
+  const isWeekend = [0, 6].includes(date.day());
+  const holidayLike = isHolidayLike(
+    date,
+    staff,
+    holidayCalendars,
+    companyHolidayCalendars,
+  );
+
+  return {
+    isToday,
+    isWeekend,
+    holidayLike,
+  };
+};
+
 export const hasSystemComment = (attendance: Attendance | undefined): boolean =>
   Boolean(
     attendance &&

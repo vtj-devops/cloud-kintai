@@ -12,6 +12,7 @@ import { useState } from "react";
 
 import {
   buildHolidayLabels,
+  getCalendarDaySurfaceState,
   getHolidayNames,
   getStatus,
 } from "../../lib/attendanceStatusUtils";
@@ -194,6 +195,12 @@ export default function MobileCalendar({
               companyHolidayCalendars,
               monthlyTerms,
             });
+            const { holidayLike } = getCalendarDaySurfaceState({
+              date: day.date,
+              staff,
+              holidayCalendars,
+              companyHolidayCalendars,
+            });
             const { holidayName, companyHolidayName } = getHolidayNames(
               day.date,
               holidayCalendars,
@@ -213,6 +220,7 @@ export default function MobileCalendar({
                 hasError={hasError}
                 status={status}
                 isSelected={selectedDate === dateKey}
+                isHolidayLike={holidayLike}
                 termColor={termColor}
                 onClick={() => day.isCurrentMonth && handleDateClick(day.date)}
               >

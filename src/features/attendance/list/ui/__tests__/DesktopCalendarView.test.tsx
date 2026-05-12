@@ -13,6 +13,7 @@ const mockGetStatus = jest.fn();
 const mockGetNetWorkingHours = jest.fn();
 const mockGetTotalRestHours = jest.fn();
 const mockFormatTimeRange = jest.fn();
+const mockGetCalendarDaySurfaceState = jest.fn();
 const mockIsHolidayLike = jest.fn();
 const mockGetHolidayNames = jest.fn();
 const mockGetSubstituteHolidayLabel = jest.fn();
@@ -27,6 +28,8 @@ jest.mock("../../lib/attendanceStatusUtils", () => ({
   getNetWorkingHours: (...args: unknown[]) => mockGetNetWorkingHours(...args),
   getTotalRestHours: (...args: unknown[]) => mockGetTotalRestHours(...args),
   formatTimeRange: (...args: unknown[]) => mockFormatTimeRange(...args),
+  getCalendarDaySurfaceState: (...args: unknown[]) =>
+    mockGetCalendarDaySurfaceState(...args),
   isHolidayLike: (...args: unknown[]) => mockIsHolidayLike(...args),
   getHolidayNames: (...args: unknown[]) => mockGetHolidayNames(...args),
   getSubstituteHolidayLabel: (...args: unknown[]) =>
@@ -96,6 +99,11 @@ beforeEach(() => {
   mockGetNetWorkingHours.mockReturnValue(0);
   mockGetTotalRestHours.mockReturnValue(0);
   mockFormatTimeRange.mockReturnValue(undefined);
+  mockGetCalendarDaySurfaceState.mockReturnValue({
+    isToday: false,
+    isWeekend: false,
+    holidayLike: false,
+  });
   mockIsHolidayLike.mockReturnValue(false);
   mockGetHolidayNames.mockReturnValue({
     holidayName: undefined,

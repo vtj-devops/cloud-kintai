@@ -21,11 +21,11 @@ import {
   buildHolidayLabels,
   buildWeeks,
   formatTimeRange,
+  getCalendarDaySurfaceState,
   getHolidayNames,
   getNetWorkingHours,
   getStatus,
   getTotalRestHours,
-  isHolidayLike,
 } from "../lib/attendanceStatusUtils";
 import { resolveMonthlyTerms } from "../lib/monthlyTermUtils";
 import { useOptionalAttendanceListContext } from "./AttendanceListContext";
@@ -292,15 +292,14 @@ export default function DesktopCalendarView({
               const timeRangeLabel = attendance
                 ? formatTimeRange(attendance)
                 : undefined;
-              const isToday = date.isSame(dayjs(), "day");
-              const isCurrentMonth = date.isSame(resolvedCurrentMonth, "month");
-              const holidayLike = isHolidayLike(
+              const daySurfaceState = getCalendarDaySurfaceState({
                 date,
                 staff,
                 holidayCalendars,
                 companyHolidayCalendars,
-              );
-              const isWeekend = date.day() === 0 || date.day() === 6;
+              });
+              const { isToday, holidayLike, isWeekend } = daySurfaceState;
+              const isCurrentMonth = date.isSame(resolvedCurrentMonth, "month");
               const { holidayName, companyHolidayName } = getHolidayNames(
                 date,
                 holidayCalendars,
