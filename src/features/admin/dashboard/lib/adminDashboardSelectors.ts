@@ -3,9 +3,8 @@ import {
   WorkStatusCodes,
 } from "@entities/attendance/lib/actions/workStatus";
 import {
-  formatWorkStatusTooltipLabel,
-  WORK_STATUS_CHART_STACK,
-  WORK_STATUS_DATASET_META,
+  buildWorkStatusChartDatasets,
+  buildWorkStatusStackedBarOptions,
 } from "@entities/attendance/lib/workStatusChart";
 import { toAttendanceWorkStatusHours } from "@entities/attendance/lib/workStatusChartAggregation";
 import { type StaffType } from "@entities/staff/model/useStaffs/useStaffs";
@@ -176,32 +175,13 @@ export const buildStaffWorkStatusChartData = (
   staffWorkStatusSummary: StaffWorkStatusSummaryItem[],
 ): StaffWorkStatusChartData => ({
   labels: staffWorkStatusSummary.map((item) => item.label),
-  datasets: [
-    {
-      label: WORK_STATUS_DATASET_META.regular.label,
-      data: staffWorkStatusSummary.map((item) => item.workHours),
-      backgroundColor: WORK_STATUS_DATASET_META.regular.backgroundColor,
-      borderColor: WORK_STATUS_DATASET_META.regular.borderColor,
-      borderWidth: 1,
-      stack: WORK_STATUS_CHART_STACK,
-    },
-    {
-      label: WORK_STATUS_DATASET_META.paidHoliday.label,
-      data: staffWorkStatusSummary.map((item) => item.paidHolidayHours),
-      backgroundColor: WORK_STATUS_DATASET_META.paidHoliday.backgroundColor,
-      borderColor: WORK_STATUS_DATASET_META.paidHoliday.borderColor,
-      borderWidth: 1,
-      stack: WORK_STATUS_CHART_STACK,
-    },
-    {
-      label: WORK_STATUS_DATASET_META.overtime.label,
-      data: staffWorkStatusSummary.map((item) => -item.overtimeHours),
-      backgroundColor: WORK_STATUS_DATASET_META.overtime.backgroundColor,
-      borderColor: WORK_STATUS_DATASET_META.overtime.borderColor,
-      borderWidth: 1,
-      stack: WORK_STATUS_CHART_STACK,
-    },
-  ],
+  datasets: buildWorkStatusChartDatasets({
+    regularHours: staffWorkStatusSummary.map((item) => item.workHours),
+    paidHolidayHours: staffWorkStatusSummary.map(
+      (item) => item.paidHolidayHours,
+    ),
+    overtimeHours: staffWorkStatusSummary.map((item) => item.overtimeHours),
+  }),
 });
 
 export const buildStaffWorkStatusChartOptions = (
@@ -218,45 +198,15 @@ export const buildStaffWorkStatusChartOptions = (
     ...staffWorkStatusSummary.map((item) => item.overtimeHours),
   );
 
-  return {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: "bottom",
-        labels: { boxWidth: 12, boxHeight: 12, color: "#334155" },
-      },
-      tooltip: {
-        callbacks: {
-          label: (context) =>
-            formatWorkStatusTooltipLabel(
-              context.dataset.label ?? "",
-              context.parsed.y,
-            ),
-        },
-      },
+  return buildWorkStatusStackedBarOptions({
+    maxWorkHours,
+    maxOvertimeHours,
+    xTicks: {
+      autoSkip: false,
+      maxRotation: 90,
+      minRotation: 90,
     },
-    scales: {
-      x: {
-        stacked: true,
-        grid: { display: false },
-        ticks: {
-          color: "#64748b",
-          autoSkip: false,
-          maxRotation: 90,
-          minRotation: 90,
-        },
-      },
-      y: {
-        stacked: true,
-        suggestedMin:
-          maxOvertimeHours > 0 ? -Math.ceil(maxOvertimeHours + 0.5) : 0,
-        suggestedMax: Math.max(1, Math.ceil(maxWorkHours + 0.5)),
-        ticks: { color: "#64748b", callback: (value) => `${value}h` },
-        grid: { color: "rgba(148,163,184,0.22)" },
-      },
-    },
-  };
+  });
 };
 
 export const buildAggregationPeriodInfoLabel = ({
