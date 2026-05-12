@@ -7,7 +7,6 @@ import {
 } from "@features/admin/holidayCalendar/lib/buildHolidayDateRange";
 import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOutlined";
 import { Stack, TextField } from "@mui/material";
-import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
@@ -21,6 +20,7 @@ import {
 import { CompanyHolidayCalendarMessage } from "@shared/lib/message/CompanyHolidayCalendarMessage";
 import { MessageStatus } from "@shared/lib/message/Message";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { AppButton } from "@shared/ui/button";
 import { useDialogCloseGuard } from "@shared/ui/feedback/useDialogCloseGuard";
 import dayjs from "dayjs";
 import { useState } from "react";
@@ -119,16 +119,17 @@ export default function AddCompanyHolidayCalendar({
   };
   return (
     <>
-      <Button
-        variant="outlined"
-        size="small"
+      <AppButton
+        variant="outline"
+        tone="primary"
+        size="sm"
         startIcon={<AddCircleOutlineOutlinedIcon />}
         onClick={() => {
           setOpen(true);
         }}
       >
         休日を追加
-      </Button>
+      </AppButton>
       {dialog}
       <Dialog open={open} onClose={requestClose}>
         <DialogTitle>会社休日を追加</DialogTitle>
@@ -236,13 +237,15 @@ export default function AddCompanyHolidayCalendar({
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={requestClose}>キャンセル</Button>
-          <Button
+          <AppButton variant="outline" tone="neutral" onClick={requestClose}>
+            キャンセル
+          </AppButton>
+          <AppButton
             disabled={!isValid || !isDirty || isSubmitting}
             onClick={handleSubmit(onSubmit)}
           >
             登録
-          </Button>
+          </AppButton>
         </DialogActions>
       </Dialog>
     </>

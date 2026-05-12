@@ -12,6 +12,7 @@ import SettingsIcon from "@features/admin/layout/ui/SettingsIcon";
 import AdminWorkflowSettingsDialog from "@features/admin-config-workflow/AdminWorkflowSettingsDialog";
 import { useSplitView } from "@features/splitView";
 import { WorkflowCategory, WorkflowStatus } from "@shared/api/graphql/types";
+import { AppButton, AppIconButton } from "@shared/ui/button";
 import { SubsectionTitle } from "@shared/ui/typography";
 import {
   ComponentType,
@@ -35,14 +36,20 @@ const MOBILE_BREAKPOINT_QUERY = "(max-width: 640px)";
 
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    if (
+      typeof window === "undefined" ||
+      typeof window.matchMedia !== "function"
+    ) {
       return false;
     }
     return window.matchMedia(MOBILE_BREAKPOINT_QUERY).matches;
   });
 
   useEffect(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    if (
+      typeof window === "undefined" ||
+      typeof window.matchMedia !== "function"
+    ) {
       return;
     }
 
@@ -121,13 +128,15 @@ export default function AdminWorkflow() {
   );
 
   const statuses = Array.from(
-    new Set((workflows || []).map((workflow) => workflow.status).filter(Boolean)),
+    new Set(
+      (workflows || []).map((workflow) => workflow.status).filter(Boolean),
+    ),
   ) as WorkflowStatus[];
 
   const defaultStatusFilter = useMemo(
     () =>
       statuses.filter(
-      (status) => !STATUS_EXCLUDED_FROM_DEFAULT.includes(status),
+        (status) => !STATUS_EXCLUDED_FROM_DEFAULT.includes(status),
       ),
     [statuses],
   );
@@ -180,7 +189,9 @@ export default function AdminWorkflow() {
 
   const createWorkflowPanelComponent = useCallback(
     (workflowId: string): ComponentType<{ panelId: string }> => {
-      const WorkflowPanel = () => <WorkflowDetailPanel workflowId={workflowId} />;
+      const WorkflowPanel = () => (
+        <WorkflowDetailPanel workflowId={workflowId} />
+      );
       WorkflowPanel.displayName = `WorkflowPanel_${workflowId}`;
       return WorkflowPanel;
     },
@@ -246,15 +257,18 @@ export default function AdminWorkflow() {
               </p>
             </div>
 
-            <button
-              type="button"
+            <AppButton
+              variant="outline"
+              tone="secondary"
               onClick={() => setIsSettingsDialogOpen(true)}
-              className="inline-flex h-11 items-center gap-2 self-start rounded-full border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition hover:border-emerald-400 hover:text-emerald-700"
+              className="self-start"
               aria-label="ワークフロー設定を開く"
+              startIcon={
+                <SettingsIcon name="settings" className="text-current" />
+              }
             >
-              <SettingsIcon name="settings" className="text-current" />
               <span>設定</span>
-            </button>
+            </AppButton>
           </div>
         </section>
 
@@ -316,15 +330,16 @@ export default function AdminWorkflow() {
 
         <section className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
           <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-slate-600">{filteredWorkflows.length} 件の申請</p>
-            <button
-              type="button"
+            <p className="text-sm text-slate-600">
+              {filteredWorkflows.length} 件の申請
+            </p>
+            <AppButton
               onClick={handleOpenCarousel}
               disabled={filteredWorkflowIds.length === 0}
-              className="inline-flex h-10 items-center justify-center rounded-md border border-emerald-700/60 bg-emerald-600 px-4 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-300 disabled:text-slate-600"
+              className="min-w-0"
             >
               まとめて確認
-            </button>
+            </AppButton>
           </div>
 
           {paginatedWorkflows.length === 0 ? (
@@ -334,7 +349,9 @@ export default function AdminWorkflow() {
           ) : isMobile ? (
             <div className="space-y-2">
               {paginatedWorkflows.map((workflow) => {
-                const staff = staffs.find((item) => item.id === workflow.staffId);
+                const staff = staffs.find(
+                  (item) => item.id === workflow.staffId,
+                );
                 const staffName = staff
                   ? `${staff.familyName || ""}${staff.givenName || ""}`
                   : workflow.staffId || "不明";
@@ -350,18 +367,18 @@ export default function AdminWorkflow() {
                       <SubsectionTitle className="m-0 text-sm font-semibold text-slate-900">
                         {categoryLabel}
                       </SubsectionTitle>
-                      <button
-                        type="button"
+                      <AppIconButton
                         title="右側で開く"
                         aria-label="右側で開く"
                         onClick={(event) => {
                           event.stopPropagation();
                           handleOpenInRightPanel(workflow.id);
                         }}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 text-slate-600 transition hover:border-emerald-400 hover:text-emerald-700"
+                        tone="neutral"
+                        size="sm"
                       >
                         <OpenInPanelIcon />
-                      </button>
+                      </AppIconButton>
                     </div>
 
                     <p className="mb-2 text-sm text-slate-800">{staffName}</p>
@@ -369,7 +386,9 @@ export default function AdminWorkflow() {
                     <div className="flex items-center justify-between gap-2">
                       <WorkflowStatusChip status={workflow.status} />
                       <span className="text-xs text-slate-500">
-                        {workflow.createdAt ? workflow.createdAt.split("T")[0] : ""}
+                        {workflow.createdAt
+                          ? workflow.createdAt.split("T")[0]
+                          : ""}
                       </span>
                     </div>
                   </article>
@@ -390,7 +409,9 @@ export default function AdminWorkflow() {
                 </thead>
                 <tbody>
                   {paginatedWorkflows.map((workflow) => {
-                    const staff = staffs.find((item) => item.id === workflow.staffId);
+                    const staff = staffs.find(
+                      (item) => item.id === workflow.staffId,
+                    );
                     const staffName = staff
                       ? `${staff.familyName || ""}${staff.givenName || ""}`
                       : workflow.staffId || "不明";
@@ -399,30 +420,38 @@ export default function AdminWorkflow() {
                     return (
                       <tr
                         key={workflow.id}
-                        onClick={() => navigate(`/admin/workflow/${workflow.id}`)}
+                        onClick={() =>
+                          navigate(`/admin/workflow/${workflow.id}`)
+                        }
                         className="cursor-pointer border-b border-slate-100 transition hover:bg-emerald-50/60"
                       >
                         <td
                           className="px-2 py-2"
                           onClick={(event) => event.stopPropagation()}
                         >
-                          <button
-                            type="button"
+                          <AppIconButton
                             title="右側で開く"
                             aria-label="右側で開く"
                             onClick={() => handleOpenInRightPanel(workflow.id)}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 text-slate-600 transition hover:border-emerald-400 hover:text-emerald-700"
+                            tone="neutral"
+                            size="sm"
                           >
                             <OpenInPanelIcon />
-                          </button>
+                          </AppIconButton>
                         </td>
-                        <td className="px-2 py-2 text-slate-900">{categoryLabel}</td>
-                        <td className="px-2 py-2 text-slate-900">{staffName}</td>
+                        <td className="px-2 py-2 text-slate-900">
+                          {categoryLabel}
+                        </td>
+                        <td className="px-2 py-2 text-slate-900">
+                          {staffName}
+                        </td>
                         <td className="px-2 py-2">
                           <WorkflowStatusChip status={workflow.status} />
                         </td>
                         <td className="px-2 py-2 text-slate-600">
-                          {workflow.createdAt ? workflow.createdAt.split("T")[0] : ""}
+                          {workflow.createdAt
+                            ? workflow.createdAt.split("T")[0]
+                            : ""}
                         </td>
                       </tr>
                     );
@@ -456,23 +485,29 @@ export default function AdminWorkflow() {
                 </select>
               </label>
 
-              <button
-                type="button"
+              <AppButton
+                variant="outline"
+                tone="secondary"
+                size="sm"
                 onClick={() => setPage(Math.max(0, currentPage - 1))}
                 disabled={currentPage <= 0}
-                className="inline-flex h-9 items-center justify-center rounded-md border border-slate-300 px-3 text-sm text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-400"
+                className="min-w-0"
               >
                 前へ
-              </button>
+              </AppButton>
 
-              <button
-                type="button"
-                onClick={() => setPage(Math.min(totalPages - 1, currentPage + 1))}
+              <AppButton
+                variant="outline"
+                tone="secondary"
+                size="sm"
+                onClick={() =>
+                  setPage(Math.min(totalPages - 1, currentPage + 1))
+                }
                 disabled={currentPage >= totalPages - 1}
-                className="inline-flex h-9 items-center justify-center rounded-md border border-slate-300 px-3 text-sm text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-400"
+                className="min-w-0"
               >
                 次へ
-              </button>
+              </AppButton>
             </div>
           </div>
         </section>
