@@ -15,6 +15,7 @@ const mockGetTotalRestHours = jest.fn();
 const mockFormatTimeRange = jest.fn();
 const mockIsHolidayLike = jest.fn();
 const mockGetHolidayNames = jest.fn();
+const mockGetSubstituteHolidayLabel = jest.fn();
 const mockResolveMonthlyTerms = jest.fn();
 const mockUseOptionalAttendanceListContext = jest.fn();
 
@@ -27,6 +28,8 @@ jest.mock("../../lib/attendanceStatusUtils", () => ({
   formatTimeRange: (...args: unknown[]) => mockFormatTimeRange(...args),
   isHolidayLike: (...args: unknown[]) => mockIsHolidayLike(...args),
   getHolidayNames: (...args: unknown[]) => mockGetHolidayNames(...args),
+  getSubstituteHolidayLabel: (...args: unknown[]) =>
+    mockGetSubstituteHolidayLabel(...args),
 }));
 
 jest.mock("../../lib/monthlyTermUtils", () => ({
@@ -34,19 +37,18 @@ jest.mock("../../lib/monthlyTermUtils", () => ({
 }));
 
 jest.mock("../AttendanceListContext", () => ({
-  useOptionalAttendanceListContext: () => mockUseOptionalAttendanceListContext(),
+  useOptionalAttendanceListContext: () =>
+    mockUseOptionalAttendanceListContext(),
 }));
 
 jest.mock("@mui/material", () => {
   const actual = jest.requireActual("@mui/material");
   return {
     ...actual,
-    styled:
-      (Component: React.ElementType) =>
-      () =>
-        function StyledComponent(props: Record<string, unknown>) {
-          return <Component {...props} />;
-        },
+    styled: (Component: React.ElementType) => () =>
+      function StyledComponent(props: Record<string, unknown>) {
+        return <Component {...props} />;
+      },
   };
 });
 
@@ -97,6 +99,7 @@ beforeEach(() => {
     holidayName: undefined,
     companyHolidayName: undefined,
   });
+  mockGetSubstituteHolidayLabel.mockReturnValue(undefined);
   mockResolveMonthlyTerms.mockReturnValue([DEFAULT_TERM]);
 });
 
@@ -129,7 +132,11 @@ describe("DesktopCalendarView", () => {
     });
 
     it("複数の集計期間チップをすべて表示する", () => {
-      const term2 = { ...DEFAULT_TERM, label: "2024/07/01 〜 2024/07/31", color: "#4caf50" };
+      const term2 = {
+        ...DEFAULT_TERM,
+        label: "2024/07/01 〜 2024/07/31",
+        color: "#4caf50",
+      };
       mockResolveMonthlyTerms.mockReturnValue([DEFAULT_TERM, term2]);
       render(<DesktopCalendarView {...defaultProps} />);
       expect(screen.getByText(DEFAULT_TERM.label)).toBeInTheDocument();
@@ -149,7 +156,9 @@ describe("DesktopCalendarView", () => {
     it("前月ボタンをクリックすると onMonthChange が前月で呼ばれる", async () => {
       const user = userEvent.setup();
       const onMonthChange = jest.fn();
-      render(<DesktopCalendarView {...defaultProps} onMonthChange={onMonthChange} />);
+      render(
+        <DesktopCalendarView {...defaultProps} onMonthChange={onMonthChange} />,
+      );
 
       await user.click(screen.getByRole("button", { name: "previous-month" }));
 
@@ -160,7 +169,9 @@ describe("DesktopCalendarView", () => {
     it("次月ボタンをクリックすると onMonthChange が次月で呼ばれる", async () => {
       const user = userEvent.setup();
       const onMonthChange = jest.fn();
-      render(<DesktopCalendarView {...defaultProps} onMonthChange={onMonthChange} />);
+      render(
+        <DesktopCalendarView {...defaultProps} onMonthChange={onMonthChange} />,
+      );
 
       await user.click(screen.getByRole("button", { name: "next-month" }));
 
@@ -171,13 +182,15 @@ describe("DesktopCalendarView", () => {
     it("今月ボタンをクリックすると onMonthChange が今月の月初で呼ばれる", async () => {
       const user = userEvent.setup();
       const onMonthChange = jest.fn();
-      render(<DesktopCalendarView {...defaultProps} onMonthChange={onMonthChange} />);
+      render(
+        <DesktopCalendarView {...defaultProps} onMonthChange={onMonthChange} />,
+      );
 
       await user.click(screen.getByRole("button", { name: "今月に戻る" }));
 
       expect(onMonthChange).toHaveBeenCalledTimes(1);
       expect(onMonthChange.mock.calls[0][0].format("YYYY-MM-DD")).toBe(
-        dayjs().startOf("month").format("YYYY-MM-DD")
+        dayjs().startOf("month").format("YYYY-MM-DD"),
       );
     });
 
@@ -186,7 +199,7 @@ describe("DesktopCalendarView", () => {
       render(<DesktopCalendarView {...defaultProps} />);
 
       await expect(
-        user.click(screen.getByRole("button", { name: "previous-month" }))
+        user.click(screen.getByRole("button", { name: "previous-month" })),
       ).resolves.not.toThrow();
     });
   });
@@ -213,7 +226,7 @@ describe("DesktopCalendarView", () => {
           {...defaultProps}
           navigate={navigate}
           buildNavigatePath={buildNavigatePath}
-        />
+        />,
       );
 
       await user.click(screen.getByText("3"));
@@ -236,12 +249,14 @@ describe("DesktopCalendarView", () => {
       mockResolveMonthlyTerms.mockReturnValue([
         { ...DEFAULT_TERM, source: "fallback" as const },
       ]);
-      render(<DesktopCalendarView {...defaultProps} closeDatesLoading={false} />);
+      render(
+        <DesktopCalendarView {...defaultProps} closeDatesLoading={false} />,
+      );
 
       expect(
         screen.getByText(
-          "集計対象月が未登録のため、暫定で月初〜月末を表示しています。"
-        )
+          "集計対象月が未登録のため、暫定で月初〜月末を表示しています。",
+        ),
       ).toBeInTheDocument();
     });
 
@@ -249,12 +264,14 @@ describe("DesktopCalendarView", () => {
       mockResolveMonthlyTerms.mockReturnValue([
         { ...DEFAULT_TERM, source: "fallback" as const },
       ]);
-      render(<DesktopCalendarView {...defaultProps} closeDatesLoading={true} />);
+      render(
+        <DesktopCalendarView {...defaultProps} closeDatesLoading={true} />,
+      );
 
       expect(
         screen.queryByText(
-          "集計対象月が未登録のため、暫定で月初〜月末を表示しています。"
-        )
+          "集計対象月が未登録のため、暫定で月初〜月末を表示しています。",
+        ),
       ).not.toBeInTheDocument();
     });
 
@@ -267,8 +284,8 @@ describe("DesktopCalendarView", () => {
 
       expect(
         screen.queryByText(
-          "集計対象月が未登録のため、暫定で月初〜月末を表示しています。"
-        )
+          "集計対象月が未登録のため、暫定で月初〜月末を表示しています。",
+        ),
       ).not.toBeInTheDocument();
     });
 
@@ -277,13 +294,13 @@ describe("DesktopCalendarView", () => {
         <DesktopCalendarView
           {...defaultProps}
           closeDatesError={new Error("fetch failed")}
-        />
+        />,
       );
 
       expect(
         screen.getByText(
-          "集計対象月の取得に失敗したため、暫定の期間で表示しています。"
-        )
+          "集計対象月の取得に失敗したため、暫定の期間で表示しています。",
+        ),
       ).toBeInTheDocument();
     });
 
@@ -292,8 +309,8 @@ describe("DesktopCalendarView", () => {
 
       expect(
         screen.queryByText(
-          "集計対象月の取得に失敗したため、暫定の期間で表示しています。"
-        )
+          "集計対象月の取得に失敗したため、暫定の期間で表示しています。",
+        ),
       ).not.toBeInTheDocument();
     });
   });
@@ -305,7 +322,7 @@ describe("DesktopCalendarView", () => {
       mockFormatTimeRange.mockReturnValue("09:00 - 18:00");
 
       render(
-        <DesktopCalendarView {...defaultProps} attendances={[attendance]} />
+        <DesktopCalendarView {...defaultProps} attendances={[attendance]} />,
       );
 
       expect(screen.getByText("09:00 - 18:00")).toBeInTheDocument();
@@ -316,7 +333,7 @@ describe("DesktopCalendarView", () => {
       mockFormatTimeRange.mockReturnValue(undefined);
 
       render(
-        <DesktopCalendarView {...defaultProps} attendances={[attendance]} />
+        <DesktopCalendarView {...defaultProps} attendances={[attendance]} />,
       );
 
       expect(screen.queryByText(/-/)).not.toBeInTheDocument();
@@ -325,10 +342,12 @@ describe("DesktopCalendarView", () => {
     it("getNetWorkingHours が 8.0 を返す場合、実働時間 '8.0h' を表示する", () => {
       const attendance = createMockAttendance({ workDate: "2024-06-03" });
       // Return 8.0 only when an attendance object is passed; 0 for days without data
-      mockGetNetWorkingHours.mockImplementation((att: unknown) => (att ? 8.0 : 0));
+      mockGetNetWorkingHours.mockImplementation((att: unknown) =>
+        att ? 8.0 : 0,
+      );
 
       render(
-        <DesktopCalendarView {...defaultProps} attendances={[attendance]} />
+        <DesktopCalendarView {...defaultProps} attendances={[attendance]} />,
       );
 
       expect(screen.getByText("8.0h")).toBeInTheDocument();
@@ -339,7 +358,7 @@ describe("DesktopCalendarView", () => {
       mockGetNetWorkingHours.mockReturnValue(0);
 
       render(
-        <DesktopCalendarView {...defaultProps} attendances={[attendance]} />
+        <DesktopCalendarView {...defaultProps} attendances={[attendance]} />,
       );
 
       expect(screen.queryByText(/\d+\.\dh/)).not.toBeInTheDocument();
@@ -352,7 +371,7 @@ describe("DesktopCalendarView", () => {
       });
 
       render(
-        <DesktopCalendarView {...defaultProps} attendances={[attendance]} />
+        <DesktopCalendarView {...defaultProps} attendances={[attendance]} />,
       );
 
       expect(screen.getByText("有給休暇")).toBeInTheDocument();
@@ -365,10 +384,12 @@ describe("DesktopCalendarView", () => {
       });
       // Even though 8.0 would be returned for this attendance, paidHolidayFlag hides it.
       // Days without attendance return 0, so no stray "8.0h" appears.
-      mockGetNetWorkingHours.mockImplementation((att: unknown) => (att ? 8.0 : 0));
+      mockGetNetWorkingHours.mockImplementation((att: unknown) =>
+        att ? 8.0 : 0,
+      );
 
       render(
-        <DesktopCalendarView {...defaultProps} attendances={[attendance]} />
+        <DesktopCalendarView {...defaultProps} attendances={[attendance]} />,
       );
 
       expect(screen.queryByText("8.0h")).not.toBeInTheDocument();
@@ -383,7 +404,7 @@ describe("DesktopCalendarView", () => {
       mockGetTotalRestHours.mockReturnValue(1.0);
 
       render(
-        <DesktopCalendarView {...defaultProps} attendances={[attendance]} />
+        <DesktopCalendarView {...defaultProps} attendances={[attendance]} />,
       );
 
       expect(screen.getByText("休憩 1.0h")).toBeInTheDocument();
@@ -397,7 +418,7 @@ describe("DesktopCalendarView", () => {
       mockGetTotalRestHours.mockReturnValue(1.0);
 
       render(
-        <DesktopCalendarView {...defaultProps} attendances={[attendance]} />
+        <DesktopCalendarView {...defaultProps} attendances={[attendance]} />,
       );
 
       expect(screen.queryByText(/休憩/)).not.toBeInTheDocument();
@@ -411,10 +432,10 @@ describe("DesktopCalendarView", () => {
       // Only return the target status for cells that have attendance data;
       // other cells get None so no extra chips appear.
       mockGetStatus.mockImplementation((att: unknown) =>
-        att ? status : AttendanceStatus.None
+        att ? status : AttendanceStatus.None,
       );
       render(
-        <DesktopCalendarView {...defaultProps} attendances={[attendance]} />
+        <DesktopCalendarView {...defaultProps} attendances={[attendance]} />,
       );
     };
 
@@ -470,7 +491,9 @@ describe("DesktopCalendarView", () => {
       });
       render(<DesktopCalendarView {...defaultProps} />);
 
-      expect(screen.getAllByText("会社休日 創立記念日").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("会社休日 創立記念日").length).toBeGreaterThan(
+        0,
+      );
     });
 
     it("holidayName と companyHolidayName が両方ある場合、両方を表示する", () => {
@@ -481,7 +504,16 @@ describe("DesktopCalendarView", () => {
       render(<DesktopCalendarView {...defaultProps} />);
 
       expect(screen.getAllByText("元日").length).toBeGreaterThan(0);
-      expect(screen.getAllByText("会社休日 特別休暇").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("会社休日 特別休暇").length).toBeGreaterThan(
+        0,
+      );
+    });
+
+    it("振替休日ラベルがある場合、表示する", () => {
+      mockGetSubstituteHolidayLabel.mockReturnValue("振替休日");
+      render(<DesktopCalendarView {...defaultProps} />);
+
+      expect(screen.getAllByText("振替休日").length).toBeGreaterThan(0);
     });
   });
 
@@ -494,11 +526,11 @@ describe("DesktopCalendarView", () => {
           {...defaultProps}
           attendances={[attendance]}
           onOpenInRightPanel={jest.fn()}
-        />
+        />,
       );
 
       expect(
-        screen.getByRole("button", { name: "右側で開く" })
+        screen.getByRole("button", { name: "右側で開く" }),
       ).toBeInTheDocument();
     });
 
@@ -511,7 +543,7 @@ describe("DesktopCalendarView", () => {
           {...defaultProps}
           attendances={[attendance]}
           onOpenInRightPanel={onOpenInRightPanel}
-        />
+        />,
       );
 
       await user.click(screen.getByRole("button", { name: "右側で開く" }));
@@ -533,7 +565,7 @@ describe("DesktopCalendarView", () => {
           attendances={[attendance]}
           navigate={navigate}
           onOpenInRightPanel={onOpenInRightPanel}
-        />
+        />,
       );
 
       await user.click(screen.getByRole("button", { name: "右側で開く" }));
@@ -547,22 +579,22 @@ describe("DesktopCalendarView", () => {
           {...defaultProps}
           attendances={[]}
           onOpenInRightPanel={jest.fn()}
-        />
+        />,
       );
 
       expect(
-        screen.queryByRole("button", { name: "右側で開く" })
+        screen.queryByRole("button", { name: "右側で開く" }),
       ).not.toBeInTheDocument();
     });
 
     it("onOpenInRightPanel が未設定の場合、'右側で開く' ボタンを表示しない", () => {
       const attendance = createMockAttendance({ workDate: "2024-06-03" });
       render(
-        <DesktopCalendarView {...defaultProps} attendances={[attendance]} />
+        <DesktopCalendarView {...defaultProps} attendances={[attendance]} />,
       );
 
       expect(
-        screen.queryByRole("button", { name: "右側で開く" })
+        screen.queryByRole("button", { name: "右側で開く" }),
       ).not.toBeInTheDocument();
     });
   });
@@ -635,7 +667,7 @@ describe("DesktopCalendarView", () => {
         <DesktopCalendarView
           currentMonth={JUN_2024}
           onMonthChange={propMonthChange}
-        />
+        />,
       );
 
       // prop の currentMonth が使われる

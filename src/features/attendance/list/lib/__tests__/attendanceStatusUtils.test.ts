@@ -8,6 +8,7 @@ import {
   getHolidayNames,
   getNetWorkingHours,
   getStatus,
+  getSubstituteHolidayLabel,
   getTotalRestHours,
   isHolidayLike,
 } from "../attendanceStatusUtils";
@@ -312,5 +313,22 @@ describe("isHolidayLike", () => {
     expect(
       isHolidayLike(holiday, makeStaff("weekday"), holidayCalendars, []),
     ).toBe(true);
+  });
+});
+
+describe("getSubstituteHolidayLabel", () => {
+  it("substituteHolidayDate がある場合は振替休日を返す", () => {
+    const attendance = {
+      substituteHolidayDate: "2024-01-08",
+    } as Attendance;
+
+    expect(getSubstituteHolidayLabel(attendance)).toBe("振替休日");
+  });
+
+  it("substituteHolidayDate がない場合は undefined を返す", () => {
+    const attendance = {} as Attendance;
+
+    expect(getSubstituteHolidayLabel(attendance)).toBeUndefined();
+    expect(getSubstituteHolidayLabel(undefined)).toBeUndefined();
   });
 });

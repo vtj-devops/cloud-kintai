@@ -115,6 +115,14 @@ export function getHolidayNames(
 }
 
 /**
+ * 振替休日ラベルを返す
+ */
+export function getSubstituteHolidayLabel(attendance: Attendance | undefined) {
+  if (!attendance?.substituteHolidayDate) return undefined;
+  return "振替休日";
+}
+
+/**
  * 指定日付が祝日・会社休日・週末かどうかを判定
  */
 export const isHolidayLike = (
