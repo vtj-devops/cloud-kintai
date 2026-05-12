@@ -36,8 +36,17 @@ jest.mock("../ElapsedDurationCards", () => ({
 
 jest.mock("../RegisterAttendanceSummaryCard", () => ({
   __esModule: true,
-  default: ({ attendanceErrorCount }: { attendanceErrorCount: number }) => (
-    <div data-testid="register-attendance-summary-card-mock">
+  default: ({
+    attendanceErrorCount,
+    attendanceErrorListPath,
+  }: {
+    attendanceErrorCount: number;
+    attendanceErrorListPath?: string;
+  }) => (
+    <div
+      data-testid="register-attendance-summary-card-mock"
+      data-attendance-error-list-path={attendanceErrorListPath ?? ""}
+    >
       {attendanceErrorCount}
     </div>
   ),
@@ -86,5 +95,8 @@ describe("RegisterDashboard", () => {
     expect(
       screen.getByTestId("register-attendance-summary-card-mock"),
     ).toHaveTextContent("2");
+    expect(
+      screen.getByTestId("register-attendance-summary-card-mock"),
+    ).toHaveAttribute("data-attendance-error-list-path", "/attendance/list");
   });
 });
