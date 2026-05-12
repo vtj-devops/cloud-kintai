@@ -1,4 +1,5 @@
 import type { UseWorkflowListFiltersResult } from "@features/workflow/list/useWorkflowListFilters";
+import { AppButton } from "@shared/ui/button";
 import type { Dispatch, ReactNode, RefObject, SetStateAction } from "react";
 
 import type { WorkflowListFiltersHandle } from "./WorkflowListFilters";
@@ -25,21 +26,29 @@ export default function WorkflowMobileFilters({
 }: WorkflowMobileFiltersProps) {
   return (
     <div className="workflow-mobile-filter-shell">
-      <button
-        type="button"
+      <AppButton
+        variant="outline"
+        tone="secondary"
+        size="sm"
         onClick={() => setMobileFiltersOpen((prev) => !prev)}
         className="workflow-mobile-filter-trigger"
+        endIcon={
+          <span className="workflow-mobile-filter-trigger__chevron">
+            {mobileFiltersOpen ? "▲" : "▼"}
+          </span>
+        }
       >
         <div className="workflow-mobile-filter-trigger__left">
-          <span className="workflow-mobile-filter-trigger__label">フィルター</span>
+          <span className="workflow-mobile-filter-trigger__label">
+            フィルター
+          </span>
           {anyFilterActive && (
-            <span className="workflow-mobile-filter-trigger__badge">適用中</span>
+            <span className="workflow-mobile-filter-trigger__badge">
+              適用中
+            </span>
           )}
         </div>
-        <span className="workflow-mobile-filter-trigger__chevron">
-          {mobileFiltersOpen ? "▲" : "▼"}
-        </span>
-      </button>
+      </AppButton>
       {mobileFiltersOpen ? (
         <div className="workflow-mobile-filter-panel">
           <WorkflowListFiltersPanel

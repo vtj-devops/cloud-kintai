@@ -1,43 +1,45 @@
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
+import { AppButton } from "@shared/ui/button";
 
 import { useWorkflowDetailContext } from "../model/WorkflowDetailContext";
 import styles from "./WorkflowDetailActions.module.scss";
 
 export default function WorkflowDetailActions() {
-  const { permissions, onBack, onWithdraw, onEdit } = useWorkflowDetailContext();
+  const { permissions, onBack, onWithdraw, onEdit } =
+    useWorkflowDetailContext();
   const { withdrawDisabled, withdrawTooltip, editDisabled, editTooltip } =
     permissions;
   return (
     <div className={styles.actions}>
       <div>
-        <button
-          type="button"
-          className={styles.backButton}
+        <AppButton
+          variant="outline"
+          tone="secondary"
+          size="sm"
           onClick={onBack}
+          startIcon={<ArrowBackRoundedIcon sx={{ fontSize: 18 }} />}
         >
-          <ArrowBackRoundedIcon sx={{ fontSize: 18, color: "#475569" }} />
           一覧に戻る
-        </button>
+        </AppButton>
       </div>
       <div className={styles.actionsRight}>
-        <button
-          type="button"
-          className={styles.dangerPillButton}
+        <AppButton
+          tone="danger"
+          size="sm"
           onClick={onWithdraw}
           disabled={withdrawDisabled}
           title={withdrawTooltip}
         >
           取り下げ
-        </button>
-        <button
-          type="button"
-          className={styles.pillButton}
+        </AppButton>
+        <AppButton
+          size="sm"
           onClick={onEdit}
           disabled={editDisabled}
           title={editTooltip}
         >
           編集
-        </button>
+        </AppButton>
       </div>
     </div>
   );

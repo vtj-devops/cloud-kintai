@@ -1,4 +1,4 @@
-import { fireEvent,render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 
 import { WorkflowDetailContext } from "../../model/WorkflowDetailContext";
 import WorkflowDetailActions from "../WorkflowDetailActions";
@@ -7,10 +7,7 @@ import { WorkflowMetadataPanelBase } from "../WorkflowMetadataPanel";
 
 jest.mock("./WorkflowDetailActions.module.scss", () => ({
   actions: "actions",
-  backButton: "backButton",
   actionsRight: "actionsRight",
-  dangerPillButton: "dangerPillButton",
-  pillButton: "pillButton",
 }));
 
 jest.mock("./WorkflowDetailHeader.module.scss", () => ({
@@ -42,10 +39,13 @@ jest.mock("@entities/workflow/ui/WorkflowStatusChip", () => ({
   ),
 }));
 
-jest.mock("@features/workflow/approval-flow/ui/WorkflowApprovalTimeline", () => ({
-  __esModule: true,
-  default: () => <div data-testid="approval-timeline" />,
-}));
+jest.mock(
+  "@features/workflow/approval-flow/ui/WorkflowApprovalTimeline",
+  () => ({
+    __esModule: true,
+    default: () => <div data-testid="approval-timeline" />,
+  }),
+);
 
 jest.mock("@shared/lib/time", () => ({
   formatDateSlash: (date: string | null | undefined) => date ?? "-",
@@ -127,7 +127,9 @@ describe("WorkflowDetailActions", () => {
 
   it("「取り下げ」ボタンを表示する", () => {
     renderWithContext(<WorkflowDetailActions />);
-    expect(screen.getByRole("button", { name: "取り下げ" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "取り下げ" }),
+    ).toBeInTheDocument();
   });
 
   it("「編集」ボタンを表示する", () => {

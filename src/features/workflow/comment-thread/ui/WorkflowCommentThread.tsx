@@ -1,6 +1,7 @@
 import { StaffType } from "@entities/staff/model/useStaffs/useStaffs";
 import { useWorkflowDetailContext } from "@features/workflow/detail-panel/model/WorkflowDetailContext";
 import { PANEL_HEIGHTS } from "@shared/config/uiDimensions";
+import { AppButton } from "@shared/ui/button";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { shouldTruncateWorkflowMessage } from "../model/workflowCommentUtils";
@@ -268,14 +269,14 @@ export function WorkflowCommentThreadView({
           </p>
         </div>
 
-        <button
-          type="button"
+        <AppButton
           onClick={onSend}
           disabled={sendDisabled}
-          className="inline-flex h-11 w-full shrink-0 items-center justify-center rounded-full border border-emerald-700/55 bg-[#19b985] px-6 text-sm font-medium text-white shadow-[inset_0_-2px_0_rgba(0,0,0,0.12),0_12px_24px_-18px_rgba(5,150,105,0.55)] transition hover:bg-[#17ab7b] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-200 disabled:text-slate-500 disabled:shadow-none sm:w-auto"
+          size="sm"
+          className="w-full shrink-0 sm:w-auto"
         >
           送信
-        </button>
+        </AppButton>
       </div>
     </div>
   );
