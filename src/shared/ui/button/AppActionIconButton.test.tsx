@@ -4,7 +4,6 @@ import userEvent from "@testing-library/user-event";
 import {
   AppCopyIconButton,
   AppDeleteIconButton,
-  AppDeleteOutlineIconButton,
   AppEditIconButton,
 } from "./AppActionIconButton";
 
@@ -21,11 +20,11 @@ describe("AppActionIconButton", () => {
     expect(screen.getByRole("button", { name: "コピー" })).toBeInTheDocument();
   });
 
-  it("AppDeleteIconButton と AppDeleteOutlineIconButton は danger tone で描画される", () => {
+  it("AppDeleteIconButton は danger tone で描画される（outlined 含む）", () => {
     render(
       <>
         <AppDeleteIconButton aria-label="削除-塗り" />
-        <AppDeleteOutlineIconButton aria-label="削除-枠" />
+        <AppDeleteIconButton outlined aria-label="削除-枠" />
       </>,
     );
 

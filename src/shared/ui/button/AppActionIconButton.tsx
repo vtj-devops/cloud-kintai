@@ -12,26 +12,21 @@ type BaseActionIconButtonProps = Omit<
   "aria-label"?: string;
 };
 
-export type AppDeleteIconButtonProps = BaseActionIconButtonProps;
+export type AppDeleteIconButtonProps = BaseActionIconButtonProps & {
+  outlined?: boolean;
+};
 export function AppDeleteIconButton({
   "aria-label": ariaLabel = "削除",
+  outlined = false,
   ...props
 }: AppDeleteIconButtonProps) {
   return (
     <AppIconButton {...props} aria-label={ariaLabel} tone="danger">
-      <DeleteIcon fontSize="small" />
-    </AppIconButton>
-  );
-}
-
-export type AppDeleteOutlineIconButtonProps = BaseActionIconButtonProps;
-export function AppDeleteOutlineIconButton({
-  "aria-label": ariaLabel = "削除",
-  ...props
-}: AppDeleteOutlineIconButtonProps) {
-  return (
-    <AppIconButton {...props} aria-label={ariaLabel} tone="danger">
-      <DeleteOutlineIcon fontSize="small" />
+      {outlined ? (
+        <DeleteOutlineIcon fontSize="small" />
+      ) : (
+        <DeleteIcon fontSize="small" />
+      )}
     </AppIconButton>
   );
 }

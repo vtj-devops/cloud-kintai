@@ -20,7 +20,7 @@ import {
   Typography,
 } from "@mui/material";
 import {
-  AppDeleteOutlineIconButton,
+  AppDeleteIconButton,
   AppEditIconButton,
 } from "@shared/ui/button/AppActionIconButton";
 import React, { useCallback, useMemo, useState } from "react";
@@ -292,7 +292,8 @@ export const CellCommentDialog: React.FC<CellCommentDialogProps> = ({
                             />
                           </Tooltip>
                           <Tooltip title="削除">
-                            <AppDeleteOutlineIconButton
+                            <AppDeleteIconButton
+                              outlined
                               size="sm"
                               aria-label="削除"
                               onClick={() => onDeleteComment(comment.id)}
@@ -352,7 +353,8 @@ export const CellCommentDialog: React.FC<CellCommentDialogProps> = ({
                           {currentUserId === reply.userId && (
                             <ListItemSecondaryAction>
                               <Tooltip title="削除">
-                                <AppDeleteOutlineIconButton
+                                <AppDeleteIconButton
+                                  outlined
                                   size="sm"
                                   aria-label="削除"
                                   onClick={() =>

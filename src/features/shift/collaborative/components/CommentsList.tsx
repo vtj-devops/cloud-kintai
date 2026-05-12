@@ -12,7 +12,7 @@ import {
   Typography,
 } from "@mui/material";
 import {
-  AppDeleteOutlineIconButton,
+  AppDeleteIconButton,
   AppEditIconButton,
 } from "@shared/ui/button/AppActionIconButton";
 import React, { useMemo } from "react";
@@ -249,7 +249,8 @@ export const CommentsList: React.FC<CommentsListProps> = ({
                       )}
                       {onDeleteComment && (
                         <Tooltip title="削除">
-                          <AppDeleteOutlineIconButton
+                          <AppDeleteIconButton
+                            outlined
                             size="sm"
                             aria-label="削除"
                             onClick={(e) => {
