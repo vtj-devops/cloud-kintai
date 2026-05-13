@@ -4,21 +4,22 @@ import { DEFAULT_AM_HOLIDAY_END, DEFAULT_AM_HOLIDAY_START, DEFAULT_PM_HOLIDAY_EN
 import AdminSettingsLayout from "@features/admin/layout/ui/AdminSettingsLayout";
 import AdminSettingsSection from "@features/admin/layout/ui/AdminSettingsSection";
 import { SettingsButton, SettingsSwitch, SettingsTimeField, } from "@features/admin/layout/ui/SettingsPrimitives";
-import { CreateAppConfigInput, UpdateAppConfigInput, } from "@shared/api/graphql/types";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
 import dayjs, { Dayjs } from "dayjs";
 import { useContext, useEffect, useState } from "react";
 
-import { E14001, E14002, S14001, S14002 } from "@/errors";
+import { E14002 } from "@/errors";
+
+import { useSaveAppConfigSection } from "../lib/useSaveAppConfigSection";
 
 export default function AmPmHoliday() {
-    const { getAmHolidayStartTime, getAmHolidayEndTime, getPmHolidayStartTime, getPmHolidayEndTime, getAmPmHolidayEnabled, getConfigId, saveConfig, fetchConfig, } = useContext(AppConfigContext);
+    const { getAmHolidayStartTime, getAmHolidayEndTime, getPmHolidayStartTime, getPmHolidayEndTime, getAmPmHolidayEnabled, } = useContext(AppConfigContext);
     const [amHolidayStartTime, setAmHolidayStartTime] = useState<Dayjs | null>(dayjs(DEFAULT_AM_HOLIDAY_START, TIME_FORMAT));
     const [amHolidayEndTime, setAmHolidayEndTime] = useState<Dayjs | null>(dayjs(DEFAULT_AM_HOLIDAY_END, TIME_FORMAT));
     const [pmHolidayStartTime, setPmHolidayStartTime] = useState<Dayjs | null>(dayjs(DEFAULT_PM_HOLIDAY_START, TIME_FORMAT));
     const [pmHolidayEndTime, setPmHolidayEndTime] = useState<Dayjs | null>(dayjs(DEFAULT_PM_HOLIDAY_END, TIME_FORMAT));
     const [amPmHolidayEnabled, setAmPmHolidayEnabled] = useState<boolean>(true);
-    const [id, setId] = useState<string | null>(null);
+    const saveAppConfigSection = useSaveAppConfigSection();
     const dispatch = useAppDispatchV2();
     useEffect(() => {
         if (typeof getAmHolidayStartTime === "function" && getAmHolidayStartTime())
@@ -36,65 +37,34 @@ export default function AmPmHoliday() {
         if (typeof getAmPmHolidayEnabled === "function")
             // eslint-disable-next-line react-hooks/set-state-in-effect
             setAmPmHolidayEnabled(getAmPmHolidayEnabled());
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setId(getConfigId());
-    }, [
-        getAmHolidayStartTime,
-        getAmHolidayEndTime,
-        getPmHolidayStartTime,
-        getPmHolidayEndTime,
-        getAmPmHolidayEnabled,
-        getConfigId,
-    ]);
+    }, [getAmHolidayStartTime, getAmHolidayEndTime, getPmHolidayStartTime, getPmHolidayEndTime, getAmPmHolidayEnabled]);
     const handleSave = async () => {
-        if (amHolidayStartTime &&
-            amHolidayEndTime &&
-            pmHolidayStartTime &&
-            pmHolidayEndTime) {
-            try {
-                if (id) {
-                    await saveConfig({
-                        id,
-                        amHolidayStartTime: amHolidayStartTime.format("HH:mm"),
-                        amHolidayEndTime: amHolidayEndTime.format("HH:mm"),
-                        pmHolidayStartTime: pmHolidayStartTime.format("HH:mm"),
-                        pmHolidayEndTime: pmHolidayEndTime.format("HH:mm"),
-                        amPmHolidayEnabled,
-                    } as unknown as UpdateAppConfigInput);
-                    dispatch(pushNotification({
-                        tone: "success",
-                        message: S14002
-                    }));
-                }
-                else {
-                    await saveConfig({
-                        name: "default",
-                        amHolidayStartTime: amHolidayStartTime.format("HH:mm"),
-                        amHolidayEndTime: amHolidayEndTime.format("HH:mm"),
-                        pmHolidayStartTime: pmHolidayStartTime.format("HH:mm"),
-                        pmHolidayEndTime: pmHolidayEndTime.format("HH:mm"),
-                        amPmHolidayEnabled,
-                    } as unknown as CreateAppConfigInput);
-                    dispatch(pushNotification({
-                        tone: "success",
-                        message: S14001
-                    }));
-                }
-                await fetchConfig();
-            }
-            catch {
-                dispatch(pushNotification({
-                    tone: "error",
-                    message: E14001
-                }));
-            }
-        }
-        else {
-            dispatch(pushNotification({
-                tone: "error",
-                message: E14002
-            }));
-        }
+        await saveAppConfigSection(
+            {
+                amHolidayStartTime: amHolidayStartTime?.format("HH:mm") ?? "",
+                amHolidayEndTime: amHolidayEndTime?.format("HH:mm") ?? "",
+                pmHolidayStartTime: pmHolidayStartTime?.format("HH:mm") ?? "",
+                pmHolidayEndTime: pmHolidayEndTime?.format("HH:mm") ?? "",
+                amPmHolidayEnabled,
+            },
+            {
+                validate: () =>
+                    Boolean(
+                        amHolidayStartTime &&
+                            amHolidayEndTime &&
+                            pmHolidayStartTime &&
+                            pmHolidayEndTime,
+                    ),
+                onInvalid: () => {
+                    dispatch(
+                        pushNotification({
+                            tone: "error",
+                            message: E14002,
+                        }),
+                    );
+                },
+            },
+        );
     };
     return (<AdminSettingsLayout>
       <AdminSettingsSection actions={<SettingsButton onClick={handleSave}>保存</SettingsButton>}>
