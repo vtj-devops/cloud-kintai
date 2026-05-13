@@ -1,11 +1,15 @@
 import { AuthContext } from "@app/providers/auth/AuthContext";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import useCloseDates from "@entities/attendance/model/useCloseDates";
-import { StaffType, useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
+import {
+  StaffType,
+  useStaffs,
+} from "@entities/staff/model/useStaffs/useStaffs";
 import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOutlined";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { STANDARD_PADDING } from "@shared/config/uiDimensions";
+import { AppButton } from "@shared/ui/button";
 import dayjs from "dayjs";
 import { useContext, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -28,7 +32,11 @@ export default function DownloadForm() {
   const { authStatus } = useContext(AuthContext);
   const isAuthenticated = authStatus === "authenticated";
   const [isExpanded, setIsExpanded] = useState(false);
-  const { staffs, loading: staffLoading, error: staffError } = useStaffs({
+  const {
+    staffs,
+    loading: staffLoading,
+    error: staffError,
+  } = useStaffs({
     isAuthenticated,
   });
   const {
@@ -85,9 +93,7 @@ export default function DownloadForm() {
       className="flex w-full min-w-0 flex-col gap-4 overflow-x-hidden"
       style={{ paddingBottom: STANDARD_PADDING.CARD }}
     >
-      <div
-        className="flex w-full flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between"
-      >
+      <div className="flex w-full flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="text-[1.05rem] font-bold text-slate-900">
             ダウンロード
@@ -97,17 +103,29 @@ export default function DownloadForm() {
           </div>
         </div>
         <div className="self-end sm:self-center">
-          <button
-            type="button"
+          <AppButton
+            variant="outline"
+            tone="secondary"
+            size="sm"
             onClick={() => setIsExpanded((prev) => !prev)}
-            className="inline-flex items-center justify-center gap-1 rounded-full border border-slate-300/70 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-[0_8px_24px_-20px_rgba(15,23,42,0.18)] transition hover:bg-slate-50"
-            aria-label={isExpanded ? "ダウンロード要素を折りたたむ" : "ダウンロード要素を展開する"}
+            className="min-w-0 rounded-full"
+            aria-label={
+              isExpanded
+                ? "ダウンロード要素を折りたたむ"
+                : "ダウンロード要素を展開する"
+            }
             aria-expanded={isExpanded}
             aria-controls="attendance-download-panel"
+            endIcon={
+              isExpanded ? (
+                <ExpandLessIcon fontSize="small" />
+              ) : (
+                <ExpandMoreIcon fontSize="small" />
+              )
+            }
           >
             {isExpanded ? "折りたたむ" : "展開する"}
-            {isExpanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
-          </button>
+          </AppButton>
         </div>
       </div>
 
@@ -156,14 +174,18 @@ export default function DownloadForm() {
                           (item) => item.closeDate === event.target.value,
                         );
                         if (!closeDate) return;
-                        setStartDate(formatInputDate(dayjs(closeDate.startDate)));
+                        setStartDate(
+                          formatInputDate(dayjs(closeDate.startDate)),
+                        );
                         setEndDate(formatInputDate(dayjs(closeDate.endDate)));
                       }}
                       className="min-w-0 flex-1 rounded-[18px] border border-slate-300/70 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-emerald-500"
                     >
                       <option value="">対象月を選択</option>
                       {closeDates
-                        .toSorted((a, b) => dayjs(b.closeDate).diff(dayjs(a.closeDate)))
+                        .toSorted((a, b) =>
+                          dayjs(b.closeDate).diff(dayjs(a.closeDate)),
+                        )
                         .map((closeDate, index) => (
                           <option key={index} value={closeDate.closeDate}>
                             {dayjs(closeDate.closeDate).format("YYYY/MM")}

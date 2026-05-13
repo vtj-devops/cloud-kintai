@@ -3,14 +3,7 @@ import AttendanceStatusChip from "@entities/attendance/ui/AttendanceStatusChip";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
-import {
-  Box,
-  Chip,
-  Divider,
-  Stack,
-  styled,
-  Typography,
-} from "@mui/material";
+import { Box, Chip, Divider, Stack, styled, Typography } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import {
   Attendance,
@@ -25,13 +18,14 @@ import dayjs, { Dayjs } from "dayjs";
 import { useMemo } from "react";
 
 import {
+  buildHolidayLabels,
   buildWeeks,
   formatTimeRange,
+  getCalendarDaySurfaceState,
   getHolidayNames,
   getNetWorkingHours,
   getStatus,
   getTotalRestHours,
-  isHolidayLike,
 } from "../lib/attendanceStatusUtils";
 import { resolveMonthlyTerms } from "../lib/monthlyTermUtils";
 import { useOptionalAttendanceListContext } from "./AttendanceListContext";
@@ -54,8 +48,8 @@ const DayCell = styled(Box, {
   backgroundColor: $isToday
     ? alpha(theme.palette.success.main, 0.08)
     : $isHoliday
-    ? alpha(theme.palette.warning.main, 0.08)
-    : "rgba(255,255,255,0.92)",
+      ? alpha(theme.palette.warning.main, 0.08)
+      : "rgba(255,255,255,0.92)",
   display: "flex",
   flexDirection: "column",
   gap: theme.spacing(1),
@@ -72,7 +66,6 @@ const DayCell = styled(Box, {
   },
 }));
 
-
 type Props = {
   attendances?: Attendance[];
   staff?: Staff | null | undefined;
@@ -87,7 +80,7 @@ type Props = {
   onMonthChange?: (nextMonth: Dayjs) => void;
   onOpenInRightPanel?: (
     attendance: Attendance | undefined,
-    date: Dayjs
+    date: Dayjs,
   ) => void;
 };
 
@@ -108,14 +101,18 @@ export default function DesktopCalendarView({
   const context = useOptionalAttendanceListContext();
   const attendances = attendancesProp ?? context?.attendances ?? [];
   const staff = staffProp ?? context?.staff;
-  const holidayCalendars = holidayCalendarsProp ?? context?.holidayCalendars ?? [];
+  const holidayCalendars =
+    holidayCalendarsProp ?? context?.holidayCalendars ?? [];
   const companyHolidayCalendars =
     companyHolidayCalendarsProp ?? context?.companyHolidayCalendars ?? [];
   const navigate = navigateProp ?? context?.navigate;
   const closeDates = closeDatesProp ?? context?.closeDates ?? [];
-  const closeDatesLoading = closeDatesLoadingProp ?? context?.closeDatesLoading ?? false;
-  const closeDatesError = closeDatesErrorProp ?? context?.closeDatesError ?? null;
-  const currentMonth = currentMonthProp ?? context?.currentMonth ?? dayjs().startOf("month");
+  const closeDatesLoading =
+    closeDatesLoadingProp ?? context?.closeDatesLoading ?? false;
+  const closeDatesError =
+    closeDatesErrorProp ?? context?.closeDatesError ?? null;
+  const currentMonth =
+    currentMonthProp ?? context?.currentMonth ?? dayjs().startOf("month");
   const onMonthChange = onMonthChangeProp ?? context?.onMonthChange;
   const theme = useTheme();
   const resolvedCurrentMonth = currentMonth;
@@ -137,7 +134,7 @@ export default function DesktopCalendarView({
 
   const weeks = useMemo(
     () => buildWeeks(resolvedCurrentMonth),
-    [resolvedCurrentMonth]
+    [resolvedCurrentMonth],
   );
 
   const handleDayClick = (date: Dayjs) => {
@@ -161,12 +158,12 @@ export default function DesktopCalendarView({
       theme.palette.success.main,
       theme.palette.warning.main,
       theme.palette.secondary.main,
-    ]
+    ],
   );
 
   const monthlyTerms = useMemo(
     () => resolveMonthlyTerms(resolvedCurrentMonth, closeDates, termPalette),
-    [closeDates, resolvedCurrentMonth, termPalette]
+    [closeDates, resolvedCurrentMonth, termPalette],
   );
   const showFallbackNotice =
     monthlyTerms.length === 1 &&
@@ -265,8 +262,8 @@ export default function DesktopCalendarView({
                 index === 0
                   ? "error.main"
                   : index === 6
-                  ? "info.main"
-                  : "text.secondary",
+                    ? "info.main"
+                    : "text.secondary",
             }}
           >
             {label}
@@ -276,7 +273,10 @@ export default function DesktopCalendarView({
 
       <Stack spacing={1.5}>
         {weeks.map((week, weekIndex) => (
-          <div key={`week-${weekIndex}`} className="grid grid-cols-7 gap-3 lg:gap-2.5">
+          <div
+            key={`week-${weekIndex}`}
+            className="grid grid-cols-7 gap-3 lg:gap-2.5"
+          >
             {week.map((date) => {
               const workDate = date.format(AttendanceDate.DataFormat);
               const attendance = attendanceMap.get(workDate);
@@ -285,38 +285,36 @@ export default function DesktopCalendarView({
                 staff,
                 holidayCalendars,
                 companyHolidayCalendars,
-                date
+                date,
               );
               const netHours = getNetWorkingHours(attendance);
               const totalRestHours = getTotalRestHours(attendance);
               const timeRangeLabel = attendance
                 ? formatTimeRange(attendance)
                 : undefined;
-              const isToday = date.isSame(dayjs(), "day");
-              const isCurrentMonth = date.isSame(resolvedCurrentMonth, "month");
-              const holidayLike = isHolidayLike(
+              const daySurfaceState = getCalendarDaySurfaceState({
                 date,
                 staff,
                 holidayCalendars,
-                companyHolidayCalendars
-              );
-              const isWeekend = date.day() === 0 || date.day() === 6;
+                companyHolidayCalendars,
+              });
+              const { isToday, holidayLike, isWeekend } = daySurfaceState;
+              const isCurrentMonth = date.isSame(resolvedCurrentMonth, "month");
               const { holidayName, companyHolidayName } = getHolidayNames(
                 date,
                 holidayCalendars,
-                companyHolidayCalendars
+                companyHolidayCalendars,
               );
-              const holidayLabels = [
+              const holidayLabels = buildHolidayLabels({
                 holidayName,
-                companyHolidayName
-                  ? `会社休日 ${companyHolidayName}`
-                  : undefined,
-              ].filter((label): label is string => Boolean(label));
+                companyHolidayName,
+                attendance,
+              });
 
               const termsForDay = monthlyTerms.filter(
                 (term) =>
                   !date.isBefore(term.start, "day") &&
-                  !date.isAfter(term.end, "day")
+                  !date.isAfter(term.end, "day"),
               );
               // シフト勤務の場合は休日関係なく集計期間の色を表示
               const allowTermHighlight =
@@ -356,7 +354,7 @@ export default function DesktopCalendarView({
                         bgcolor: alpha(primaryTerm.color, 0.9),
                         border: `1px solid ${alpha(
                           theme.palette.common.white,
-                          0.9
+                          0.9,
                         )}`,
                       }}
                     />

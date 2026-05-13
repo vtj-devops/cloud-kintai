@@ -1,3 +1,4 @@
+import { AppButton, AppIconButton } from "@shared/ui/button";
 import { SectionTitle } from "@shared/ui/typography";
 import { useEffect, useId, useMemo, useState } from "react";
 
@@ -86,22 +87,22 @@ export default function WorkflowFiltersArea() {
     <>
       <section className="workflow-filter-toolbar">
         <div className="workflow-filter-toolbar__actions">
-          <button
-            type="button"
+          <AppButton
+            size="sm"
             onClick={() => setDialogOpen(true)}
             className="workflow-filter-trigger-button"
             aria-haspopup="dialog"
             aria-expanded={dialogOpen}
             aria-controls={dialogOpen ? titleId : undefined}
+            startIcon={<FilterIcon />}
           >
-            <FilterIcon />
             <span>フィルター</span>
             {anyFilterActive ? (
               <span className="workflow-filter-trigger-button__badge">
                 {activeFilterCount}
               </span>
             ) : null}
-          </button>
+          </AppButton>
         </div>
       </section>
 
@@ -119,21 +120,24 @@ export default function WorkflowFiltersArea() {
           >
             <div className="workflow-filter-dialog__header">
               <div>
-                <SectionTitle id={titleId} className="workflow-filter-dialog__title">
+                <SectionTitle
+                  id={titleId}
+                  className="workflow-filter-dialog__title"
+                >
                   申請一覧のフィルター
                 </SectionTitle>
                 <p className="workflow-filter-dialog__description">
                   種別、申請日、ステータス、作成日を組み合わせて一覧を整理できます。
                 </p>
               </div>
-              <button
-                type="button"
+              <AppIconButton
                 onClick={closeDialog}
                 className="workflow-filter-dialog__close"
                 aria-label="フィルターダイアログを閉じる"
+                tone="neutral"
               >
                 ×
-              </button>
+              </AppIconButton>
             </div>
 
             <div className="workflow-filter-dialog__body">
@@ -150,13 +154,13 @@ export default function WorkflowFiltersArea() {
               ) : (
                 <span />
               )}
-              <button
-                type="button"
+              <AppButton
+                size="sm"
                 onClick={closeDialog}
                 className="workflow-filter-dialog__submit"
               >
                 一覧に反映
-              </button>
+              </AppButton>
             </div>
           </div>
         </div>

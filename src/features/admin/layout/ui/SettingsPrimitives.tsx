@@ -18,6 +18,7 @@ type SettingsButtonProps = {
   onClick?: () => void;
   children: ReactNode;
   className?: string;
+  style?: CSSProperties;
 };
 
 type SettingsRowProps = {
@@ -471,6 +472,7 @@ export function SettingsButton({
   onClick,
   children,
   className,
+  style,
 }: SettingsButtonProps) {
   const toneByVariant: Record<
     SettingsButtonVariant,
@@ -490,6 +492,7 @@ export function SettingsButton({
       variant={variant === "secondary" ? "outline" : "solid"}
       size={size}
       className={className}
+      style={style}
     >
       {children}
     </AppButton>

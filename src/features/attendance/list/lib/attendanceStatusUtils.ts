@@ -115,6 +115,39 @@ export function getHolidayNames(
 }
 
 /**
+ * 振替休日ラベルを返す
+ */
+export function getSubstituteHolidayLabel(attendance: Attendance | undefined) {
+  if (!attendance?.substituteHolidayDate) return undefined;
+  return "振替休日";
+}
+
+/**
+ * カレンダー上に表示する休日ラベル群を組み立てる
+ */
+export function buildHolidayLabels({
+  holidayName,
+  companyHolidayName,
+  attendance,
+  includeCompanyHolidayPrefix = true,
+}: {
+  holidayName?: string;
+  companyHolidayName?: string;
+  attendance: Attendance | undefined;
+  includeCompanyHolidayPrefix?: boolean;
+}) {
+  return [
+    holidayName,
+    companyHolidayName
+      ? includeCompanyHolidayPrefix
+        ? `会社休日 ${companyHolidayName}`
+        : companyHolidayName
+      : undefined,
+    getSubstituteHolidayLabel(attendance),
+  ].filter((label): label is string => Boolean(label));
+}
+
+/**
  * 指定日付が祝日・会社休日・週末かどうかを判定
  */
 export const isHolidayLike = (
@@ -136,6 +169,38 @@ export const isHolidayLike = (
   }
 
   return isHoliday || isCompanyHoliday || [0, 6].includes(date.day());
+};
+
+/**
+ * カレンダー日セルの背景表示で使う共通状態を返す
+ */
+export const getCalendarDaySurfaceState = ({
+  date,
+  staff,
+  holidayCalendars,
+  companyHolidayCalendars,
+  today = dayjs(),
+}: {
+  date: Dayjs;
+  staff: Staff | null | undefined;
+  holidayCalendars: HolidayCalendar[];
+  companyHolidayCalendars: CompanyHolidayCalendar[];
+  today?: Dayjs;
+}) => {
+  const isToday = date.isSame(today, "day");
+  const isWeekend = [0, 6].includes(date.day());
+  const holidayLike = isHolidayLike(
+    date,
+    staff,
+    holidayCalendars,
+    companyHolidayCalendars,
+  );
+
+  return {
+    isToday,
+    isWeekend,
+    holidayLike,
+  };
 };
 
 export const hasSystemComment = (attendance: Attendance | undefined): boolean =>

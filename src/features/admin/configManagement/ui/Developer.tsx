@@ -1,14 +1,11 @@
-import { useAppDispatchV2 } from "@app/hooks";
 import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import AdminSettingsLayout from "@features/admin/layout/ui/AdminSettingsLayout";
 import AdminSettingsSection from "@features/admin/layout/ui/AdminSettingsSection";
 import { SettingsButton, SettingsSwitch } from "@features/admin/layout/ui/SettingsPrimitives";
-import { CreateAppConfigInput, UpdateAppConfigInput, } from "@shared/api/graphql/types";
-import { pushNotification } from "@shared/lib/store/notificationSlice";
 import { SubsectionTitle } from "@shared/ui/typography";
 import { useContext, useEffect, useState } from "react";
 
-import { E14001, S14001, S14002 } from "@/errors";
+import { useSaveAppConfigSection } from "../lib/useSaveAppConfigSection";
 
 type DeveloperSettingItem = {
     id: string;
@@ -17,50 +14,19 @@ type DeveloperSettingItem = {
     checked: boolean;
 };
 export default function Developer() {
-    const { getWorkflowNotificationEnabled, getConfigId, saveConfig, fetchConfig, } = useContext(AppConfigContext);
-    const [workflowNotificationEnabled, setWorkflowNotificationEnabled] = useState(false);
-    const [id, setId] = useState<string | null>(null);
-    const dispatch = useAppDispatchV2();
-    useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setWorkflowNotificationEnabled(getWorkflowNotificationEnabled());
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setId(getConfigId());
-    }, [getConfigId, getWorkflowNotificationEnabled]);
-    const handleChange = (checked: boolean) => {
-        setWorkflowNotificationEnabled(checked);
-    };
-    const handleSave = async () => {
-        try {
-            if (id) {
-                await saveConfig({
-                    id,
-                    workflowNotificationEnabled,
-                } as UpdateAppConfigInput);
-                dispatch(pushNotification({
-                    tone: "success",
-                    message: S14002
-                }));
-            }
-            else {
-                await saveConfig({
-                    name: "default",
-                    workflowNotificationEnabled,
-                } as CreateAppConfigInput);
-                dispatch(pushNotification({
-                    tone: "success",
-                    message: S14001
-                }));
-            }
-            await fetchConfig();
-        }
-        catch {
-            dispatch(pushNotification({
-                tone: "error",
-                message: E14001
-            }));
-        }
-    };
+  const { getWorkflowNotificationEnabled } = useContext(AppConfigContext);
+  const [workflowNotificationEnabled, setWorkflowNotificationEnabled] = useState(false);
+  const saveAppConfigSection = useSaveAppConfigSection();
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setWorkflowNotificationEnabled(getWorkflowNotificationEnabled());
+  }, [getWorkflowNotificationEnabled]);
+  const handleChange = (checked: boolean) => {
+    setWorkflowNotificationEnabled(checked);
+  };
+  const handleSave = async () => {
+    await saveAppConfigSection({ workflowNotificationEnabled });
+  };
     const developerSettings: DeveloperSettingItem[] = [
         {
             id: "workflow-notification",

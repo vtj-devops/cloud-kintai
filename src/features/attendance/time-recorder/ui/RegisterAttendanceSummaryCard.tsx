@@ -11,10 +11,12 @@ import RegisterSummaryWorkStatusChartCard from "./RegisterSummaryWorkStatusChart
 
 type RegisterAttendanceSummaryCardProps = {
   attendanceErrorCount?: number;
+  attendanceErrorListPath?: string;
 };
 
 export default function RegisterAttendanceSummaryCard({
   attendanceErrorCount = 0,
+  attendanceErrorListPath,
 }: RegisterAttendanceSummaryCardProps) {
   const { filteredAttendances, effectiveDateRange, isLoading, hasError } =
     useAttendanceSummaryData();
@@ -64,6 +66,7 @@ export default function RegisterAttendanceSummaryCard({
       <RegisterSummaryAttendanceErrorCountCard
         attendanceErrorCount={attendanceErrorCount}
         hasAttendanceError={hasAttendanceError}
+        to={attendanceErrorListPath}
       />
       <RegisterSummaryWorkStatusChartCard
         chartData={stackedBarData}

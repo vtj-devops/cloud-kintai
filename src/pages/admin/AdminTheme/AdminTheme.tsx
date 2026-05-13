@@ -1,7 +1,10 @@
 import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import AdminSettingsLayout from "@features/admin/layout/ui/AdminSettingsLayout";
 import SettingsIcon from "@features/admin/layout/ui/SettingsIcon";
-import { SettingsButton, SettingsTextField } from "@features/admin/layout/ui/SettingsPrimitives";
+import {
+  SettingsButton,
+  SettingsTextField,
+} from "@features/admin/layout/ui/SettingsPrimitives";
 import {
   CreateAppConfigInput,
   UpdateAppConfigInput,
@@ -10,6 +13,7 @@ import { resolveThemeColor } from "@shared/config/theme";
 import { useAppNotification } from "@shared/lib/useAppNotification";
 import { usePageLeaveGuard } from "@shared/ui/feedback/usePageLeaveGuard";
 import { SubsectionTitle } from "@shared/ui/typography";
+import type { CSSProperties } from "react";
 import { useContext, useEffect, useMemo, useState } from "react";
 
 import { E15001, S15001 } from "@/errors";
@@ -198,7 +202,9 @@ export default function AdminTheme() {
       <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-slate-200">
         <div className="flex flex-col gap-8">
           <div className="flex flex-col gap-4">
-            <SubsectionTitle className="text-sm font-semibold text-slate-800">テーマカラー</SubsectionTitle>
+            <SubsectionTitle className="text-sm font-semibold text-slate-800">
+              テーマカラー
+            </SubsectionTitle>
             <div
               className="grid gap-2"
               style={{
@@ -223,9 +229,13 @@ export default function AdminTheme() {
                     style={{
                       width: TILE_SIZE,
                       height: TILE_SIZE,
-                      borderColor: isSelected ? brandPrimary : previewPanelDividerColor,
+                      borderColor: isSelected
+                        ? brandPrimary
+                        : previewPanelDividerColor,
                       backgroundColor: color,
-                      boxShadow: isSelected ? `0 0 0 2px ${focusRingColor}` : "none",
+                      boxShadow: isSelected
+                        ? `0 0 0 2px ${focusRingColor}`
+                        : "none",
                     }}
                   />
                 );
@@ -238,9 +248,13 @@ export default function AdminTheme() {
                 style={{
                   width: TILE_SIZE,
                   height: TILE_SIZE,
-                  borderColor: customMode ? brandPrimary : previewPanelDividerColor,
+                  borderColor: customMode
+                    ? brandPrimary
+                    : previewPanelDividerColor,
                   color: customMode ? brandPrimary : "#64748b",
-                  boxShadow: customMode ? `0 0 0 2px ${focusRingColor}` : "none",
+                  boxShadow: customMode
+                    ? `0 0 0 2px ${focusRingColor}`
+                    : "none",
                 }}
               >
                 <SettingsIcon name="plus" />
@@ -267,7 +281,9 @@ export default function AdminTheme() {
           )}
 
           <div className="flex flex-col gap-2">
-            <SubsectionTitle className="text-sm font-semibold text-slate-800">プレビュー</SubsectionTitle>
+            <SubsectionTitle className="text-sm font-semibold text-slate-800">
+              プレビュー
+            </SubsectionTitle>
             <div
               className="p-4 rounded-lg border max-w-sm flex flex-col gap-2"
               style={{
@@ -278,20 +294,25 @@ export default function AdminTheme() {
               <h4 className="text-base font-medium text-slate-800">
                 管理パネルプレビュー
               </h4>
-              <p className="text-xs text-slate-500 pb-2 border-b" style={{ borderColor: previewPanelDividerColor }}>
+              <p
+                className="text-xs text-slate-500 pb-2 border-b"
+                style={{ borderColor: previewPanelDividerColor }}
+              >
                 選択したカラーがフォーカスリングやボタンにどう反映されるかを確認できます。
               </p>
-              <button
-                type="button"
-                className="mt-1 self-start rounded-lg px-4 py-2 text-sm font-medium focus:outline-none"
-                style={{
-                  backgroundColor: brandPrimary,
-                  color: previewTokens.color.brand.primary.contrastText,
-                  boxShadow: `0 0 0 0 ${focusRingColor}`,
-                }}
+              <SettingsButton
+                className="mt-1 self-start [--app-button-bg:var(--preview-brand-primary)] [--app-button-border:var(--preview-brand-primary)] [--app-button-hover-bg:var(--preview-brand-primary)] [--app-button-hover-border:var(--preview-brand-primary)] [--app-button-color:var(--preview-brand-contrast)] [--app-button-hover-color:var(--preview-brand-contrast)] [--ds-shadow-focus:0_0_0_2px_var(--preview-focus-ring)]"
+                style={
+                  {
+                    "--preview-brand-primary": brandPrimary,
+                    "--preview-brand-contrast":
+                      previewTokens.color.brand.primary.contrastText,
+                    "--preview-focus-ring": focusRingColor,
+                  } as CSSProperties
+                }
               >
                 プライマリボタン
-              </button>
+              </SettingsButton>
             </div>
           </div>
 

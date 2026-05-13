@@ -100,15 +100,17 @@ export const ShiftManagementHeader: React.FC<Props> = ({
 
       <div className="flex items-center gap-2">
         {onOpenSettings && (
-          <button
-            type="button"
+          <AppButton
+            variant="outline"
+            tone="secondary"
+            size="sm"
             onClick={onOpenSettings}
             aria-label="シフト設定を開く"
-            className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50"
+            startIcon={<Settings className="h-4 w-4" />}
+            className="min-w-0"
           >
-            <Settings className="h-4 w-4" />
             <span>設定</span>
-          </button>
+          </AppButton>
         )}
         <div className="relative">
           <AppButton
