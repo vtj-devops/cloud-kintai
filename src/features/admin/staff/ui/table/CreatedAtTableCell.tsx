@@ -1,10 +1,12 @@
 import { StaffType } from "@entities/staff/model/useStaffs/useStaffs";
-import { TableCell } from "@mui/material";
-import dayjs from "dayjs";
+import { DateDisplayCell } from "@shared/ui/table";
 
 export function CreatedAtTableCell({ staff }: { staff: StaffType }) {
-  const { createdAt } = staff;
-  const formattedDate = dayjs(createdAt).format("YYYY/MM/DD HH:mm");
-
-  return <TableCell>{formattedDate}</TableCell>;
+  return (
+    <DateDisplayCell
+      date={staff.createdAt}
+      format="YYYY/MM/DD HH:mm"
+      emptyLabel=""
+    />
+  );
 }

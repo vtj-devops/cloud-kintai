@@ -1,6 +1,10 @@
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
+import {
+  getMonthDateRange,
+  getOverlappingCloseDateRanges,
+} from "@entities/attendance/lib/closeDateRangeUtils";
 import { CloseDate } from "@shared/api/graphql/types";
-import dayjs, { Dayjs } from "dayjs";
+import { Dayjs } from "dayjs";
 
 export type MonthTerm = {
   start: Dayjs;
@@ -37,8 +41,7 @@ export const resolveMonthlyTerms = (
   palette: string[],
   variant: "desktop" | "mobile" = "desktop"
 ): MonthTerm[] => {
-  const monthStart = currentMonth.startOf("month");
-  const monthEnd = currentMonth.endOf("month");
+  const { monthStart, monthEnd } = getMonthDateRange(currentMonth);
 
   const formatLabel = variant === "mobile" ? formatMobileTermLabel : formatDesktopTermLabel;
 
@@ -50,25 +53,7 @@ export const resolveMonthlyTerms = (
     color: palette[0] ?? "#90CAF9",
   };
 
-  if (closeDates.length === 0) {
-    return [fallback];
-  }
-
-  const terms = closeDates
-    .map((item) => {
-      const start = dayjs(item.startDate);
-      const end = dayjs(item.endDate);
-      return { start, end };
-    })
-    .filter(({ start, end }) => {
-      return (
-        start.isValid() &&
-        end.isValid() &&
-        // 月の範囲と少しでも重なれば対象
-        !end.isBefore(monthStart, "day") &&
-        !start.isAfter(monthEnd, "day")
-      );
-    })
+  const terms = getOverlappingCloseDateRanges(currentMonth, closeDates)
     .toSorted((a, b) => a.start.valueOf() - b.start.valueOf())
     .map(
       ({ start, end }, index): MonthTerm => ({

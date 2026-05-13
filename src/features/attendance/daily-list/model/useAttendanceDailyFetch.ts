@@ -1,11 +1,10 @@
 import { useLazyListAttendancesByDateRangeQuery } from "@entities/attendance/api/attendanceApi";
-import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
+import { getAttendanceMonthRangeInput } from "@entities/attendance/lib/attendanceQueryRange";
 import {
   AttendanceDaily,
   DuplicateAttendanceDaily,
 } from "@entities/attendance/model/useAttendanceDaily";
 import { Attendance } from "@shared/api/graphql/types";
-import dayjs from "dayjs";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { calculateTotalOvertimeMinutes } from "../lib/overtimeUtils";
@@ -72,14 +71,9 @@ export function useAttendanceDailyFetch({
       setAttendanceLoadingMap((state) => ({ ...state, [staffId]: true }));
       setAttendanceErrorMap((state) => ({ ...state, [staffId]: null }));
 
-      const baseDate =
-        displayDateFormatted ?? dayjs().format(AttendanceDate.DataFormat);
-      const startDate = dayjs(baseDate)
-        .startOf("month")
-        .format(AttendanceDate.DataFormat);
-      const endDate = dayjs(baseDate)
-        .endOf("month")
-        .format(AttendanceDate.DataFormat);
+      const { startDate, endDate } = getAttendanceMonthRangeInput(
+        displayDateFormatted,
+      );
 
       triggerListAttendancesByDateRange({ staffId, startDate, endDate })
         .unwrap()

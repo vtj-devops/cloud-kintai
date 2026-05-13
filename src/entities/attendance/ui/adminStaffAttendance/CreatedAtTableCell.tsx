@@ -1,19 +1,25 @@
-import { styled, TableCell as MuiTableCell } from "@mui/material";
 import { Attendance } from "@shared/api/graphql/types";
-import dayjs from "dayjs";
+import { DateDisplayCell } from "@shared/ui/table";
 
-const TableCell = styled(MuiTableCell)(({ theme }) => ({
-  width: theme.spacing(18),
-  minWidth: theme.spacing(18),
+const dateCellSx = {
+  width: (theme: { spacing: (value: number) => string }) => theme.spacing(18),
+  minWidth: (theme: { spacing: (value: number) => string }) =>
+    theme.spacing(18),
   textAlign: "right",
   whiteSpace: "nowrap",
-}));
+} as const;
 
 export function CreatedAtTableCell({
   createdAt,
 }: {
   createdAt: Attendance["createdAt"];
 }) {
-  const date = createdAt ? dayjs(createdAt).format("YYYY/MM/DD HH:mm") : "";
-  return <TableCell>{date}</TableCell>;
+  return (
+    <DateDisplayCell
+      date={createdAt}
+      format="YYYY/MM/DD HH:mm"
+      emptyLabel=""
+      sx={dateCellSx}
+    />
+  );
 }

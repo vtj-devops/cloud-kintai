@@ -2,6 +2,10 @@ import { expect, test } from "@playwright/test";
 import dayjs from "dayjs";
 
 import { AttendanceDirectLocator } from "../locators/AttendanceDirectLocator";
+import {
+  closeTimeElapsedErrorDialogIfVisible,
+  waitForOptionalLayoutLoading,
+} from "../helpers/pageTestHelpers";
 /* eslint-disable import/order */
 import { AttendanceLocator } from "./attendance-locator";
 /* eslint-enable import/order */
@@ -12,14 +16,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   });
 
   await test.step("ローディングを待つ", async () => {
-    const loading = page.getByTestId("layout-linear-progress");
-    // ローディング要素が存在しないケースもあるため、見つからなければスキップする
-    try {
-      await expect(loading).toBeVisible();
-      await expect(loading).toBeHidden({ timeout: 10000 });
-    } catch (e) {
-      // ignore if loading element is not present for certain pages
-    }
+    await waitForOptionalLayoutLoading(page);
   });
 
   await test.step("過去の勤怠に関するエラーダイアログ対応", async () => {
@@ -35,15 +32,7 @@ test.beforeEach(async ({ page }, testInfo) => {
       return;
     }
 
-    try {
-      const dialog = page.getByTestId("time-elapsed-error-dialog");
-      // 最大3秒だけ待って表示されなければ無視
-      await dialog.waitFor({ state: "visible", timeout: 5000 });
-      await page.getByTestId("time-elapsed-error-dialog-later-btn").click();
-      await dialog.waitFor({ state: "hidden", timeout: 5000 });
-    } catch (e) {
-      // ダイアログが表示されなかった場合は何もしない
-    }
+    await closeTimeElapsedErrorDialogIfVisible(page);
   });
 });
 

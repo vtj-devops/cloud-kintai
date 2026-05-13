@@ -12,6 +12,11 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
+import {
+  createTestFile,
+  openFileBulkAddDialog,
+  setFileInputFiles,
+} from "../../__tests__/filePickerTestHelpers";
 import { ExcelFilePicker } from "../ExcelFilePicker";
 
 // ── Module mocks ──────────────────────────────────────────────────────────────
@@ -85,25 +90,12 @@ const MISSING_FIELDS_CSV = "holiday_date,name\n,名前なし\n2024-01-01,";
 
 /** テスト用 File オブジェクトを生成する */
 function createFile(name: string, content: string): File {
-  return new File([content], name, { type: "text/csv" });
+  return createTestFile(content, { name, type: "text/csv" });
 }
 
 /** ファイル入力に File を設定して change イベントを発火する */
 function selectFile(file: File) {
-  const input = document.querySelector(
-    'input[type="file"]',
-  ) as HTMLInputElement;
-  // files は読み取り専用なので Object.defineProperty で上書きする
-  const fileList = {
-    item: (i: number) => (i === 0 ? file : null),
-    length: 1,
-    0: file,
-  };
-  Object.defineProperty(input, "files", {
-    value: fileList,
-    configurable: true,
-  });
-  fireEvent.change(input);
+  setFileInputFiles(file);
 }
 
 /** 最後に生成された MockFileReader インスタンスを取得する */
@@ -131,9 +123,7 @@ function renderComponent(
 
 /** 「ファイルからまとめて追加」ボタンをクリックしてダイアログを開く */
 async function openDialog() {
-  await userEvent.click(
-    screen.getByRole("button", { name: /ファイルからまとめて追加/ }),
-  );
+  await openFileBulkAddDialog();
 }
 
 // ── Tests ──────────────────────────────────────────────────────────────────
@@ -512,14 +502,11 @@ describe("ExcelFilePicker", () => {
     expect(bulkCreate).not.toHaveBeenCalled();
   });
 
-  it("ダイアログの form onSubmit でダイアログが閉じる", async () => {
+  it("データ未選択で登録を押すとダイアログが閉じる", async () => {
     renderComponent();
     await openDialog();
 
-    // PaperProps.onSubmit をトリガーする（登録ボタンは type="submit"）
-    const form = document.querySelector("form");
-    expect(form).not.toBeNull();
-    fireEvent.submit(form!);
+    await userEvent.click(screen.getByRole("button", { name: "登録" }));
 
     await waitFor(() => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();

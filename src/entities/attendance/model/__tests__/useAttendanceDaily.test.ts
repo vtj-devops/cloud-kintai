@@ -103,10 +103,16 @@ describe("useAttendanceDaily", () => {
       });
 
       expect(mockTrigger).toHaveBeenCalledWith(
-        expect.objectContaining({ staffId: "user-a" }),
+        expect.objectContaining({
+          staffId: "user-a",
+          workDate: "2024-01-01",
+        }),
       );
       expect(mockTrigger).toHaveBeenCalledWith(
-        expect.objectContaining({ staffId: "user-b" }),
+        expect.objectContaining({
+          staffId: "user-b",
+          workDate: "2024-01-01",
+        }),
       );
     });
 

@@ -66,7 +66,11 @@ describe("useAttendanceDailyFetch", () => {
     await waitFor(() => expect(mockTrigger).toHaveBeenCalled());
 
     expect(mockTrigger).toHaveBeenCalledWith(
-      expect.objectContaining({ staffId: "staff-1" }),
+      expect.objectContaining({
+        staffId: "staff-1",
+        startDate: "2024-01-01",
+        endDate: "2024-01-31",
+      }),
     );
   });
 
