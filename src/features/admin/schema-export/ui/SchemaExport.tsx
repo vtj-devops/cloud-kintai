@@ -1,6 +1,7 @@
 import { AuthContext } from "@app/providers/auth/AuthContext";
 import {
   SettingsAlert,
+  SettingsButton,
   SettingsSelect,
 } from "@features/admin/layout/ui/SettingsPrimitives";
 import { SectionTitle, SubsectionTitle } from "@shared/ui/typography";
@@ -81,15 +82,19 @@ export default function SchemaExport() {
   const isExporting = activeMode !== null;
   const bulkProgressValue =
     bulkExportProgress && bulkExportProgress.totalModels > 0
-      ? (bulkExportProgress.completedModels / bulkExportProgress.totalModels) * 100
+      ? (bulkExportProgress.completedModels / bulkExportProgress.totalModels) *
+        100
       : 0;
 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <SectionTitle className="m-0 text-2xl font-semibold text-slate-900">データエクスポート</SectionTitle>
+        <SectionTitle className="m-0 text-2xl font-semibold text-slate-900">
+          データエクスポート
+        </SectionTitle>
         <p className="mt-2 text-sm text-slate-500">
-          システム内の設定や登録データを、まとめて JSON ファイルとして保存できる保守機能です。
+          システム内の設定や登録データを、まとめて JSON
+          ファイルとして保存できる保守機能です。
         </p>
       </div>
 
@@ -105,7 +110,9 @@ export default function SchemaExport() {
         <>
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-col gap-4">
-              <SubsectionTitle className="m-0 text-lg font-semibold text-slate-900">個別エクスポート</SubsectionTitle>
+              <SubsectionTitle className="m-0 text-lg font-semibold text-slate-900">
+                個別エクスポート
+              </SubsectionTitle>
               <SettingsSelect
                 label="対象モデル"
                 value={selectedModel}
@@ -117,14 +124,12 @@ export default function SchemaExport() {
                 }))}
               />
               <div className="flex items-center gap-3">
-                <button
-                  type="button"
+                <SettingsButton
                   onClick={handleSingleExport}
                   disabled={!selectedModel || isExporting}
-                  className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   個別エクスポート
-                </button>
+                </SettingsButton>
                 {activeMode === "single" ? (
                   <span className="text-sm text-slate-500">処理中...</span>
                 ) : null}
@@ -134,9 +139,12 @@ export default function SchemaExport() {
 
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-col gap-4">
-              <SubsectionTitle className="m-0 text-lg font-semibold text-slate-900">一括エクスポート</SubsectionTitle>
+              <SubsectionTitle className="m-0 text-lg font-semibold text-slate-900">
+                一括エクスポート
+              </SubsectionTitle>
               <p className="m-0 text-sm text-slate-500">
-                対象 {modelOptions.length} モデルを全件取得し、単一 JSON ファイルとしてダウンロードします。
+                対象 {modelOptions.length} モデルを全件取得し、単一 JSON
+                ファイルとしてダウンロードします。
               </p>
               <SettingsAlert variant="warning">
                 全モデルの一括エクスポート実行中は、画面を移動せずそのままお待ちください。
@@ -164,14 +172,13 @@ export default function SchemaExport() {
                 </div>
               ) : null}
               <div className="flex items-center gap-3">
-                <button
-                  type="button"
+                <SettingsButton
                   onClick={handleBulkExport}
                   disabled={isExporting}
-                  className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  variant="secondary"
                 >
                   全モデルを一括エクスポート
-                </button>
+                </SettingsButton>
                 {activeMode === "all" ? (
                   <span className="text-sm text-slate-500">処理中...</span>
                 ) : null}

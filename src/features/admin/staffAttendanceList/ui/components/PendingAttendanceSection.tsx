@@ -9,7 +9,6 @@ import {
   attendanceRowVariantStyles,
 } from "@entities/attendance/ui/rowVariant";
 import { AttendanceStatusTooltip } from "@features/attendance/list/ui/AttendanceStatusTooltip";
-import EditIcon from "@mui/icons-material/Edit";
 import {
   Alert,
   AlertTitle,
@@ -31,15 +30,15 @@ import {
   Staff,
 } from "@shared/api/graphql/types";
 import { designTokenVar } from "@shared/designSystem";
-import { AppIconButton } from "@shared/ui/button";
+import { AppEditIconButton } from "@shared/ui/button/AppActionIconButton";
 
 const HIGHLIGHT_BORDER = designTokenVar(
   "color.feedback.warning.base",
-  "#E8A447"
+  "#E8A447",
 );
 const HIGHLIGHT_BACKGROUND = designTokenVar(
   "color.feedback.warning.surface",
-  "#FFF7EA"
+  "#FFF7EA",
 );
 const STACK_SPACING = designTokenVar("spacing.md", "12px");
 
@@ -54,7 +53,7 @@ export type PendingAttendanceSectionProps = {
   getRowVariant: (
     attendance: Attendance,
     holidayCalendars?: HolidayCalendar[],
-    companyHolidayCalendars?: CompanyHolidayCalendar[]
+    companyHolidayCalendars?: CompanyHolidayCalendar[],
   ) => AttendanceRowVariant;
 };
 
@@ -166,7 +165,7 @@ export function PendingAttendanceSection({
               const rowVariant = getRowVariant(
                 attendance,
                 holidayCalendars,
-                companyHolidayCalendars
+                companyHolidayCalendars,
               );
               const rowKey = attendance.id || `${attendance.workDate}-${index}`;
               return (
@@ -195,14 +194,12 @@ export function PendingAttendanceSection({
                         holidayCalendars={holidayCalendars}
                         companyHolidayCalendars={companyHolidayCalendars}
                       />
-                      <AppIconButton
+                      <AppEditIconButton
                         size="sm"
                         onClick={() => onEdit(attendance)}
                         aria-label="編集"
                         data-testid="edit-attendance"
-                      >
-                        <EditIcon fontSize="small" />
-                      </AppIconButton>
+                      />
                     </Stack>
                   </TableCell>
 

@@ -1,8 +1,7 @@
 import { AttendanceEditContext } from "@features/attendance/edit/model/AttendanceEditProvider";
 import { AttendanceEditInputs } from "@features/attendance/edit/model/common";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { Box, Stack, Typography } from "@mui/material";
-import { AppIconButton } from "@shared/ui/button";
+import { AppDeleteIconButton } from "@shared/ui/button/AppActionIconButton";
 import { TimeRangeInput } from "@shared/ui/form";
 import { useContext } from "react";
 import { Controller, FieldArrayWithId } from "react-hook-form";
@@ -31,13 +30,12 @@ export default function HourlyPaidHolidayTimeItemMobile({
   time,
   index,
 }: HourlyPaidHolidayTimeItemMobileProps) {
-  const { hourlyPaidHolidayTimeRemove, readOnly, workDate, control } = useContext(
-    AttendanceEditContext
-  );
+  const { hourlyPaidHolidayTimeRemove, readOnly, workDate, control } =
+    useContext(AttendanceEditContext);
 
   const totalHourlyPaidHolidayTime = calcTotalHourlyPaidHolidayTime(
     time.startTime,
-    time.endTime
+    time.endTime,
   );
 
   const baseDateStr = workDate ? workDate.format("YYYY-MM-DD") : "";
@@ -93,20 +91,17 @@ export default function HourlyPaidHolidayTimeItemMobile({
           alignItems="center"
           justifyContent="space-between"
         >
-          <AppIconButton
+          <AppDeleteIconButton
             aria-label={ARIA_LABEL_DELETE}
             onClick={() => hourlyPaidHolidayTimeRemove(index)}
             size="sm"
             disabled={!!readOnly}
-            tone="danger"
-          >
-            <DeleteIcon />
-          </AppIconButton>
+          />
           <Box textAlign="right">
             <Typography variant="body2" color="text.secondary">
               {totalHourlyPaidHolidayTime > 0
                 ? `${totalHourlyPaidHolidayTime.toFixed(
-                    HOURS_DECIMAL_PLACES
+                    HOURS_DECIMAL_PLACES,
                   )} 時間`
                 : "―"}
             </Typography>

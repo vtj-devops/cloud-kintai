@@ -32,6 +32,7 @@ export default function RegisterDashboard({
         <ElapsedDurationCards elapsedWorkInfo={elapsedWorkInfo} />
         <RegisterAttendanceSummaryCard
           attendanceErrorCount={attendanceErrorCount}
+          attendanceErrorListPath="/attendance/list"
         />
       </div>
     </aside>

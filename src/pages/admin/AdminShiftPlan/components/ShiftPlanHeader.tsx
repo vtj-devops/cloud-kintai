@@ -1,3 +1,4 @@
+import { AppIconButton } from "@shared/ui/button";
 import { PageTitle } from "@shared/ui/typography";
 
 type ShiftPlanHeaderProps = {
@@ -22,37 +23,54 @@ const ShiftPlanHeader: React.FC<ShiftPlanHeaderProps> = ({
         </p>
       </div>
       <div className="flex items-center gap-1">
-        <button
-          type="button"
+        <AppIconButton
           aria-label="前の年"
           disabled={isBusy}
           onClick={() => onYearChange(-1)}
-          className="flex items-center justify-center rounded-full w-9 h-9 border-0 transition-colors disabled:opacity-40"
-          style={{ color: "#45574F" }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#EDF1EF"; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
+          tone="neutral"
+          size="sm"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <polyline points="15 18 9 12 15 6" />
           </svg>
-        </button>
-        <span className="text-xl font-bold min-w-[5rem] text-center" style={{ color: "#1E2A25" }}>
+        </AppIconButton>
+        <span
+          className="text-xl font-bold min-w-[5rem] text-center"
+          style={{ color: "#1E2A25" }}
+        >
           {selectedYear}年
         </span>
-        <button
-          type="button"
+        <AppIconButton
           aria-label="次の年"
           disabled={isBusy}
           onClick={() => onYearChange(1)}
-          className="flex items-center justify-center rounded-full w-9 h-9 border-0 transition-colors disabled:opacity-40"
-          style={{ color: "#45574F" }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#EDF1EF"; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
+          tone="neutral"
+          size="sm"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <polyline points="9 18 15 12 9 6" />
           </svg>
-        </button>
+        </AppIconButton>
       </div>
     </div>
   );

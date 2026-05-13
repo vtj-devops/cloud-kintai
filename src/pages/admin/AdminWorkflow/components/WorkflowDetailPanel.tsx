@@ -18,6 +18,7 @@ import { designTokenVar } from "@shared/designSystem";
 import { createLogger } from "@shared/lib/logger";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
 import { useAppNotification } from "@shared/lib/useAppNotification";
+import { AppButton } from "@shared/ui/button";
 import { SectionTitle, SubsectionTitle } from "@shared/ui/typography";
 import { useCallback, useContext, useMemo } from "react";
 
@@ -192,38 +193,37 @@ export default function WorkflowDetailPanel({
 
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-end">
             {showBackButton && onBack && (
-              <button
-                type="button"
+              <AppButton
+                variant="outline"
+                tone="secondary"
+                size="sm"
                 onClick={onBack}
-                className="inline-flex h-10 items-center justify-center gap-1 rounded-md border px-3 text-sm font-medium transition hover:bg-white/80"
+                className="min-w-0"
                 style={{
-                  borderColor: HERO_BORDER,
-                  color: HERO_TITLE,
                   backgroundColor: "rgba(255,255,255,0.72)",
                 }}
+                startIcon={<BackArrowIcon />}
               >
-                <BackArrowIcon />
                 ワークフロー一覧へ戻る
-              </button>
+              </AppButton>
             )}
 
-            <button
-              type="button"
+            <AppButton
               onClick={handleApprove}
               disabled={isApproveDisabled}
-              className="inline-flex h-10 min-w-24 items-center justify-center rounded-md border border-emerald-700/65 bg-emerald-600 px-4 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-300 disabled:text-slate-600"
+              className="min-w-24"
             >
               承認
-            </button>
+            </AppButton>
 
-            <button
-              type="button"
+            <AppButton
+              tone="danger"
               onClick={handleReject}
               disabled={isRejectDisabled}
-              className="inline-flex h-10 min-w-24 items-center justify-center rounded-md border border-rose-700/60 bg-rose-600 px-4 text-sm font-medium text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-300 disabled:text-slate-600"
+              className="min-w-24"
             >
               却下
-            </button>
+            </AppButton>
           </div>
         </div>
 

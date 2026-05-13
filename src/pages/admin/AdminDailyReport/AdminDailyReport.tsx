@@ -5,7 +5,7 @@ import { graphqlClient } from "@shared/api/amplify/graphqlClient";
 import { listDailyReports } from "@shared/api/graphql/documents/queries";
 import type { ListDailyReportsQuery } from "@shared/api/graphql/types";
 import { formatDateTimeReadable } from "@shared/lib/time";
-import { AppButton } from "@shared/ui/button";
+import { AppButton, AppIconButton } from "@shared/ui/button";
 import type { GraphQLResult } from "aws-amplify/api";
 import dayjs, { type Dayjs } from "dayjs";
 import { Download } from "lucide-react";
@@ -361,15 +361,17 @@ export default function AdminDailyReport() {
             CSV出力
           </AppButton>
 
-          <button
-            type="button"
+          <AppButton
             onClick={handleOpenCarousel}
             disabled={filteredReports.length === 0}
             data-testid="admin-daily-report-carousel-button"
-            className="inline-flex h-9 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-xs font-semibold tracking-wide text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            size="sm"
+            variant="outline"
+            tone="secondary"
+            className="min-w-0"
           >
             まとめて確認
-          </button>
+          </AppButton>
         </div>
 
         <section className="overflow-hidden rounded-2xl border border-emerald-100 bg-white/95">
@@ -421,14 +423,15 @@ export default function AdminDailyReport() {
                       className="group transition hover:bg-emerald-50/40"
                     >
                       <td className="px-2 py-2">
-                        <button
-                          type="button"
+                        <AppIconButton
                           title="右側で開く"
+                          aria-label="右側で開く"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleOpenInRightPanel(report);
                           }}
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-slate-800 border-0 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none"
+                          tone="neutral"
+                          size="sm"
                         >
                           <svg
                             className="h-4 w-4"
@@ -444,7 +447,7 @@ export default function AdminDailyReport() {
                             <polyline points="15 3 21 3 21 9" />
                             <line x1="10" y1="14" x2="21" y2="3" />
                           </svg>
-                        </button>
+                        </AppIconButton>
                       </td>
                       <td
                         className="cursor-pointer px-4 py-3 text-slate-700"
@@ -508,11 +511,12 @@ export default function AdminDailyReport() {
                   : "0件"}
               </span>
               <div className="flex items-center gap-1">
-                <button
-                  type="button"
+                <AppIconButton
                   onClick={() => setPage((p) => p - 1)}
                   disabled={page <= 0}
-                  className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  aria-label="前のページ"
+                  tone="neutral"
+                  size="sm"
                 >
                   <svg
                     className="h-4 w-4"
@@ -526,12 +530,13 @@ export default function AdminDailyReport() {
                   >
                     <polyline points="15 18 9 12 15 6" />
                   </svg>
-                </button>
-                <button
-                  type="button"
+                </AppIconButton>
+                <AppIconButton
                   onClick={() => setPage((p) => p + 1)}
                   disabled={page >= totalPages - 1}
-                  className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  aria-label="次のページ"
+                  tone="neutral"
+                  size="sm"
                 >
                   <svg
                     className="h-4 w-4"
@@ -545,7 +550,7 @@ export default function AdminDailyReport() {
                   >
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
-                </button>
+                </AppIconButton>
               </div>
             </div>
           </div>

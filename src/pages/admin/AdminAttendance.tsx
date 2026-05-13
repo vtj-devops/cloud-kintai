@@ -4,6 +4,7 @@ import AttendanceDailyList from "@features/attendance/daily-list/ui/AttendanceDa
 import DownloadForm from "@features/attendance/download-form/ui/DownloadForm";
 import { Stack } from "@mui/material";
 import { designTokenVar } from "@shared/designSystem";
+import { AppButton } from "@shared/ui/button";
 import { PageSection } from "@shared/ui/layout";
 import { useState } from "react";
 
@@ -50,15 +51,18 @@ export default function AdminAttendance() {
               </p>
             </div>
 
-            <button
-              type="button"
+            <AppButton
+              variant="outline"
+              tone="secondary"
               onClick={() => setIsSettingsDialogOpen(true)}
-              className="inline-flex h-11 items-center gap-2 self-start rounded-full border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition hover:border-emerald-400 hover:text-emerald-700"
+              className="self-start"
               aria-label="勤怠設定を開く"
+              startIcon={
+                <SettingsIcon name="settings" className="text-current" />
+              }
             >
-              <SettingsIcon name="settings" className="text-current" />
               <span>設定</span>
-            </button>
+            </AppButton>
           </div>
         </section>
         <PageSection

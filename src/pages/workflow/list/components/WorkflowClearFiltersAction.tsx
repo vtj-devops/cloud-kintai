@@ -1,3 +1,5 @@
+import { AppButton } from "@shared/ui/button";
+
 import { WORKFLOW_CLEAR_FILTERS_LABEL } from "./workflowListContentShared";
 
 type WorkflowClearFiltersActionProps = {
@@ -9,14 +11,18 @@ export default function WorkflowClearFiltersAction({
 }: WorkflowClearFiltersActionProps) {
   return (
     <div className="workflow-filter-actions">
-      <button
-        type="button"
+      <AppButton
+        variant="outline"
+        tone="secondary"
+        size="sm"
         onClick={onClearFilters}
         className="workflow-clear-filters-button"
+        startIcon={
+          <span className="workflow-clear-filters-button__icon">×</span>
+        }
       >
-        <span className="workflow-clear-filters-button__icon">×</span>
         {WORKFLOW_CLEAR_FILTERS_LABEL}
-      </button>
+      </AppButton>
     </div>
   );
 }

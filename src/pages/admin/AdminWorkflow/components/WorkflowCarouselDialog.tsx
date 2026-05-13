@@ -16,6 +16,7 @@ import {
   WorkflowStatus,
 } from "@shared/api/graphql/types";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { AppButton } from "@shared/ui/button";
 import { SectionTitle } from "@shared/ui/typography";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 
@@ -115,26 +116,25 @@ function WorkflowCarouselActionButtons({
 }: WorkflowCarouselActionButtonsProps) {
   return (
     <div className="flex flex-col gap-2 sm:flex-row">
-      <button
-        type="button"
+      <AppButton
+        className="min-w-0"
         onClick={() => {
           void onApproveAndNext();
         }}
         disabled={isApproveDisabled}
-        className="inline-flex h-9 items-center justify-center rounded-md border border-emerald-700/65 bg-emerald-600 px-4 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-300 disabled:text-slate-600"
       >
         承認して次へ
-      </button>
-      <button
-        type="button"
+      </AppButton>
+      <AppButton
+        tone="danger"
+        className="min-w-0"
         onClick={() => {
           void onRejectAndNext();
         }}
         disabled={isRejectDisabled}
-        className="inline-flex h-9 items-center justify-center rounded-md border border-rose-700/60 bg-rose-600 px-4 text-sm font-medium text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-300 disabled:text-slate-600"
       >
         却下して次へ
-      </button>
+      </AppButton>
     </div>
   );
 }
@@ -178,7 +178,8 @@ export default function WorkflowCarouselDialog({
   } = useContext(AppConfigContext);
   const { update: updateWorkflow } = useWorkflows({ isAuthenticated });
   const [createAttendance] = useCreateAttendanceMutation();
-  const [getAttendanceByStaffAndDate] = useLazyGetAttendanceByStaffAndDateQuery();
+  const [getAttendanceByStaffAndDate] =
+    useLazyGetAttendanceByStaffAndDateQuery();
   const [updateAttendance] = useUpdateAttendanceMutation();
   const dispatch = useAppDispatchV2();
 
@@ -196,7 +197,9 @@ export default function WorkflowCarouselDialog({
     cognitoUser,
     staffs,
     updateWorkflow: (input) =>
-      updateWorkflow(input) as Promise<NonNullable<GetWorkflowQuery["getWorkflow"]>>,
+      updateWorkflow(input) as Promise<
+        NonNullable<GetWorkflowQuery["getWorkflow"]>
+      >,
     setWorkflow,
     notifySuccess: (message) =>
       dispatch(
@@ -434,13 +437,15 @@ export default function WorkflowCarouselDialog({
               </div>
 
               <div className="flex justify-end border-t border-slate-200 pt-3">
-                <button
-                  type="button"
+                <AppButton
+                  variant="outline"
+                  tone="secondary"
+                  size="sm"
                   onClick={onClose}
-                  className="inline-flex h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-4 text-sm text-slate-700 transition hover:bg-slate-100"
+                  className="min-w-0"
                 >
                   閉じる
-                </button>
+                </AppButton>
               </div>
             </div>
           ) : currentWorkflow ? (
@@ -450,17 +455,19 @@ export default function WorkflowCarouselDialog({
                   {currentIndex + 1} / {filteredWorkflowIds.length}
                 </span>
 
-                <button
-                  type="button"
+                <AppButton
+                  variant="outline"
+                  tone="secondary"
+                  size="sm"
                   onClick={() =>
                     currentWorkflowId && onOpenInRightPanel(currentWorkflowId)
                   }
                   disabled={!currentWorkflowId}
-                  className="inline-flex h-9 items-center justify-center gap-1 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-700 transition hover:border-emerald-400 hover:text-emerald-700 disabled:cursor-not-allowed disabled:text-slate-400"
+                  startIcon={<OpenInPanelIcon />}
+                  className="min-w-0"
                 >
-                  <OpenInPanelIcon />
                   右側で開く
-                </button>
+                </AppButton>
               </div>
 
               {enableApprovalActions && currentWorkflowId && (
@@ -483,7 +490,8 @@ export default function WorkflowCarouselDialog({
                 <div>
                   <p className="m-0 text-xs text-slate-500">申請者</p>
                   <p className="m-0 mt-1 text-sm font-medium text-slate-900">
-                    {staffNamesById.get(currentWorkflow.staffId || "") || "不明"}
+                    {staffNamesById.get(currentWorkflow.staffId || "") ||
+                      "不明"}
                   </p>
                 </div>
 
@@ -523,24 +531,28 @@ export default function WorkflowCarouselDialog({
               </div>
 
               <div className="flex items-center justify-between border-t border-slate-200 pt-3">
-                <button
-                  type="button"
+                <AppButton
+                  variant="outline"
+                  tone="secondary"
+                  size="sm"
                   onClick={handlePrev}
                   disabled={!canGoPrev}
-                  className="inline-flex h-9 items-center gap-1 rounded-md border border-slate-300 px-3 text-sm text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-400"
+                  startIcon={<ChevronLeftIcon />}
+                  className="min-w-0"
                 >
-                  <ChevronLeftIcon />
                   前へ
-                </button>
-                <button
-                  type="button"
+                </AppButton>
+                <AppButton
+                  variant="outline"
+                  tone="secondary"
+                  size="sm"
                   onClick={handleNext}
                   disabled={!canGoNext}
-                  className="inline-flex h-9 items-center gap-1 rounded-md border border-slate-300 px-3 text-sm text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-400"
+                  endIcon={<ChevronRightIcon />}
+                  className="min-w-0"
                 >
                   次へ
-                  <ChevronRightIcon />
-                </button>
+                </AppButton>
               </div>
             </div>
           ) : (

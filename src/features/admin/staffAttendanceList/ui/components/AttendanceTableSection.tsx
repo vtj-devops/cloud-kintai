@@ -9,7 +9,6 @@ import {
   attendanceRowVariantStyles,
 } from "@entities/attendance/ui/rowVariant";
 import { AttendanceStatusTooltip } from "@features/attendance/list/ui/AttendanceStatusTooltip";
-import EditIcon from "@mui/icons-material/Edit";
 import {
   Button,
   Stack,
@@ -26,7 +25,7 @@ import {
   HolidayCalendar,
   Staff,
 } from "@shared/api/graphql/types";
-import { AppIconButton } from "@shared/ui/button";
+import { AppEditIconButton } from "@shared/ui/button/AppActionIconButton";
 
 import type { PendingAttendanceControls } from "./PendingAttendanceSection";
 
@@ -41,7 +40,7 @@ export type AttendanceTableSectionProps = {
   getRowVariant: (
     attendance: Attendance,
     holidayCalendars?: HolidayCalendar[],
-    companyHolidayCalendars?: CompanyHolidayCalendar[]
+    companyHolidayCalendars?: CompanyHolidayCalendar[],
   ) => AttendanceRowVariant;
 };
 
@@ -77,7 +76,7 @@ export function AttendanceTableSection({
             const rowVariant = getRowVariant(
               attendance,
               holidayCalendars,
-              companyHolidayCalendars
+              companyHolidayCalendars,
             );
             const rowKey = attendance.id || `${attendance.workDate}-${index}`;
             return (
@@ -96,14 +95,12 @@ export function AttendanceTableSection({
                       holidayCalendars={holidayCalendars}
                       companyHolidayCalendars={companyHolidayCalendars}
                     />
-                    <AppIconButton
+                    <AppEditIconButton
                       size="sm"
                       onClick={() => onEdit(attendance)}
                       aria-label="編集"
                       data-testid="edit-attendance-button"
-                    >
-                      <EditIcon fontSize="small" />
-                    </AppIconButton>
+                    />
                   </Stack>
                 </TableCell>
 

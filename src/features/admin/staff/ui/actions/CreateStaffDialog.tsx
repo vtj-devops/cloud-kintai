@@ -30,6 +30,7 @@ import {
   UpdateStaffInput,
 } from "@shared/api/graphql/types";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
+import { AppButton } from "@shared/ui/button";
 import { useDialogCloseGuard } from "@shared/ui/feedback/useDialogCloseGuard";
 import { SectionTitle } from "@shared/ui/typography";
 import dayjs from "dayjs";
@@ -243,12 +244,10 @@ export default function CreateStaffDialog({
   };
   return (
     <>
-      <button
-        type="button"
-        className="inline-flex h-9 items-center justify-center rounded-xl border border-emerald-700/15 bg-[#19b985] px-4 text-xs font-semibold leading-none tracking-wide text-white shadow-[0_10px_20px_-14px_rgba(5,150,105,0.75)] transition hover:bg-[#17ab7b] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200"
+      <AppButton
+        size="sm"
         onClick={handleClickOpen}
-      >
-        <span className="inline-flex items-center gap-1.5 leading-none">
+        startIcon={
           <svg
             className="h-4 w-4"
             viewBox="0 0 24 24"
@@ -262,9 +261,10 @@ export default function CreateStaffDialog({
             <path d="M12 5v14" />
             <path d="M5 12h14" />
           </svg>
-          <span>スタッフ登録</span>
-        </span>
-      </button>
+        }
+      >
+        スタッフ登録
+      </AppButton>
 
       {dialog}
       {open ? (

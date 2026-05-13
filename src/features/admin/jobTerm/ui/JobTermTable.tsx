@@ -1,5 +1,6 @@
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import { CloseDate } from "@shared/api/graphql/types";
+import { AppButton } from "@shared/ui/button";
 import dayjs from "dayjs";
 import { PenLine, Trash2 } from "lucide-react";
 import { memo, useMemo } from "react";
@@ -10,17 +11,8 @@ type JobTermTableProps = {
   onDelete: (row: CloseDate) => void;
 };
 
-function JobTermTableComponent({
-  rows,
-  onEdit,
-  onDelete,
-}: JobTermTableProps) {
-  const sortedRows = useMemo(
-    () => [
-      ...rows,
-    ],
-    [rows],
-  ).toSorted(
+function JobTermTableComponent({ rows, onEdit, onDelete }: JobTermTableProps) {
+  const sortedRows = useMemo(() => [...rows], [rows]).toSorted(
     (left, right) =>
       dayjs(right.closeDate).valueOf() - dayjs(left.closeDate).valueOf(),
   );
@@ -66,22 +58,26 @@ function JobTermTableComponent({
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center justify-end gap-2">
-                      <button
-                        type="button"
+                      <AppButton
+                        variant="outline"
+                        tone="secondary"
+                        size="sm"
                         onClick={() => onEdit(row)}
-                        className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                        startIcon={<PenLine className="h-4 w-4" />}
+                        className="min-w-0"
                       >
-                        <PenLine className="h-4 w-4" />
                         編集
-                      </button>
-                      <button
-                        type="button"
+                      </AppButton>
+                      <AppButton
+                        variant="outline"
+                        tone="danger"
+                        size="sm"
                         onClick={() => onDelete(row)}
-                        className="inline-flex items-center gap-2 rounded-lg border border-rose-200 px-3 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50"
+                        startIcon={<Trash2 className="h-4 w-4" />}
+                        className="min-w-0"
                       >
-                        <Trash2 className="h-4 w-4" />
                         削除
-                      </button>
+                      </AppButton>
                     </div>
                   </td>
                 </tr>

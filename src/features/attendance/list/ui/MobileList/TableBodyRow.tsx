@@ -10,7 +10,6 @@ import {
   attendanceRowVariantStyles,
   getAttendanceRowVariant,
 } from "@entities/attendance/ui/rowVariant";
-import EditIcon from "@mui/icons-material/Edit";
 import {
   Stack,
   TableCell as MuiTableCell,
@@ -23,7 +22,7 @@ import {
   HolidayCalendar,
   Staff,
 } from "@shared/api/graphql/types";
-import { AppIconButton } from "@shared/ui/button";
+import { AppEditIconButton } from "@shared/ui/button/AppActionIconButton";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 
@@ -79,9 +78,7 @@ export default function TableBodyRow({
             holidayCalendars={holidayCalendars}
             companyHolidayCalendars={companyHolidayCalendars}
           />
-          <AppIconButton onClick={handleEdit} aria-label="編集" size="sm">
-            <EditIcon fontSize="small" />
-          </AppIconButton>
+          <AppEditIconButton onClick={handleEdit} aria-label="編集" size="sm" />
         </Stack>
       </MuiTableCell>
       {/* 勤務日 */}
