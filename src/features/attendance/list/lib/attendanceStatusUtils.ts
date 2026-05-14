@@ -22,6 +22,7 @@ import {
   HolidayCalendar,
   Staff,
 } from "@shared/api/graphql/types";
+import { formatISOTimeRange } from "@shared/lib/time";
 import dayjs, { Dayjs } from "dayjs";
 
 /**
@@ -79,18 +80,11 @@ export function getTotalRestHours(attendance: Attendance | undefined) {
  */
 export function formatTimeRange(attendance: Attendance | undefined) {
   if (!attendance) return undefined;
-
-  const format = (value?: string | null) =>
-    value ? dayjs(value).format("HH:mm") : undefined;
-
-  const start = format(attendance.startTime || undefined);
-  const end = format(attendance.endTime || undefined);
-
-  if (!start && !end) {
-    return undefined;
-  }
-
-  return `${start ?? ""} - ${end ?? ""}`.trim();
+  return formatISOTimeRange(attendance.startTime, attendance.endTime, {
+    separator: " - ",
+    missingTimeLabel: "",
+    emptyAsUndefined: true,
+  });
 }
 
 /**

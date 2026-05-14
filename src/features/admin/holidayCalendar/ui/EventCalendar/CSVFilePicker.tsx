@@ -1,7 +1,8 @@
 import { useAppDispatchV2 } from "@app/hooks";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import { BulkUploadDialogShell } from "@features/admin/holidayCalendar/ui/components/BulkUploadDialogShell";
-import { Box, Stack, Typography } from "@mui/material";
+import { BulkUploadFileInput } from "@features/admin/holidayCalendar/ui/components/BulkUploadFileInput";
+import { Stack, Typography } from "@mui/material";
 import {
   CreateEventCalendarInput,
   EventCalendar,
@@ -9,9 +10,8 @@ import {
 import { EventCalendarMessage } from "@shared/lib/message/EventCalendarMessage";
 import { MessageStatus } from "@shared/lib/message/Message";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
-import { AppButton } from "@shared/ui/button";
 import dayjs from "dayjs";
-import { useState } from "react";
+import { type Dispatch, type SetStateAction, useState } from "react";
 
 type ParseSummary = {
   totalRows: number;
@@ -115,69 +115,60 @@ function FileInput({
   onFileSelected,
   onParsed,
 }: {
-  setUploadedData: React.Dispatch<
-    React.SetStateAction<CreateEventCalendarInput[]>
-  >;
+  setUploadedData: Dispatch<SetStateAction<CreateEventCalendarInput[]>>;
   onFileSelected: () => void;
   onParsed: (summary: ParseSummary) => void;
 }) {
-  const [name, setName] = useState<string | undefined>();
+  const parseEventCsv = (
+    csv: string,
+  ): {
+    calendars: CreateEventCalendarInput[];
+    summary: ParseSummary;
+  } => {
+    const lines = csv.split(/\r\n|\n/);
+    const data = lines.map((line) => line.split(","));
+
+    const calendars = data
+      .slice(1)
+      .filter((row) => row[0] !== "")
+      .map((row) => {
+        const eventDate = dayjs(row[0].trim());
+        if (!eventDate.isValid()) {
+          return null;
+        }
+
+        return {
+          eventDate: eventDate.format(AttendanceDate.DataFormat),
+          name: String(row[1]?.trim() || ""),
+          description: row[2]?.trim() || undefined,
+        } as CreateEventCalendarInput;
+      })
+      .filter((item): item is CreateEventCalendarInput => item !== null);
+
+    const totalRows = data.slice(1).filter((row) => row[0] !== "").length;
+
+    return {
+      calendars,
+      summary: {
+        totalRows,
+        validRows: calendars.length,
+        invalidRows: totalRows - calendars.length,
+      },
+    };
+  };
 
   return (
-    <Box>
-      <AppButton as="label" variant="outline">
-        ファイルを選択
-        <input
-          type="file"
-          hidden
-          accept=".csv"
-          onChange={(event) => {
-            const file = event.target.files?.item(0);
-            if (!file) {
-              return;
-            }
-
-            onFileSelected();
-            setName(file.name);
-
-            const reader = new FileReader();
-            reader.readAsText(file, "UTF-8");
-            reader.onload = () => {
-              const csv = reader.result as string;
-              const lines = csv.split(/\r\n|\n/);
-              const data = lines.map((line) => line.split(","));
-
-              const requestCalendars = data
-                .slice(1)
-                .filter((row) => row[0] !== "")
-                .map((row) => {
-                  const eventDate = dayjs(row[0].trim());
-                  if (!eventDate.isValid()) {
-                    return null;
-                  }
-
-                  return {
-                    eventDate: eventDate.format(AttendanceDate.DataFormat),
-                    name: String(row[1]?.trim() || ""),
-                    description: row[2]?.trim() || undefined,
-                  } as CreateEventCalendarInput;
-                })
-                .filter(
-                  (item): item is CreateEventCalendarInput => item !== null,
-                );
-
-              const totalRows = data.slice(1).filter((row) => row[0] !== "").length;
-              setUploadedData(requestCalendars);
-              onParsed({
-                totalRows,
-                validRows: requestCalendars.length,
-                invalidRows: totalRows - requestCalendars.length,
-              });
-            };
-          }}
-        />
-      </AppButton>
-      <Typography>{name}</Typography>
-    </Box>
+    <BulkUploadFileInput<{
+      calendars: CreateEventCalendarInput[];
+      summary: ParseSummary;
+    }>
+      encoding="UTF-8"
+      parse={parseEventCsv}
+      onFileSelected={onFileSelected}
+      onParsed={({ calendars, summary }) => {
+        setUploadedData(calendars);
+        onParsed(summary);
+      }}
+    />
   );
 }

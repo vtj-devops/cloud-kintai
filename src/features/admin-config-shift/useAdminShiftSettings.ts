@@ -28,6 +28,12 @@ const SHIFT_GROUP_ERROR_FIELDS = [
 
 const SHIFT_DISPLAY_AUTO_SAVE_DELAY = 600;
 
+type UseAdminShiftSettingsOptions = {
+  enableShiftDisplayAutoSave?: boolean;
+  onShiftGroupSaveSuccess?: (isUpdate: boolean) => void;
+  onShiftDisplaySaveSuccess?: (isUpdate: boolean) => void;
+};
+
 const getValidationDetails = (errors: {
   shiftGroups?: Array<
     Record<string, { message?: unknown } | undefined>
@@ -51,7 +57,7 @@ const getValidationDetails = (errors: {
   return details;
 };
 
-export function useAdminShiftSettings() {
+export function useAdminShiftSettings(options: UseAdminShiftSettingsOptions = {}) {
   const {
     getShiftGroups,
     getConfigId,
@@ -68,6 +74,8 @@ export function useAdminShiftSettings() {
     useState<ShiftDisplayMode>("normal");
   const [savedShiftDefaultMode, setSavedShiftDefaultMode] =
     useState<ShiftDisplayMode>("normal");
+  const enableShiftDisplayAutoSave =
+    options.enableShiftDisplayAutoSave ?? true;
 
   const {
     control,
@@ -165,21 +173,25 @@ export function useAdminShiftSettings() {
   const isBusy = savingShiftGroup || savingShiftDisplay;
 
   const persistConfig = useCallback(
-    async (
-      payloadShiftGroups: ReturnType<typeof buildShiftGroupPayload>,
-    ) => {
-      if (configId) {
+    async (payload: {
+      shiftGroups?: ReturnType<typeof buildShiftGroupPayload>;
+      shiftCollaborativeEnabled?: boolean;
+      shiftDefaultMode?: ShiftDisplayMode;
+    }) => {
+      const isUpdate = configId !== null;
+      if (isUpdate) {
         await saveConfig({
           id: configId,
-          shiftGroups: payloadShiftGroups,
+          ...payload,
         } as UpdateAppConfigInput);
       } else {
         await saveConfig({
           name: "default",
-          shiftGroups: payloadShiftGroups,
+          ...payload,
         } as CreateAppConfigInput);
       }
       await fetchConfig();
+      return isUpdate;
     },
     [configId, fetchConfig, saveConfig],
   );
@@ -191,7 +203,8 @@ export function useAdminShiftSettings() {
     setSavingShiftGroup(true);
     const payloadShiftGroups = buildShiftGroupPayload(values.shiftGroups);
     try {
-      await persistConfig(payloadShiftGroups);
+      const isUpdate = await persistConfig({ shiftGroups: payloadShiftGroups });
+      options.onShiftGroupSaveSuccess?.(isUpdate);
       reset(values);
     } catch (error) {
       console.error(error);
@@ -204,16 +217,11 @@ export function useAdminShiftSettings() {
     if (savingShiftDisplay) return;
     setSavingShiftDisplay(true);
     try {
-      const payload = {
+      const isUpdate = await persistConfig({
         shiftCollaborativeEnabled: true,
         shiftDefaultMode,
-      };
-      if (configId) {
-        await saveConfig({ id: configId, ...payload } as UpdateAppConfigInput);
-      } else {
-        await saveConfig({ name: "default", ...payload } as CreateAppConfigInput);
-      }
-      await fetchConfig();
+      });
+      options.onShiftDisplaySaveSuccess?.(isUpdate);
       setSavedShiftDefaultMode(shiftDefaultMode);
     } catch (error) {
       console.error(error);
@@ -225,13 +233,14 @@ export function useAdminShiftSettings() {
   shiftDisplaySaveRef.current = shiftDisplaySaveHandler;
 
   useEffect(() => {
+    if (!enableShiftDisplayAutoSave) return;
     if (!isShiftDisplayDirty) return;
     const id = window.setTimeout(() => {
       void shiftDisplaySaveRef.current();
     }, SHIFT_DISPLAY_AUTO_SAVE_DELAY);
     return () => window.clearTimeout(id);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shiftDefaultMode, isShiftDisplayDirty]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enableShiftDisplayAutoSave, shiftDefaultMode, isShiftDisplayDirty]);
 
   return {
     control,
@@ -250,5 +259,6 @@ export function useAdminShiftSettings() {
     handleAddGroup,
     handleRemoveGroup: remove,
     handleSaveShiftGroup: shiftGroupSaveHandler,
+    handleSaveShiftDisplay: shiftDisplaySaveHandler,
   };
 }

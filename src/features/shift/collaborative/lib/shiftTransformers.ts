@@ -1,4 +1,8 @@
 import type { ShiftRequestLite } from "@entities/shift/api/shiftApi";
+import {
+  shiftRequestStatusToShiftStateWithEmpty,
+  shiftStateWithEmptyToShiftRequestStatus,
+} from "@entities/shift/lib/statusMapping";
 import type {
   ModelShiftRequestConditionInput,
   ShiftRequest,
@@ -16,9 +20,7 @@ import {
   ShiftDataMap,
   ShiftRequestData,
   ShiftRequestHistoryEntry,
-  shiftRequestStatusToShiftState,
   ShiftState,
-  shiftStateToShiftRequestStatus,
 } from "../types/collaborative.types";
 
 const buildDayKeys = (targetMonth: string) => {
@@ -48,7 +50,7 @@ const buildStaffShiftMap = (
   dayKeys.forEach((dayKey) => {
     const entry = entryMap.get(dayKey);
     const state = entry
-      ? shiftRequestStatusToShiftState(entry.status)
+      ? shiftRequestStatusToShiftStateWithEmpty(entry.status)
       : "empty";
 
     map.set(dayKey, {
@@ -231,7 +233,7 @@ export const transformShiftCellUpdateToGraphQLInput = ({
   const entries: ShiftRequestDayPreferenceInput[] = [];
 
   staffData.forEach((cell, dayKey) => {
-    const status = shiftStateToShiftRequestStatus(cell.state);
+    const status = shiftStateWithEmptyToShiftRequestStatus(cell.state);
     if (!status) {
       return;
     }
@@ -346,10 +348,10 @@ export function deriveHistoryCellChanges(
       const prevEntry = prevEntryMap.get(date);
 
       const newState = currentEntry
-        ? shiftRequestStatusToShiftState(currentEntry.status)
+        ? shiftRequestStatusToShiftStateWithEmpty(currentEntry.status)
         : "empty";
       const previousState = prevEntry
-        ? shiftRequestStatusToShiftState(prevEntry.status)
+        ? shiftRequestStatusToShiftStateWithEmpty(prevEntry.status)
         : i === 0
           ? undefined // 最古スナップショットは「変更前不明」
           : "empty";

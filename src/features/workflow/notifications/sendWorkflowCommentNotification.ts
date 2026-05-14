@@ -6,7 +6,7 @@ import type {
 import { graphqlClient } from "@shared/api/amplify/graphqlClient";
 import { sendMail } from "@shared/api/graphql/documents/queries";
 import { formatStaffDisplayName } from "@shared/lib/mail/adminNotification";
-import dayjs from "dayjs";
+import { formatDateTimeReadable } from "@shared/lib/time";
 
 import * as MESSAGE_CODE from "@/errors";
 
@@ -31,14 +31,6 @@ const isAdminRole = (role?: string | null) => {
     normalized === "STAFFADMIN" ||
     normalized === "OWNER"
   );
-};
-
-const formatDateTime = (value?: string | null) => {
-  if (!value) {
-    return "-";
-  }
-  const parsed = dayjs(value);
-  return parsed.isValid() ? parsed.format("YYYY/MM/DD HH:mm") : value;
 };
 
 const parseAdminOverrideRecipients = () => {
@@ -71,7 +63,10 @@ const createEmailPayload = (
 ) => {
   const { workflow, actorDisplayName, commentText } = args;
   const categoryLabel = getWorkflowCategoryLabel(workflow);
-  const submittedAt = formatDateTime(workflow.updatedAt || workflow.createdAt);
+  const submittedAt = formatDateTimeReadable(
+    workflow.updatedAt || workflow.createdAt,
+    "-",
+  );
   const safeCommentText = commentText.trim() || "(コメント本文なし)";
 
   return {

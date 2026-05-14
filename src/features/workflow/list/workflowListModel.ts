@@ -1,30 +1,12 @@
 import {
   CATEGORY_LABELS,
-  CLOCK_CORRECTION_CHECK_OUT_LABEL,
-  CLOCK_CORRECTION_LABEL,
   getWorkflowCategoryLabel,
+  REVERSE_CATEGORY,
+  REVERSE_STATUS,
   STATUS_LABELS,
 } from "@entities/workflow/lib/workflowLabels";
 import { WorkflowCategory, WorkflowStatus } from "@shared/api/graphql/types";
-
-const CATEGORY_LABELS_REVERSE = Object.entries(CATEGORY_LABELS).reduce(
-  (acc, [key, value]) => {
-    acc[value] = key;
-    return acc;
-  },
-  {
-    [CLOCK_CORRECTION_LABEL]: WorkflowCategory.CLOCK_CORRECTION,
-    [CLOCK_CORRECTION_CHECK_OUT_LABEL]: WorkflowCategory.CLOCK_CORRECTION,
-  } as Record<string, string>,
-);
-
-const STATUS_LABELS_REVERSE = Object.entries(STATUS_LABELS).reduce(
-  (acc, [key, value]) => {
-    acc[value] = key;
-    return acc;
-  },
-  {} as Record<string, string>,
-);
+import { isoDateFromTimestamp } from "@shared/lib/time";
 
 export type WorkflowLike = {
   id?: string | null;
@@ -64,12 +46,6 @@ export const DEFAULT_STATUS_FILTERS: WorkflowStatus[] = [
   WorkflowStatus.REJECTED,
 ];
 
-const formatIsoDate = (value?: string | null): string => {
-  if (!value) return "";
-  const [date] = value.split("T");
-  return date ?? "";
-};
-
 export function mapWorkflowsToListItems<T extends WorkflowLike>(
   workflows: T[] | null | undefined,
   currentStaffId?: string,
@@ -84,7 +60,7 @@ export function mapWorkflowsToListItems<T extends WorkflowLike>(
       const status = workflow.status ?? undefined;
       const category = workflow.category ?? undefined;
       const categoryLabel = category ? getWorkflowCategoryLabel(workflow) : "";
-      const createdDate = formatIsoDate(workflow.createdAt);
+      const createdDate = isoDateFromTimestamp(workflow.createdAt);
       return {
         name: workflow.id ?? "",
         rawStaffId: workflow.staffId ?? undefined,
@@ -118,10 +94,9 @@ export function applyWorkflowFilters(
     if (filters.category) {
       const categoryCandidates = new Set<string>();
       categoryCandidates.add(filters.category);
-      const labelFromEnum =
-        CATEGORY_LABELS[filters.category as WorkflowCategory];
+      const labelFromEnum = CATEGORY_LABELS[filters.category];
       if (labelFromEnum) categoryCandidates.add(labelFromEnum);
-      const enumFromLabel = CATEGORY_LABELS_REVERSE[filters.category];
+      const enumFromLabel = REVERSE_CATEGORY[filters.category];
       if (enumFromLabel) categoryCandidates.add(enumFromLabel);
 
       const matches =
@@ -136,9 +111,9 @@ export function applyWorkflowFilters(
       const statusCandidates = new Set<string>();
       statusFilters.forEach((status) => {
         statusCandidates.add(status);
-        const labelFromEnum = STATUS_LABELS[status as WorkflowStatus];
+        const labelFromEnum = STATUS_LABELS[status];
         if (labelFromEnum) statusCandidates.add(labelFromEnum);
-        const enumFromLabel = STATUS_LABELS_REVERSE[status];
+        const enumFromLabel = REVERSE_STATUS[status];
         if (enumFromLabel) statusCandidates.add(enumFromLabel);
       });
 

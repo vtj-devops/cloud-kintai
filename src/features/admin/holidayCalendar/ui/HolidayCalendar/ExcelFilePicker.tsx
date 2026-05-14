@@ -1,6 +1,7 @@
 import { useAppDispatchV2 } from "@app/hooks";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import { BulkUploadDialogShell } from "@features/admin/holidayCalendar/ui/components/BulkUploadDialogShell";
+import { BulkUploadFileInput } from "@features/admin/holidayCalendar/ui/components/BulkUploadFileInput";
 import DownloadIcon from "@mui/icons-material/Download";
 import { Box, Stack, Typography } from "@mui/material";
 import {
@@ -12,7 +13,7 @@ import { MessageStatus } from "@shared/lib/message/Message";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
 import { AppButton } from "@shared/ui/button";
 import dayjs from "dayjs";
-import { useState } from "react";
+import { type Dispatch, type SetStateAction, useState } from "react";
 
 import company_holiday from "@/templates/company_holiday.csv";
 
@@ -150,11 +151,9 @@ export function ExcelFilePicker({
 function FileInput({
   setUploadedData,
 }: {
-  setUploadedData: React.Dispatch<
-    React.SetStateAction<CreateCompanyHolidayCalendarInput[]>
-  >;
+  setUploadedData: Dispatch<SetStateAction<CreateCompanyHolidayCalendarInput[]>>;
 }) {
-  const [file, setFile] = useState<File | undefined>();
+  const [fileName, setFileName] = useState<string | undefined>();
   const dispatch = useAppDispatchV2();
 
   const handleParseFailure = (message: string) => {
@@ -165,52 +164,31 @@ function FileInput({
       }),
     );
     setUploadedData([]);
-    setFile(undefined);
+    setFileName(undefined);
   };
 
   return (
-    <Box>
-      <AppButton as="label" variant="outline">
-        ファイルを選択
-        <input
-          type="file"
-          hidden
-          accept=".csv"
-          onChange={(event) => {
-            const uploadFile = event.target.files?.item(0);
-            if (!uploadFile) {
-              return;
-            }
-
-            setFile(uploadFile);
-            const reader = new FileReader();
-            reader.readAsText(uploadFile, "utf-8");
-
-            reader.onload = (e) => {
-              if (!e.target?.result) {
-                handleParseFailure(CSV_PARSE_ERROR_MESSAGE);
-                return;
-              }
-
-              try {
-                const parsed = parseHolidayCsv(e.target.result as string);
-                if (parsed.length === 0) {
-                  handleParseFailure(CSV_EMPTY_DATA_MESSAGE);
-                  return;
-                }
-                setUploadedData(parsed);
-              } catch (error) {
-                console.error(error);
-                handleParseFailure(CSV_PARSE_ERROR_MESSAGE);
-              }
-            };
-
-            reader.onerror = () => handleParseFailure(CSV_PARSE_ERROR_MESSAGE);
-            event.target.value = "";
-          }}
-        />
-      </AppButton>
-      <Typography>{file?.name}</Typography>
-    </Box>
+    <BulkUploadFileInput<CreateCompanyHolidayCalendarInput[]>
+      encoding="utf-8"
+      clearInputOnChange
+      treatEmptyResultAsError
+      fileName={fileName}
+      onFileNameChange={setFileName}
+      parse={parseHolidayCsv}
+      onParsed={(parsed) => {
+        if (parsed.length === 0) {
+          handleParseFailure(CSV_EMPTY_DATA_MESSAGE);
+          return;
+        }
+        setUploadedData(parsed);
+      }}
+      onParseError={(error) => {
+        console.error(error);
+        handleParseFailure(CSV_PARSE_ERROR_MESSAGE);
+      }}
+      onReadError={() => {
+        handleParseFailure(CSV_PARSE_ERROR_MESSAGE);
+      }}
+    />
   );
 }

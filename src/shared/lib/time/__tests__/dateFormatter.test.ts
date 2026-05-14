@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import {
   formatDateSlash,
   formatDateTimeReadable,
+  formatISOTimeRange,
   formatRelativeDateTime,
   isoDateFromTimestamp,
 } from "../dateFormatter";
@@ -83,6 +84,11 @@ describe("formatDateTimeReadable", () => {
   it("空文字を渡すと空文字を返す", () => {
     expect(formatDateTimeReadable("")).toBe("");
   });
+
+  it("emptyValueFallback を指定した場合は未入力時にその値を返す", () => {
+    expect(formatDateTimeReadable(undefined, "-")).toBe("-");
+    expect(formatDateTimeReadable(null, "-")).toBe("-");
+  });
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -152,5 +158,34 @@ describe("formatRelativeDateTime", () => {
     // 未来の日時を渡すと "今" になるはず
     const farFuture = dayjs().add(1, "year").toISOString();
     expect(formatRelativeDateTime(farFuture)).toBe("今");
+  });
+});
+
+describe("formatISOTimeRange", () => {
+  it("開始/終了がある場合に範囲を返す", () => {
+    expect(
+      formatISOTimeRange(
+        "2026-03-25T09:00:00+09:00",
+        "2026-03-25T18:00:00+09:00",
+      ),
+    ).toBe("09:00 〜 18:00");
+  });
+
+  it("未入力をプレースホルダーで補完できる", () => {
+    expect(
+      formatISOTimeRange("2026-03-25T09:00:00+09:00", null, {
+        missingTimeLabel: "--:--",
+      }),
+    ).toBe("09:00 〜 --:--");
+  });
+
+  it("両方未入力時に undefined を返せる", () => {
+    expect(
+      formatISOTimeRange(null, undefined, {
+        separator: " - ",
+        missingTimeLabel: "",
+        emptyAsUndefined: true,
+      }),
+    ).toBeUndefined();
   });
 });

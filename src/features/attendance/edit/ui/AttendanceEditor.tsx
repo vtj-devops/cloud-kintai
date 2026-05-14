@@ -6,7 +6,6 @@ import {
 } from "@entities/attendance/api/attendanceApi";
 import { useOvertimeRequest } from "@entities/attendance/hooks/useOvertimeRequest";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
-import { attendanceEditSchema } from "@entities/attendance/validation/attendanceEditSchema";
 import { collectAttendanceErrorMessages } from "@entities/attendance/validation/collectErrorMessages";
 import {
   type OvertimeCheckContext,
@@ -14,19 +13,17 @@ import {
 } from "@entities/attendance/validation/overtimeCheckValidator";
 import { useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import AttendanceEditProvider from "@features/attendance/edit/model/AttendanceEditProvider";
-import { AttendanceEditInputs, defaultValues } from "@features/attendance/edit/model/common";
+import { useAttendanceEditForm } from "@features/attendance/edit/model/useAttendanceEditForm";
 import { useAttendanceGoDirectlyHandler } from "@features/attendance/edit/model/useAttendanceGoDirectlyHandler";
 import { useAttendanceHolidayHandlers } from "@features/attendance/edit/model/useAttendanceHolidayHandlers";
 import { useAttendanceSubmit } from "@features/attendance/edit/model/useAttendanceSubmit";
 import { AttendanceVacationTabs } from "@features/attendance/edit/ui/components/AttendanceVacationTabs";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Logger } from "@shared/lib/logger";
 import { ProgressBar } from "@shared/ui/feedback";
 import { InlineAlert } from "@shared/ui/feedback/InlineAlert";
 import { usePageLeaveGuard } from "@shared/ui/feedback/usePageLeaveGuard";
 import GroupContainer from "@shared/ui/group-container/GroupContainer";
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useCallback, useContext, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { useAttendanceRecord } from "../model/useAttendanceRecord";
@@ -38,9 +35,7 @@ import { AttendanceEditorEditActions } from "./components/AttendanceEditorEditAc
 import { AttendanceEditorHeader } from "./components/AttendanceEditorHeader";
 import { AttendanceEditorHistorySidebar } from "./components/AttendanceEditorHistorySidebar";
 import { AttendanceEditorSaveAction } from "./components/AttendanceEditorSaveAction";
-import {
-  calcTotalHourlyPaidHolidayTime,
-} from "./items/HourlyPaidHolidayTimeItem";
+import { calcTotalHourlyPaidHolidayTime } from "./items/HourlyPaidHolidayTimeItem";
 // eslint-disable-next-line import/no-cycle
 import RemarksItem from "./items/RemarksItem";
 // eslint-disable-next-line import/no-cycle
@@ -96,7 +91,6 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
   const [vacationTab, setVacationTab] = useState<number>(0);
   const [highlightStartTime, setHighlightStartTime] = useState(false);
   const [highlightEndTime, setHighlightEndTime] = useState(false);
-  const [overtimeError, setOvertimeError] = useState<string | null>(null);
   const logger = useMemo(
     () =>
       new Logger("AttendanceEditor", import.meta.env.DEV ? "DEBUG" : "ERROR"),
@@ -115,46 +109,32 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
   const {
     register,
     control,
-    watch,
     setValue,
     getValues,
+    watch,
     handleSubmit,
     reset,
-    formState: { errors, isDirty, isValid, isSubmitting },
-  } = useForm<AttendanceEditInputs>({
-    mode: "onChange",
-    defaultValues,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(attendanceEditSchema) as any,
-  });
-  const {
-    fields: restFields,
-    remove: restRemove,
-    append: restAppend,
-    replace: restReplace,
-    update: restUpdate,
-  } = useFieldArray({
-    control,
-    name: "rests",
-  });
-  const {
-    fields: systemCommentFields,
-    update: systemCommentUpdate,
-    replace: systemCommentReplace,
-  } = useFieldArray({
-    control,
-    name: "systemComments",
-  });
-  const {
-    fields: hourlyPaidHolidayTimeFields,
-    remove: hourlyPaidHolidayTimeRemove,
-    append: hourlyPaidHolidayTimeAppend,
-    update: hourlyPaidHolidayTimeUpdate,
-    replace: hourlyPaidHolidayTimeReplace,
-  } = useFieldArray({
-    control,
-    name: "hourlyPaidHolidayTimes",
-  });
+    errors,
+    isDirty,
+    isValid,
+    isSubmitting,
+    restFields,
+    restRemove,
+    restAppend,
+    restReplace,
+    restUpdate,
+    systemCommentFields,
+    systemCommentUpdate,
+    systemCommentReplace,
+    hourlyPaidHolidayTimeFields,
+    hourlyPaidHolidayTimeRemove,
+    hourlyPaidHolidayTimeAppend,
+    hourlyPaidHolidayTimeUpdate,
+    hourlyPaidHolidayTimeReplace,
+    submitErrorMessage,
+    setSubmitError,
+    clearSubmitError,
+  } = useAttendanceEditForm();
   const {
     attendance,
     staff,
@@ -194,30 +174,30 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
     () => collectAttendanceErrorMessages(errors),
     [errors],
   );
-  useEffect(() => {
+  const overtimeError = useMemo(() => {
     if (!watchedEndTime || !appConfig) {
-      setOvertimeError(null);
-      return;
+      return null;
     }
-    const workEndTimeStr = getEndTime().format("HH:mm");
+
     const context: OvertimeCheckContext = {
-      workEndTime: workEndTimeStr,
+      workEndTime: configEndTime.format("HH:mm"),
       overTimeCheckEnabled: appConfig.overTimeCheckEnabled ?? false,
       overtimeRequestEndTime,
       hasOvertimeRequest,
     };
     const result = validateOvertimeCheck(watchedEndTime, context);
+
     if (!result.isValid && result.errorMessage) {
-      setOvertimeError(result.errorMessage);
-    } else {
-      setOvertimeError(null);
+      return result.errorMessage;
     }
+
+    return null;
   }, [
     watchedEndTime,
     appConfig,
     overtimeRequestEndTime,
     hasOvertimeRequest,
-    getEndTime,
+    configEndTime,
   ]);
   const totalWorkTime = useMemo(() => {
     if (!watchedEndTime) return 0;
@@ -277,6 +257,8 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
     logger,
     navigateToAttendanceList: () =>
       runWithoutGuard(() => navigate(attendanceListPath)),
+    setSubmitError,
+    clearSubmitError,
   });
   const { handleAbsentFlagChange, handleSpecialHolidayFlagChange } =
     useAttendanceHolidayHandlers({
@@ -305,9 +287,9 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
     isDirty,
     isBusy: isSubmitting,
   });
-    if (appConfigLoading || staffsLoading || !hasAttendanceFetched) {
-      return <ProgressBar />;
-    }
+  if (appConfigLoading || staffsLoading || !hasAttendanceFetched) {
+    return <ProgressBar />;
+  }
   if (staffSError) {
     return (
       <InlineAlert tone="error" title="エラー">
@@ -340,6 +322,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
         isDirty,
         isValid,
         isSubmitting,
+        submitErrorMessage,
         restFields,
         changeRequests,
         restAppend,
@@ -363,7 +346,10 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
       }}
     >
       {dialog}
-      <div className="flex flex-col gap-2 pb-5" data-testid="admin-attendance-editor-root">
+      <div
+        className="flex flex-col gap-2 pb-5"
+        data-testid="admin-attendance-editor-root"
+      >
         {isSubmitting && (
           <div className="mt-1">
             <div className="h-1.5 w-full overflow-hidden rounded-full bg-emerald-100">
@@ -421,6 +407,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
             <div className="flex flex-col gap-2 px-[120px]">
               <AttendanceEditorAlerts
                 errorMessages={errorMessages}
+                submitErrorMessage={submitErrorMessage}
                 overtimeError={overtimeError}
                 showNoDataAlert={!attendance}
               />
@@ -469,7 +456,9 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
                     getSpecialHolidayEnabled={getSpecialHolidayEnabled}
                     getHourlyPaidHolidayEnabled={getHourlyPaidHolidayEnabled}
                     handleAbsentFlagChange={handleAbsentFlagChange}
-                    handleSpecialHolidayFlagChange={handleSpecialHolidayFlagChange}
+                    handleSpecialHolidayFlagChange={
+                      handleSpecialHolidayFlagChange
+                    }
                     hourlyPaidHolidayTimeFields={hourlyPaidHolidayTimeFields}
                     hourlyPaidHolidayTimeAppend={hourlyPaidHolidayTimeAppend}
                     staffWorkType={staff?.workType}
@@ -492,7 +481,9 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
               <AttendanceEditorSaveAction
                 readOnly={readOnly}
                 onSave={handleSubmit(onSubmit)}
-                disabled={!isValid || !isDirty || isSubmitting || !!overtimeError}
+                disabled={
+                  !isValid || !isDirty || isSubmitting || !!overtimeError
+                }
                 loading={isSubmitting}
               />
             </div>

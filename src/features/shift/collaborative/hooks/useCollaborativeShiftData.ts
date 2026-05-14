@@ -4,6 +4,7 @@ import {
   useGetShiftRequestsQuery,
   useUpdateShiftCellMutation,
 } from "@entities/shift/api/shiftApi";
+import { shiftStateWithEmptyToShiftRequestStatus } from "@entities/shift/lib/statusMapping";
 import { graphqlClient } from "@shared/api/amplify/graphqlClient";
 import {
   onCreateShiftRequest,
@@ -30,7 +31,6 @@ import {
   ShiftDataMap,
   ShiftRequestCommentData,
   ShiftRequestData,
-  shiftStateToShiftRequestStatus,
 } from "../types/collaborative.types";
 
 /**
@@ -289,7 +289,7 @@ export const useCollaborativeShiftData = ({
         const staffData = currentMap.get(update.staffId) ?? new Map();
         const entries = Array.from(staffData.entries())
           .map(([dayKey, cell]): ShiftRequestDayPreferenceInput | null => {
-            const status = shiftStateToShiftRequestStatus(cell.state);
+            const status = shiftStateWithEmptyToShiftRequestStatus(cell.state);
             if (!status) return null;
             return {
               date: dayjs(`${targetMonth}-${dayKey}`).format("YYYY-MM-DD"),
@@ -437,7 +437,7 @@ export const useCollaborativeShiftData = ({
               const entries = Array.from(staffData.entries())
                 .map(
                   ([dayKey, cell]): ShiftRequestDayPreferenceInput | null => {
-                    const status = shiftStateToShiftRequestStatus(cell.state);
+                    const status = shiftStateWithEmptyToShiftRequestStatus(cell.state);
                     if (!status) return null;
                     return {
                       date: dayjs(`${targetMonth}-${dayKey}`).format(

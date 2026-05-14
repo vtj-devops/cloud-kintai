@@ -29,6 +29,7 @@ type AttendanceEditUiContextProps = {
   isDirty: boolean;
   isValid: boolean;
   isSubmitting: boolean;
+  submitErrorMessage?: string | null;
   errorMessages?: string[];
   changeRequests: AttendanceChangeRequest[];
   readOnly?: boolean;
@@ -101,6 +102,7 @@ const defaultUiContextValue: AttendanceEditUiContextProps = {
   isDirty: false,
   isValid: false,
   isSubmitting: false,
+  submitErrorMessage: null,
   errorMessages: [],
   changeRequests: [],
   readOnly: false,
@@ -174,6 +176,7 @@ export default function AttendanceEditProvider({
     isDirty: value.isDirty,
     isValid: value.isValid,
     isSubmitting: value.isSubmitting,
+    submitErrorMessage: value.submitErrorMessage,
     errorMessages: value.errorMessages,
     changeRequests: value.changeRequests,
     readOnly: value.readOnly,
