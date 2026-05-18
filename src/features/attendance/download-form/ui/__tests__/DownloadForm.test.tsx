@@ -1,13 +1,16 @@
-import { AuthContext, type AuthContextProps } from "@app/providers/auth/AuthContext";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { renderWithProviders } from "@shared/test-utils";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
 
 import DownloadForm from "../DownloadForm";
+import { createDownloadTestStaff } from "./downloadFormTestUtils";
 
 // ─── Mock: useStaffs ─────────────────────────────────────────────────────────
 const mockUseStaffs = jest.fn();
 jest.mock("@entities/staff/model/useStaffs/useStaffs", () => ({
+  ...jest.requireActual<typeof import("@entities/staff/model/useStaffs/useStaffs")>(
+    "@entities/staff/model/useStaffs/useStaffs",
+  ),
   useStaffs: (...args: unknown[]) => mockUseStaffs(...args),
 }));
 
@@ -92,39 +95,12 @@ jest.mock("@shared/config/uiDimensions", () => ({
 }));
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-const makeStaff = (id = "staff-1") => ({
-  id,
-  cognitoUserId: id,
-  familyName: "山田",
-  givenName: "太郎",
-  mailAddress: "test@example.com",
-  owner: false,
-  role: "Staff" as const,
-  enabled: true,
-  status: "active",
-  createdAt: "2024-01-01",
-  updatedAt: "2024-01-01",
-});
-
-const authContextValue: AuthContextProps = {
-  authStatus: "authenticated",
-  signOut: jest.fn(),
-  signIn: jest.fn(),
-  isCognitoUserRole: jest.fn(() => false),
-};
-
 function renderForm() {
-  return render(
-    <MemoryRouter>
-      <AuthContext.Provider value={authContextValue}>
-        <DownloadForm />
-      </AuthContext.Provider>
-    </MemoryRouter>,
-  );
+  return renderWithProviders(<DownloadForm />);
 }
 
 const defaultStaffsResult = {
-  staffs: [makeStaff()],
+  staffs: [createDownloadTestStaff()],
   loading: false,
   error: null,
   refreshStaff: jest.fn(),
@@ -338,7 +314,10 @@ describe("DownloadForm", () => {
     it("staffs が StaffSelector に渡される", async () => {
       mockUseStaffs.mockReturnValue({
         ...defaultStaffsResult,
-        staffs: [makeStaff("s1"), makeStaff("s2")],
+        staffs: [
+          createDownloadTestStaff({ id: "s1", cognitoUserId: "s1" }),
+          createDownloadTestStaff({ id: "s2", cognitoUserId: "s2" }),
+        ],
       });
       await expandForm();
       expect(screen.getByTestId("staffs-count")).toHaveTextContent("2");

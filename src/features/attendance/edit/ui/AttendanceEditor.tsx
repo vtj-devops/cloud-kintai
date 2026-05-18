@@ -19,6 +19,7 @@ import { useAttendanceHolidayHandlers } from "@features/attendance/edit/model/us
 import { useAttendanceSubmit } from "@features/attendance/edit/model/useAttendanceSubmit";
 import { AttendanceVacationTabs } from "@features/attendance/edit/ui/components/AttendanceVacationTabs";
 import { Logger } from "@shared/lib/logger";
+import { createMonthSearchParams,MONTH_QUERY_KEY } from "@shared/lib/monthQuery";
 import { ProgressBar } from "@shared/ui/feedback";
 import { InlineAlert } from "@shared/ui/feedback/InlineAlert";
 import { usePageLeaveGuard } from "@shared/ui/feedback/usePageLeaveGuard";
@@ -44,7 +45,6 @@ import WorkDateItem from "./items/WorkDateItem";
 import { calcTotalWorkTime } from "./items/WorkTimeItem/WorkTimeItem";
 import MoveDateItem from "./MoveDateItem";
 
-const MONTH_QUERY_KEY = "month";
 export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
   const {
     derived,
@@ -104,7 +104,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
     if (!month) {
       return basePath;
     }
-    return `${basePath}?${new URLSearchParams({ [MONTH_QUERY_KEY]: month }).toString()}`;
+    return `${basePath}?${createMonthSearchParams(month).toString()}`;
   }, [searchParams, targetStaffId]);
   const {
     register,
@@ -379,9 +379,7 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
                       navigate(editPath);
                       return;
                     }
-                    navigate(
-                      `${editPath}?${new URLSearchParams({ [MONTH_QUERY_KEY]: month }).toString()}`,
-                    );
+                    navigate(`${editPath}?${createMonthSearchParams(month).toString()}`);
                   }
                 }
               : undefined

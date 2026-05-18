@@ -119,7 +119,7 @@ function AutoSaveStatus({ saving }: { saving: boolean }) {
   );
 }
 
-function useAutoSave({
+function useAutoSaveAction({
   enabled = true,
   validate,
   onSave,
@@ -199,7 +199,7 @@ function WorkingTimePanel() {
       lunchRestEndTime: lunchRestEndTime?.format("HH:mm"),
     });
   }, [endTime, lunchRestEndTime, lunchRestStartTime, save, startTime]);
-  const { saving: autoSaving, queueSave } = useAutoSave({
+  const { saving: autoSaving, queueSave } = useAutoSaveAction({
     validate: isValid,
     onSave: persist,
     onInvalid: () => notifyValidationError(),
@@ -318,7 +318,7 @@ function AmPmHolidayPanel() {
     pmHolidayStartTime,
     save,
   ]);
-  const { saving: autoSaving, queueSave } = useAutoSave({
+  const { saving: autoSaving, queueSave } = useAutoSaveAction({
     validate: isValid,
     onSave: persist,
     onInvalid: () => notifyValidationError(),
@@ -419,7 +419,7 @@ function OfficeModePanel() {
       hourlyPaidHolidayEnabled,
     });
   }, [hourlyPaidHolidayEnabled, officeMode, save]);
-  const { saving: autoSaving, queueSave } = useAutoSave({
+  const { saving: autoSaving, queueSave } = useAutoSaveAction({
     onSave: persist,
   });
 
@@ -459,7 +459,7 @@ function SpecialHolidayPanel() {
       specialHolidayEnabled: enabled,
     });
   }, [enabled, save]);
-  const { saving: autoSaving, queueSave } = useAutoSave({
+  const { saving: autoSaving, queueSave } = useAutoSaveAction({
     onSave: persist,
   });
 
@@ -501,7 +501,7 @@ function AbsentPanel() {
       absentEnabled: enabled,
     });
   }, [enabled, save]);
-  const { saving: autoSaving, queueSave } = useAutoSave({
+  const { saving: autoSaving, queueSave } = useAutoSaveAction({
     onSave: persist,
   });
 
@@ -544,7 +544,7 @@ function OvertimeConfirmationPanel() {
       overTimeCheckEnabled: enabled,
     });
   }, [enabled, save]);
-  const { saving: autoSaving, queueSave } = useAutoSave({
+  const { saving: autoSaving, queueSave } = useAutoSaveAction({
     onSave: persist,
   });
 
@@ -612,7 +612,7 @@ function QuickInputPanel() {
       })),
     });
   }, [quickInputEndTimes, quickInputStartTimes, save]);
-  const { saving: autoSaving, queueSave } = useAutoSave({
+  const { saving: autoSaving, queueSave } = useAutoSaveAction({
     onSave: persist,
   });
 

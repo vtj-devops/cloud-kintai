@@ -1,10 +1,7 @@
 import useAppConfig from "@entities/app-config/model/useAppConfig";
-import {
-  AttendanceEditInputs,
-  RestInputs,
-} from "@features/attendance/edit/model/common";
+import { buildPaidHolidayToggleValues } from "@features/attendance/edit/lib/paidHolidayToggle";
+import { AttendanceEditInputs } from "@features/attendance/edit/model/common";
 import { Label } from "@features/attendance/edit/ui/mobile/Label";
-import dayjs from "dayjs";
 import { Controller, UseFieldArrayReplace } from "react-hook-form";
 
 import {
@@ -55,82 +52,36 @@ export default function PaidHolidayFlagInputMobile({
     setValue("paidHolidayFlag", checked);
     field.onChange(checked);
 
-    if (!checked) {
-      try {
-        if (getValues) {
-          const tags: string[] = (getValues("remarkTags") as string[]) || [];
-          if (tags.includes("有給休暇")) {
-            setValue("remarkTags", tags.filter((t) => t !== "有給休暇"));
-          }
-        }
-      } catch {
-        // noop
-      }
-      return;
-    }
-
-    if (!setPaidHolidayTimes || !workDate) return;
-
-    const workDayjs = dayjs(workDate);
-    const cfgStart = getStartTime();
-    const cfgEnd = getEndTime();
-    const cfgRestStart = getLunchRestStartTime();
-    const cfgRestEnd = getLunchRestEndTime();
-
-    const startDt = workDayjs
-      .hour(cfgStart.hour())
-      .minute(cfgStart.minute())
-      .second(0)
-      .millisecond(0);
-    const endDt = workDayjs
-      .hour(cfgEnd.hour())
-      .minute(cfgEnd.minute())
-      .second(0)
-      .millisecond(0);
-    const restStartDt = workDayjs
-      .hour(cfgRestStart.hour())
-      .minute(cfgRestStart.minute())
-      .second(0)
-      .millisecond(0);
-    const restEndDt = workDayjs
-      .hour(cfgRestEnd.hour())
-      .minute(cfgRestEnd.minute())
-      .second(0)
-      .millisecond(0);
-
-    setValue("startTime", startDt.toISOString());
-    setValue("endTime", endDt.toISOString());
-    const rests: RestInputs[] = [
-      {
-        startTime: restStartDt.toISOString(),
-        endTime: restEndDt.toISOString(),
+    const toggleValues = buildPaidHolidayToggleValues({
+      checked,
+      setPaidHolidayTimes,
+      workDate,
+      remarkTags: getRemarkTags(getValues),
+      specialHolidayFlag: getSpecialHolidayFlag(getValues),
+      timeConfig: {
+        startTime: getStartTime(),
+        endTime: getEndTime(),
+        restStartTime: getLunchRestStartTime(),
+        restEndTime: getLunchRestEndTime(),
       },
-    ];
+    });
 
-    if (restReplace && typeof restReplace === "function") {
-      restReplace(rests);
-    } else {
-      setValue("rests", rests);
+    if (toggleValues.timeValues) {
+      setValue("startTime", toggleValues.timeValues.startTime);
+      setValue("endTime", toggleValues.timeValues.endTime);
+      if (restReplace && typeof restReplace === "function") {
+        restReplace(toggleValues.timeValues.rests);
+      } else {
+        setValue("rests", toggleValues.timeValues.rests);
+      }
     }
 
-    try {
-      if (getValues) {
-        const tags: string[] = (getValues("remarkTags") as string[]) || [];
-        if (!tags.includes("有給休暇")) {
-          setValue("remarkTags", [...tags, "有給休暇"]);
-        }
-      }
-    } catch {
-      // noop
+    if (toggleValues.nextRemarkTags) {
+      setValue("remarkTags", toggleValues.nextRemarkTags);
     }
 
-    // 有給ON時は特別休暇フラグを解除して相互排他にする
-    try {
-      if (getValues && getValues("specialHolidayFlag")) {
-        setValue("specialHolidayFlag", false);
-      }
-    } catch {
-      // noop
+    if (toggleValues.shouldClearSpecialHolidayFlag) {
+      setValue("specialHolidayFlag", false);
     }
   };
 
@@ -161,4 +112,22 @@ export default function PaidHolidayFlagInputMobile({
       </div>
     </>
   );
+}
+
+function getRemarkTags(getValues: AttendanceGetValues | undefined): string[] {
+  try {
+    return ((getValues?.("remarkTags") as string[]) || []).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function getSpecialHolidayFlag(
+  getValues: AttendanceGetValues | undefined
+): boolean {
+  try {
+    return Boolean(getValues?.("specialHolidayFlag"));
+  } catch {
+    return false;
+  }
 }

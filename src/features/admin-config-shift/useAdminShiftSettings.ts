@@ -6,8 +6,9 @@ import {
   CreateAppConfigInput,
   UpdateAppConfigInput,
 } from "@shared/api/graphql/types";
+import { useAutoSave } from "@shared/hooks";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 
 import { E14001 } from "@/errors";
@@ -196,8 +197,6 @@ export function useAdminShiftSettings(options: UseAdminShiftSettingsOptions = {}
     [configId, fetchConfig, saveConfig],
   );
 
-  const shiftDisplaySaveRef = useRef<() => Promise<void>>(() => Promise.resolve());
-
   const shiftGroupSaveHandler = handleSubmit(async (values) => {
     if (savingShiftGroup) return;
     setSavingShiftGroup(true);
@@ -230,17 +229,11 @@ export function useAdminShiftSettings(options: UseAdminShiftSettingsOptions = {}
       setSavingShiftDisplay(false);
     }
   };
-  shiftDisplaySaveRef.current = shiftDisplaySaveHandler;
-
-  useEffect(() => {
-    if (!enableShiftDisplayAutoSave) return;
-    if (!isShiftDisplayDirty) return;
-    const id = window.setTimeout(() => {
-      void shiftDisplaySaveRef.current();
-    }, SHIFT_DISPLAY_AUTO_SAVE_DELAY);
-    return () => window.clearTimeout(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enableShiftDisplayAutoSave, shiftDefaultMode, isShiftDisplayDirty]);
+  useAutoSave(
+    shiftDisplaySaveHandler,
+    SHIFT_DISPLAY_AUTO_SAVE_DELAY,
+    enableShiftDisplayAutoSave && isShiftDisplayDirty,
+  );
 
   return {
     control,

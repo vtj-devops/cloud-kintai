@@ -3,9 +3,8 @@ import type {
   NotificationStaff,
   WorkflowData,
 } from "@features/workflow/notification/model/workflowNotificationEventService";
-import { graphqlClient } from "@shared/api/amplify/graphqlClient";
-import { sendMail } from "@shared/api/graphql/documents/queries";
 import { formatStaffDisplayName } from "@shared/lib/mail/adminNotification";
+import { sendMailNotification } from "@shared/lib/notification/sendMailNotification";
 import { formatDateTimeReadable } from "@shared/lib/time";
 
 import * as MESSAGE_CODE from "@/errors";
@@ -123,15 +122,10 @@ export const sendWorkflowCommentNotification = async (
   }
 
   const payload = createEmailPayload(args, recipients, reviewUrl);
-  await graphqlClient.graphql({
-    query: sendMail,
-    variables: {
-      data: {
-        to: payload.to,
-        subject: payload.subject,
-        body: payload.body,
-      },
-    },
+  await sendMailNotification({
+    to: payload.to,
+    subject: payload.subject,
+    body: payload.body,
   });
 };
 

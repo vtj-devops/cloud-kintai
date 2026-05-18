@@ -2,6 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import StaffSelector from "../StaffSelector";
+import { createDownloadTestStaff } from "./downloadFormTestUtils";
 
 // ─── Mock: uiDimensions ──────────────────────────────────────────────────────
 jest.mock("@shared/config/uiDimensions", () => ({
@@ -10,28 +11,9 @@ jest.mock("@shared/config/uiDimensions", () => ({
 }));
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-const makeStaff = (overrides: Partial<{
-  id: string;
-  cognitoUserId: string;
-  familyName: string;
-  givenName: string;
-}> = {}) => ({
-  id: overrides.id ?? "staff-1",
-  cognitoUserId: overrides.cognitoUserId ?? "staff-1",
-  familyName: overrides.familyName ?? "山田",
-  givenName: overrides.givenName ?? "太郎",
-  mailAddress: "test@example.com",
-  owner: false,
-  role: "Staff" as const,
-  enabled: true,
-  status: "active",
-  createdAt: "2024-01-01",
-  updatedAt: "2024-01-01",
-});
-
 function renderSelector(props: {
-  staffs?: ReturnType<typeof makeStaff>[];
-  selectedStaff?: ReturnType<typeof makeStaff>[];
+  staffs?: ReturnType<typeof createDownloadTestStaff>[];
+  selectedStaff?: ReturnType<typeof createDownloadTestStaff>[];
   setSelectedStaff?: jest.Mock;
 }) {
   const {
@@ -69,7 +51,7 @@ describe("StaffSelector", () => {
     });
 
     it("スタッフが 1 名選択されているとき、トリガーボタンにその名前が表示される", () => {
-      const staff = makeStaff({ familyName: "田中", givenName: "花子" });
+      const staff = createDownloadTestStaff({ familyName: "田中", givenName: "花子" });
       renderSelector({ selectedStaff: [staff] });
       // The name appears in both the trigger span and the chip; check at least one exists
       const allOccurrences = screen.getAllByText("田中 花子");
@@ -77,15 +59,15 @@ describe("StaffSelector", () => {
     });
 
     it("スタッフが 2 名以上選択されているとき「N名を選択中」を表示する", () => {
-      const staffA = makeStaff({ id: "s1" });
-      const staffB = makeStaff({ id: "s2", cognitoUserId: "s2" });
+      const staffA = createDownloadTestStaff({ id: "s1", cognitoUserId: "s1" });
+      const staffB = createDownloadTestStaff({ id: "s2", cognitoUserId: "s2" });
       renderSelector({ selectedStaff: [staffA, staffB] });
       expect(screen.getByText("2名を選択中")).toBeInTheDocument();
     });
 
     it("3 名選択されているとき「3名を選択中」を表示する", () => {
       const staffs = ["s1", "s2", "s3"].map((id) =>
-        makeStaff({ id, cognitoUserId: id }),
+        createDownloadTestStaff({ id, cognitoUserId: id }),
       );
       renderSelector({ selectedStaff: staffs });
       expect(screen.getByText("3名を選択中")).toBeInTheDocument();
@@ -99,8 +81,17 @@ describe("StaffSelector", () => {
     });
 
     it("選択済みスタッフのチップが表示される（複数名）", () => {
-      const staffA = makeStaff({ id: "s1", familyName: "鈴木", givenName: "一郎" });
-      const staffB = makeStaff({ id: "s2", cognitoUserId: "s2", familyName: "佐藤", givenName: "二郎" });
+      const staffA = createDownloadTestStaff({
+        id: "s1",
+        familyName: "鈴木",
+        givenName: "一郎",
+      });
+      const staffB = createDownloadTestStaff({
+        id: "s2",
+        cognitoUserId: "s2",
+        familyName: "佐藤",
+        givenName: "二郎",
+      });
       renderSelector({ selectedStaff: [staffA, staffB] });
       // 複数選択時は "N名を選択中" が trigger に表示され、chip は両者分表示される
       expect(screen.getByText("鈴木 一郎")).toBeInTheDocument();
@@ -111,7 +102,9 @@ describe("StaffSelector", () => {
   describe("ドロップダウンの開閉", () => {
     it("トリガーボタンをクリックするとドロップダウンが開く", async () => {
       const user = userEvent.setup();
-      const staffs = [makeStaff({ id: "s1", familyName: "田中", givenName: "花子" })];
+      const staffs = [
+        createDownloadTestStaff({ id: "s1", familyName: "田中", givenName: "花子" }),
+      ];
       renderSelector({ staffs });
       const trigger = screen.getAllByRole("button")[0];
       await user.click(trigger);
@@ -122,7 +115,9 @@ describe("StaffSelector", () => {
 
     it("ドロップダウンが開いているとき再クリックで閉じる", async () => {
       const user = userEvent.setup();
-      const staffs = [makeStaff({ id: "s1", familyName: "田中", givenName: "花子" })];
+      const staffs = [
+        createDownloadTestStaff({ id: "s1", familyName: "田中", givenName: "花子" }),
+      ];
       renderSelector({ staffs });
       const trigger = screen.getAllByRole("button")[0];
       await user.click(trigger);
@@ -138,8 +133,8 @@ describe("StaffSelector", () => {
     it("ドロップダウンが開くとスタッフ件数が表示される", async () => {
       const user = userEvent.setup();
       const staffs = [
-        makeStaff({ id: "s1" }),
-        makeStaff({ id: "s2", cognitoUserId: "s2" }),
+        createDownloadTestStaff({ id: "s1", cognitoUserId: "s1" }),
+        createDownloadTestStaff({ id: "s2", cognitoUserId: "s2" }),
       ];
       renderSelector({ staffs });
       const trigger = screen.getAllByRole("button")[0];
@@ -152,8 +147,13 @@ describe("StaffSelector", () => {
     it("ドロップダウンが開くとスタッフ一覧が表示される", async () => {
       const user = userEvent.setup();
       const staffs = [
-        makeStaff({ id: "s1", familyName: "田中", givenName: "花子" }),
-        makeStaff({ id: "s2", cognitoUserId: "s2", familyName: "鈴木", givenName: "一郎" }),
+        createDownloadTestStaff({ id: "s1", familyName: "田中", givenName: "花子" }),
+        createDownloadTestStaff({
+          id: "s2",
+          cognitoUserId: "s2",
+          familyName: "鈴木",
+          givenName: "一郎",
+        }),
       ];
       renderSelector({ staffs });
       const trigger = screen.getAllByRole("button")[0];
@@ -179,7 +179,11 @@ describe("StaffSelector", () => {
   describe("スタッフ選択", () => {
     it("チェックボックスをクリックすると setSelectedStaff が呼ばれる（未選択 → 選択）", async () => {
       const user = userEvent.setup();
-      const staff = makeStaff({ id: "s1", familyName: "田中", givenName: "花子" });
+      const staff = createDownloadTestStaff({
+        id: "s1",
+        familyName: "田中",
+        givenName: "花子",
+      });
       const setSelectedStaff = jest.fn();
       renderSelector({ staffs: [staff], selectedStaff: [], setSelectedStaff });
 
@@ -196,7 +200,11 @@ describe("StaffSelector", () => {
 
     it("選択済みスタッフのチェックボックスをクリックすると選択解除される", async () => {
       const user = userEvent.setup();
-      const staff = makeStaff({ id: "s1", familyName: "田中", givenName: "花子" });
+      const staff = createDownloadTestStaff({
+        id: "s1",
+        familyName: "田中",
+        givenName: "花子",
+      });
       const setSelectedStaff = jest.fn();
       renderSelector({ staffs: [staff], selectedStaff: [staff], setSelectedStaff });
 
@@ -213,7 +221,11 @@ describe("StaffSelector", () => {
 
     it("選択済みスタッフのチェックボックスは checked 状態になっている", async () => {
       const user = userEvent.setup();
-      const staff = makeStaff({ id: "s1", familyName: "田中", givenName: "花子" });
+      const staff = createDownloadTestStaff({
+        id: "s1",
+        familyName: "田中",
+        givenName: "花子",
+      });
       renderSelector({ staffs: [staff], selectedStaff: [staff] });
 
       const trigger = screen.getAllByRole("button")[0];
@@ -226,7 +238,11 @@ describe("StaffSelector", () => {
 
     it("未選択のスタッフのチェックボックスは unchecked 状態になっている", async () => {
       const user = userEvent.setup();
-      const staff = makeStaff({ id: "s1", familyName: "田中", givenName: "花子" });
+      const staff = createDownloadTestStaff({
+        id: "s1",
+        familyName: "田中",
+        givenName: "花子",
+      });
       renderSelector({ staffs: [staff], selectedStaff: [] });
 
       const trigger = screen.getAllByRole("button")[0];
@@ -240,8 +256,13 @@ describe("StaffSelector", () => {
     it("複数スタッフがある場合、各スタッフのチェックボックスが表示される", async () => {
       const user = userEvent.setup();
       const staffs = [
-        makeStaff({ id: "s1", familyName: "田中", givenName: "花子" }),
-        makeStaff({ id: "s2", cognitoUserId: "s2", familyName: "鈴木", givenName: "一郎" }),
+        createDownloadTestStaff({ id: "s1", familyName: "田中", givenName: "花子" }),
+        createDownloadTestStaff({
+          id: "s2",
+          cognitoUserId: "s2",
+          familyName: "鈴木",
+          givenName: "一郎",
+        }),
       ];
       renderSelector({ staffs, selectedStaff: [] });
 
@@ -257,8 +278,13 @@ describe("StaffSelector", () => {
     it("「全選択」ボタンをクリックすると全スタッフが渡される", async () => {
       const user = userEvent.setup();
       const staffs = [
-        makeStaff({ id: "s1", familyName: "田中", givenName: "花子" }),
-        makeStaff({ id: "s2", cognitoUserId: "s2", familyName: "鈴木", givenName: "一郎" }),
+        createDownloadTestStaff({ id: "s1", familyName: "田中", givenName: "花子" }),
+        createDownloadTestStaff({
+          id: "s2",
+          cognitoUserId: "s2",
+          familyName: "鈴木",
+          givenName: "一郎",
+        }),
       ];
       const setSelectedStaff = jest.fn();
       renderSelector({ staffs, selectedStaff: [], setSelectedStaff });
@@ -275,7 +301,9 @@ describe("StaffSelector", () => {
 
     it("「全解除」ボタンをクリックすると空配列が渡される", async () => {
       const user = userEvent.setup();
-      const staffs = [makeStaff({ id: "s1", familyName: "田中", givenName: "花子" })];
+      const staffs = [
+        createDownloadTestStaff({ id: "s1", familyName: "田中", givenName: "花子" }),
+      ];
       const setSelectedStaff = jest.fn();
       renderSelector({ staffs, selectedStaff: staffs, setSelectedStaff });
 
@@ -304,7 +332,7 @@ describe("StaffSelector", () => {
 
     it("全員選択済みのとき「全選択」ボタンは disabled になる", async () => {
       const user = userEvent.setup();
-      const staff = makeStaff({ id: "s1" });
+      const staff = createDownloadTestStaff({ id: "s1", cognitoUserId: "s1" });
       renderSelector({ staffs: [staff], selectedStaff: [staff] });
 
       const trigger = screen.getAllByRole("button")[0];
@@ -318,7 +346,7 @@ describe("StaffSelector", () => {
 
     it("selectedStaff が空のとき「全解除」ボタンは disabled になる", async () => {
       const user = userEvent.setup();
-      const staff = makeStaff({ id: "s1" });
+      const staff = createDownloadTestStaff({ id: "s1", cognitoUserId: "s1" });
       renderSelector({ staffs: [staff], selectedStaff: [] });
 
       const trigger = screen.getAllByRole("button")[0];
@@ -332,8 +360,8 @@ describe("StaffSelector", () => {
 
     it("一部のスタッフが選択されているとき「全選択」ボタンは enabled になる", async () => {
       const user = userEvent.setup();
-      const staffA = makeStaff({ id: "s1" });
-      const staffB = makeStaff({ id: "s2", cognitoUserId: "s2" });
+      const staffA = createDownloadTestStaff({ id: "s1", cognitoUserId: "s1" });
+      const staffB = createDownloadTestStaff({ id: "s2", cognitoUserId: "s2" });
       renderSelector({ staffs: [staffA, staffB], selectedStaff: [staffA] });
 
       const trigger = screen.getAllByRole("button")[0];
@@ -349,7 +377,9 @@ describe("StaffSelector", () => {
   describe("ドロップダウン外クリックで閉じる", () => {
     it("コンポーネント外をクリックするとドロップダウンが閉じる", async () => {
       const user = userEvent.setup();
-      const staffs = [makeStaff({ id: "s1", familyName: "田中", givenName: "花子" })];
+      const staffs = [
+        createDownloadTestStaff({ id: "s1", familyName: "田中", givenName: "花子" }),
+      ];
       renderSelector({ staffs });
 
       const trigger = screen.getAllByRole("button")[0];
@@ -367,7 +397,7 @@ describe("StaffSelector", () => {
 
   describe("スタッフ名の表示", () => {
     it("familyName のみ設定されている場合、名前部分が表示される（trim）", () => {
-      const staff = makeStaff({ familyName: "田中", givenName: "" });
+      const staff = createDownloadTestStaff({ familyName: "田中", givenName: "" });
       renderSelector({ selectedStaff: [staff] });
       // Both trigger label and chip show the name; at least one occurrence expected
       const occurrences = screen.getAllByText("田中");
@@ -375,7 +405,7 @@ describe("StaffSelector", () => {
     });
 
     it("givenName のみ設定されている場合、名前部分が表示される（trim）", () => {
-      const staff = makeStaff({ familyName: "", givenName: "花子" });
+      const staff = createDownloadTestStaff({ familyName: "", givenName: "花子" });
       renderSelector({ selectedStaff: [staff] });
       const occurrences = screen.getAllByText("花子");
       expect(occurrences.length).toBeGreaterThanOrEqual(1);

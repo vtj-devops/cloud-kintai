@@ -1,8 +1,12 @@
-import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import AggregateExportButton from "../AggregateExportButton";
+import {
+  createDownloadTestStaff,
+  renderDownloadTestUI,
+  setupDownloadAnchorMocks,
+} from "./downloadFormTestUtils";
 
 // ─── Mock: downloadAttendances ───────────────────────────────────────────────
 const mockDownloadAttendances = jest.fn();
@@ -39,27 +43,6 @@ Object.defineProperty(window.URL, "revokeObjectURL", {
 });
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-const makeStaff = (overrides: Partial<{
-  id: string;
-  cognitoUserId: string;
-  familyName: string;
-  givenName: string;
-  sortKey: string;
-}> = {}) => ({
-  id: overrides.id ?? "staff-1",
-  cognitoUserId: overrides.cognitoUserId ?? "staff-1",
-  familyName: overrides.familyName ?? "山田",
-  givenName: overrides.givenName ?? "太郎",
-  sortKey: overrides.sortKey ?? "yamada",
-  mailAddress: "test@example.com",
-  owner: false,
-  role: "Staff" as const,
-  enabled: true,
-  status: "active",
-  createdAt: "2024-01-01",
-  updatedAt: "2024-01-01",
-});
-
 const makeAttendance = (overrides: Record<string, unknown> = {}) => ({
   id: "att-1",
   staffId: "staff-1",
@@ -76,46 +59,9 @@ const makeAttendance = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
-const makeContextValue = (overrides: {
-  getHourlyPaidHolidayEnabled?: () => boolean;
-  getSpecialHolidayEnabled?: () => boolean;
-} = {}) => ({
-  getHourlyPaidHolidayEnabled: overrides.getHourlyPaidHolidayEnabled ?? (() => false),
-  getSpecialHolidayEnabled: overrides.getSpecialHolidayEnabled ?? (() => false),
-  fetchConfig: jest.fn(),
-  saveConfig: jest.fn(),
-  getConfigId: jest.fn(),
-  getStartTime: jest.fn(),
-  getEndTime: jest.fn(),
-  getLunchRestStartTime: jest.fn(),
-  getLunchRestEndTime: jest.fn(),
-  getStandardWorkHours: jest.fn(),
-  getLinks: jest.fn(),
-  getReasons: jest.fn(),
-  getOfficeMode: jest.fn(),
-  getAttendanceStatisticsEnabled: jest.fn(),
-  getWorkflowNotificationEnabled: jest.fn(),
-  getTimeRecorderAnnouncement: jest.fn(),
-  getShiftCollaborativeEnabled: jest.fn(),
-  getShiftDefaultMode: jest.fn(),
-  getQuickInputStartTimes: jest.fn(),
-  getQuickInputEndTimes: jest.fn(),
-  getShiftGroups: jest.fn(),
-  getAmHolidayStartTime: jest.fn(),
-  getAmHolidayEndTime: jest.fn(),
-  getPmHolidayStartTime: jest.fn(),
-  getPmHolidayEndTime: jest.fn(),
-  getAmPmHolidayEnabled: jest.fn(),
-  getAbsentEnabled: jest.fn(),
-  getOverTimeCheckEnabled: jest.fn(),
-  getWorkflowCategoryOrder: jest.fn(),
-  getThemeColor: jest.fn(),
-  getThemeTokens: jest.fn(),
-});
-
 function renderButton(props: {
   workDates?: string[];
-  selectedStaff?: ReturnType<typeof makeStaff>[];
+  selectedStaff?: ReturnType<typeof createDownloadTestStaff>[];
   fullWidth?: boolean;
   contextOverrides?: {
     getHourlyPaidHolidayEnabled?: () => boolean;
@@ -124,30 +70,27 @@ function renderButton(props: {
 }) {
   const {
     workDates = ["2024-01-15"],
-    selectedStaff = [makeStaff()],
+    selectedStaff = [createDownloadTestStaff()],
     fullWidth,
     contextOverrides = {},
   } = props;
 
-  return render(
-    <AppConfigContext.Provider value={makeContextValue(contextOverrides) as never}>
-      <AggregateExportButton
-        workDates={workDates}
-        selectedStaff={selectedStaff as never}
-        fullWidth={fullWidth}
-      />
-    </AppConfigContext.Provider>,
+  return renderDownloadTestUI(
+    <AggregateExportButton
+      workDates={workDates}
+      selectedStaff={selectedStaff as never}
+      fullWidth={fullWidth}
+    />,
+    {
+      hourlyPaidHolidayEnabled:
+        contextOverrides.getHourlyPaidHolidayEnabled?.() ?? false,
+      specialHolidayEnabled: contextOverrides.getSpecialHolidayEnabled?.() ?? false,
+    },
   );
 }
 
 // ─── Anchor mock ─────────────────────────────────────────────────────────────
-const mockAnchorClick = jest.fn();
-const mockAnchorRemove = jest.fn();
-let capturedAnchorDownload = "";
-
-// Capture the real createElement BEFORE any spy is installed (module scope)
-const _origCreateElement = document.createElement.bind(document);
-let createElementSpy: jest.SpyInstance;
+let anchorMocks: ReturnType<typeof setupDownloadAnchorMocks>;
 
 beforeEach(() => {
   jest.resetAllMocks();
@@ -155,28 +98,11 @@ beforeEach(() => {
   mockDownloadAttendances.mockResolvedValue([]);
   (window.URL.createObjectURL as jest.Mock).mockReturnValue("blob:mock-url");
 
-  capturedAnchorDownload = "";
-  mockAnchorClick.mockReset();
-  mockAnchorRemove.mockReset();
-
-  const anchor = {
-    set download(val: string) { capturedAnchorDownload = val; },
-    get download() { return capturedAnchorDownload; },
-    href: "",
-    click: mockAnchorClick,
-    remove: mockAnchorRemove,
-  };
-
-  createElementSpy = jest
-    .spyOn(document, "createElement")
-    .mockImplementation((tagName: string) => {
-      if (tagName === "a") return anchor as unknown as HTMLElement;
-      return _origCreateElement(tagName);
-    });
+  anchorMocks = setupDownloadAnchorMocks();
 });
 
 afterEach(() => {
-  createElementSpy.mockRestore();
+  anchorMocks.restore();
 });
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -203,7 +129,10 @@ describe("AggregateExportButton", () => {
     });
 
     it("workDates と selectedStaff が両方あるとき enabled になる", () => {
-      renderButton({ workDates: ["2024-01-15"], selectedStaff: [makeStaff()] });
+      renderButton({
+        workDates: ["2024-01-15"],
+        selectedStaff: [createDownloadTestStaff()],
+      });
       expect(screen.getByRole("button", { name: /集計ダウンロード/ })).toBeEnabled();
     });
   });
@@ -260,7 +189,7 @@ describe("AggregateExportButton", () => {
       renderButton({});
       await user.click(screen.getByRole("button", { name: /集計ダウンロード/ }));
       await waitFor(() => {
-        expect(mockAnchorClick).toHaveBeenCalledTimes(1);
+        expect(anchorMocks.mockAnchorClick).toHaveBeenCalledTimes(1);
       });
     });
   });
@@ -344,7 +273,11 @@ describe("AggregateExportButton", () => {
 
     it("スタッフの認証 ID と名前がデータ行に含まれる", async () => {
       const user = userEvent.setup();
-      const staff = makeStaff({ cognitoUserId: "user-abc", familyName: "田中", givenName: "花子" });
+      const staff = createDownloadTestStaff({
+        cognitoUserId: "user-abc",
+        familyName: "田中",
+        givenName: "花子",
+      });
       mockDownloadAttendances.mockResolvedValue([
         makeAttendance({ staffId: "user-abc", workDate: "2024-01-15" }),
       ]);
@@ -357,7 +290,7 @@ describe("AggregateExportButton", () => {
 
     it("出勤日数が正しく集計される（1件）", async () => {
       const user = userEvent.setup();
-      const staff = makeStaff();
+      const staff = createDownloadTestStaff();
       mockDownloadAttendances.mockResolvedValue([
         makeAttendance({ staffId: "staff-1", workDate: "2024-01-15" }),
       ]);
@@ -373,7 +306,7 @@ describe("AggregateExportButton", () => {
 
     it("勤怠データが 0 件のスタッフも行が出力される", async () => {
       const user = userEvent.setup();
-      const staff = makeStaff({ cognitoUserId: "no-attendance" });
+      const staff = createDownloadTestStaff({ cognitoUserId: "no-attendance" });
       mockDownloadAttendances.mockResolvedValue([]);
       renderButton({ workDates: ["2024-01-15"], selectedStaff: [staff] });
       await user.click(screen.getByRole("button", { name: /集計ダウンロード/ }));
@@ -384,8 +317,20 @@ describe("AggregateExportButton", () => {
 
     it("複数スタッフは sortKey でソートされる", async () => {
       const user = userEvent.setup();
-      const staffA = makeStaff({ id: "s1", cognitoUserId: "s1", familyName: "鈴木", givenName: "一郎", sortKey: "suzuki" });
-      const staffB = makeStaff({ id: "s2", cognitoUserId: "s2", familyName: "青木", givenName: "二郎", sortKey: "aoki" });
+      const staffA = createDownloadTestStaff({
+        id: "s1",
+        cognitoUserId: "s1",
+        familyName: "鈴木",
+        givenName: "一郎",
+        sortKey: "suzuki",
+      });
+      const staffB = createDownloadTestStaff({
+        id: "s2",
+        cognitoUserId: "s2",
+        familyName: "青木",
+        givenName: "二郎",
+        sortKey: "aoki",
+      });
       mockDownloadAttendances.mockResolvedValue([]);
       renderButton({ workDates: ["2024-01-15"], selectedStaff: [staffA, staffB] });
       await user.click(screen.getByRole("button", { name: /集計ダウンロード/ }));
@@ -396,7 +341,7 @@ describe("AggregateExportButton", () => {
 
     it("有給休暇フラグが立った勤怠は paidHolidayCount に加算される", async () => {
       const user = userEvent.setup();
-      const staff = makeStaff();
+      const staff = createDownloadTestStaff();
       mockDownloadAttendances.mockResolvedValue([
         makeAttendance({ staffId: "staff-1", workDate: "2024-01-15", paidHolidayFlag: true }),
       ]);
@@ -412,7 +357,7 @@ describe("AggregateExportButton", () => {
 
     it("摘要が複数あるとき半角スペースで結合される", async () => {
       const user = userEvent.setup();
-      const staff = makeStaff();
+      const staff = createDownloadTestStaff();
       mockDownloadAttendances.mockResolvedValue([
         makeAttendance({ staffId: "staff-1", workDate: "2024-01-15", remarks: "メモA" }),
         makeAttendance({ id: "att-2", staffId: "staff-1", workDate: "2024-01-16", remarks: "メモB" }),
@@ -430,7 +375,7 @@ describe("AggregateExportButton", () => {
       renderButton({});
       await user.click(screen.getByRole("button", { name: /集計ダウンロード/ }));
       await waitFor(() => {
-        expect(capturedAnchorDownload).toMatch(/^attendance_aggregate_\d+\.csv$/);
+        expect(anchorMocks.capturedAnchorDownload).toMatch(/^attendance_aggregate_\d+\.csv$/);
       });
     });
 

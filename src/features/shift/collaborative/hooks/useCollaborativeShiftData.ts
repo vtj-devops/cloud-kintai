@@ -27,6 +27,7 @@ import {
 } from "../lib/shiftTransformers";
 import {
   PendingChangesMap,
+  ShiftCellData,
   ShiftCellUpdate,
   ShiftDataMap,
   ShiftRequestCommentData,
@@ -278,6 +279,71 @@ export const useCollaborativeShiftData = ({
     }
   }, [shouldSkipFetch, buildShiftErrorMessage]);
 
+  const buildShiftRequestEntries = useCallback(
+    (staffData: Map<string, ShiftCellData>) =>
+      Array.from(staffData.entries())
+        .map(([dayKey, cell]): ShiftRequestDayPreferenceInput | null => {
+          if (!targetMonth) {
+            return null;
+          }
+          const status = shiftStateWithEmptyToShiftRequestStatus(cell.state);
+          if (!status) return null;
+          return {
+            date: dayjs(`${targetMonth}-${dayKey}`).format("YYYY-MM-DD"),
+            status,
+            isLocked: cell.isLocked || undefined,
+          };
+        })
+        .filter(
+          (entry): entry is ShiftRequestDayPreferenceInput => entry !== null,
+        )
+        .toSorted((a, b) => a.date.localeCompare(b.date)),
+    [targetMonth],
+  );
+
+  const createShiftRequestForStaff = useCallback(
+    async (staffId: string, map: ShiftDataMap) => {
+      if (!targetMonth) {
+        throw new Error("Target month is required");
+      }
+
+      const staffData = map.get(staffId) ?? new Map();
+      const entries = buildShiftRequestEntries(staffData);
+      const timestamp = new Date().toISOString();
+      const histories: ShiftRequestHistoryInput[] = [
+        {
+          version: 1,
+          entries,
+          recordedAt: timestamp,
+          recordedByStaffId: currentUserId,
+        },
+      ];
+
+      const created = await createShiftRequest({
+        input: {
+          staffId,
+          targetMonth,
+          entries,
+          updatedBy: currentUserId,
+          updatedAt: timestamp,
+          histories,
+        },
+      }).unwrap();
+
+      const normalizedCreated = normalizeShiftRequest(created);
+      updateShiftRequestState(normalizedCreated);
+      onPersistCompletedRef.current?.(normalizedCreated);
+      return created;
+    },
+    [
+      targetMonth,
+      buildShiftRequestEntries,
+      currentUserId,
+      createShiftRequest,
+      updateShiftRequestState,
+    ],
+  );
+
   const persistShiftUpdate = useCallback(
     async (update: ShiftCellUpdate, currentMap: ShiftDataMap) => {
       if (!targetMonth) {
@@ -286,46 +352,7 @@ export const useCollaborativeShiftData = ({
 
       const shiftRequest = shiftRequestsRef.current.get(update.staffId);
       if (!shiftRequest) {
-        const staffData = currentMap.get(update.staffId) ?? new Map();
-        const entries = Array.from(staffData.entries())
-          .map(([dayKey, cell]): ShiftRequestDayPreferenceInput | null => {
-            const status = shiftStateWithEmptyToShiftRequestStatus(cell.state);
-            if (!status) return null;
-            return {
-              date: dayjs(`${targetMonth}-${dayKey}`).format("YYYY-MM-DD"),
-              status,
-              isLocked: cell.isLocked || undefined,
-            };
-          })
-          .filter(
-            (entry): entry is ShiftRequestDayPreferenceInput => entry !== null,
-          )
-          .toSorted((a, b) => a.date.localeCompare(b.date));
-        const timestamp = new Date().toISOString();
-        const histories: ShiftRequestHistoryInput[] = [
-          {
-            version: 1,
-            entries,
-            recordedAt: timestamp,
-            recordedByStaffId: currentUserId,
-          },
-        ];
-
-        const created = await createShiftRequest({
-          input: {
-            staffId: update.staffId,
-            targetMonth,
-            entries,
-            updatedBy: currentUserId,
-            updatedAt: timestamp,
-            histories,
-          },
-        }).unwrap();
-
-        const normalizedCreated = normalizeShiftRequest(created);
-        updateShiftRequestState(normalizedCreated);
-        onPersistCompletedRef.current?.(normalizedCreated);
-        return created;
+        return createShiftRequestForStaff(update.staffId, currentMap);
       }
 
       const payload = transformShiftCellUpdateToGraphQLInput({
@@ -346,8 +373,8 @@ export const useCollaborativeShiftData = ({
       currentUserId,
       targetMonth,
       updateShiftCell,
-      createShiftRequest,
       updateShiftRequestState,
+      createShiftRequestForStaff,
     ],
   );
 
@@ -433,51 +460,7 @@ export const useCollaborativeShiftData = ({
         if (missingStaffIds.length > 0) {
           await Promise.all(
             missingStaffIds.map(async (staffId) => {
-              const staffData = nextMap.get(staffId) ?? new Map();
-              const entries = Array.from(staffData.entries())
-                .map(
-                  ([dayKey, cell]): ShiftRequestDayPreferenceInput | null => {
-                    const status = shiftStateWithEmptyToShiftRequestStatus(cell.state);
-                    if (!status) return null;
-                    return {
-                      date: dayjs(`${targetMonth}-${dayKey}`).format(
-                        "YYYY-MM-DD",
-                      ),
-                      status,
-                      isLocked: cell.isLocked || undefined,
-                    };
-                  },
-                )
-                .filter(
-                  (entry): entry is ShiftRequestDayPreferenceInput =>
-                    entry !== null,
-                )
-                .toSorted((a, b) => a.date.localeCompare(b.date));
-              const timestamp = new Date().toISOString();
-              const histories: ShiftRequestHistoryInput[] = [
-                {
-                  version: 1,
-                  entries,
-                  recordedAt: timestamp,
-                  recordedByStaffId: currentUserId,
-                },
-              ];
-
-              const created = await createShiftRequest({
-                input: {
-                  staffId,
-                  targetMonth,
-                  entries,
-                  updatedBy: currentUserId,
-                  updatedAt: timestamp,
-                  histories,
-                },
-              }).unwrap();
-
-              const normalizedCreated = normalizeShiftRequest(created);
-              updateShiftRequestState(normalizedCreated);
-              onPersistCompletedRef.current?.(normalizedCreated);
-
+              await createShiftRequestForStaff(staffId, nextMap);
               const staffUpdates = updatesByStaff.get(staffId) ?? [];
               staffUpdates.forEach((update) => {
                 const key = `${update.staffId}-${update.date}`;
@@ -552,8 +535,7 @@ export const useCollaborativeShiftData = ({
       shiftDataMap,
       currentUserId,
       batchUpdateShiftCells,
-      createShiftRequest,
-      updateShiftRequestState,
+      createShiftRequestForStaff,
       buildShiftErrorMessage,
     ],
   );

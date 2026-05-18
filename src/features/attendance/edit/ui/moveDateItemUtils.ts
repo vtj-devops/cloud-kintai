@@ -1,6 +1,5 @@
+import { formatMonthQueryValue,MONTH_QUERY_KEY } from "@shared/lib/monthQuery";
 import dayjs from "dayjs";
-
-const MONTH_QUERY_KEY = "month";
 
 export function buildAttendanceEditPath(params: {
   date: dayjs.Dayjs;
@@ -17,7 +16,7 @@ export function buildAttendanceEditPath(params: {
   }
 
   const nextParams = new URLSearchParams(searchParams);
-  nextParams.set(MONTH_QUERY_KEY, date.startOf("month").format("YYYY-MM"));
+  nextParams.set(MONTH_QUERY_KEY, formatMonthQueryValue(date));
   return `/attendance/${formatted}/edit?${nextParams.toString()}`;
 }
 

@@ -2,6 +2,7 @@ import { ShiftRequestStatus } from "@shared/api/graphql/types";
 import { act, renderHook, waitFor } from "@testing-library/react";
 
 import { useCollaborativeShiftData } from "../useCollaborativeShiftData";
+import { createSubscriptionMockHarness } from "./subscriptionMockHarness";
 
 const mockUseGetShiftRequestsQuery = jest.fn();
 const mockUpdateShiftCell = jest.fn();
@@ -26,6 +27,23 @@ jest.mock("@/shared/api/amplify/graphqlClient", () => ({
 }));
 
 describe("useCollaborativeShiftData", () => {
+  const setupShiftRequestSubscriptionHarness = () => {
+    const harness = createSubscriptionMockHarness<{
+      onCreateShiftRequest: unknown;
+      onUpdateShiftRequest: unknown;
+    }>(mockSubscriptionUnsubscribe);
+
+    mockGraphqlSubscribe
+      .mockReturnValueOnce(
+        harness.buildSubscriptionResponse("onCreateShiftRequest"),
+      )
+      .mockReturnValueOnce(
+        harness.buildSubscriptionResponse("onUpdateShiftRequest"),
+      );
+
+    return harness;
+  };
+
   const baseShiftRequest = {
     __typename: "ShiftRequest",
     id: "req-1",
@@ -75,26 +93,7 @@ describe("useCollaborativeShiftData", () => {
       refetch: jest.fn(),
     });
 
-    let createNext:
-      | ((value: { data?: { onCreateShiftRequest?: unknown } }) => void)
-      | undefined;
-    let updateNext:
-      | ((value: { data?: { onUpdateShiftRequest?: unknown } }) => void)
-      | undefined;
-
-    mockGraphqlSubscribe
-      .mockReturnValueOnce({
-        subscribe: jest.fn((handlers: { next: typeof createNext }) => {
-          createNext = handlers.next;
-          return { unsubscribe: mockSubscriptionUnsubscribe };
-        }),
-      })
-      .mockReturnValueOnce({
-        subscribe: jest.fn((handlers: { next: typeof updateNext }) => {
-          updateNext = handlers.next;
-          return { unsubscribe: mockSubscriptionUnsubscribe };
-        }),
-      });
+    const subscriptionHarness = setupShiftRequestSubscriptionHarness();
 
     const onAutoSyncReceived = jest.fn();
 
@@ -107,19 +106,19 @@ describe("useCollaborativeShiftData", () => {
       }),
     );
 
-    await waitFor(() => expect(createNext).toBeDefined());
-    expect(updateNext).toBeDefined();
+    await waitFor(() =>
+      expect(
+        subscriptionHarness.hasHandler("onCreateShiftRequest"),
+      ).toBeTruthy(),
+    );
+    expect(subscriptionHarness.hasHandler("onUpdateShiftRequest")).toBeTruthy();
 
     act(() => {
-      createNext?.({
-        data: {
-          onCreateShiftRequest: {
-            ...baseShiftRequest,
-            id: "req-2",
-            staffId: "staff-2",
-            updatedBy: "other-user",
-          },
-        },
+      subscriptionHarness.emit("onCreateShiftRequest", {
+        ...baseShiftRequest,
+        id: "req-2",
+        staffId: "staff-2",
+        updatedBy: "other-user",
       });
     });
 
@@ -140,26 +139,7 @@ describe("useCollaborativeShiftData", () => {
       refetch: jest.fn(),
     });
 
-    let createNext:
-      | ((value: { data?: { onCreateShiftRequest?: unknown } }) => void)
-      | undefined;
-    let updateNext:
-      | ((value: { data?: { onUpdateShiftRequest?: unknown } }) => void)
-      | undefined;
-
-    mockGraphqlSubscribe
-      .mockReturnValueOnce({
-        subscribe: jest.fn((handlers: { next: typeof createNext }) => {
-          createNext = handlers.next;
-          return { unsubscribe: mockSubscriptionUnsubscribe };
-        }),
-      })
-      .mockReturnValueOnce({
-        subscribe: jest.fn((handlers: { next: typeof updateNext }) => {
-          updateNext = handlers.next;
-          return { unsubscribe: mockSubscriptionUnsubscribe };
-        }),
-      });
+    const subscriptionHarness = setupShiftRequestSubscriptionHarness();
 
     const onAutoSyncReceived = jest.fn();
 
@@ -172,19 +152,19 @@ describe("useCollaborativeShiftData", () => {
       }),
     );
 
-    await waitFor(() => expect(createNext).toBeDefined());
-    expect(updateNext).toBeDefined();
+    await waitFor(() =>
+      expect(
+        subscriptionHarness.hasHandler("onCreateShiftRequest"),
+      ).toBeTruthy(),
+    );
+    expect(subscriptionHarness.hasHandler("onUpdateShiftRequest")).toBeTruthy();
 
     act(() => {
-      createNext?.({
-        data: {
-          onCreateShiftRequest: {
-            ...baseShiftRequest,
-            id: "req-3",
-            staffId: "staff-2",
-            updatedBy: "user-1",
-          },
-        },
+      subscriptionHarness.emit("onCreateShiftRequest", {
+        ...baseShiftRequest,
+        id: "req-3",
+        staffId: "staff-2",
+        updatedBy: "user-1",
       });
     });
 
