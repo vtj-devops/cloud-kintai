@@ -146,6 +146,13 @@ const attendance = createMockAttendance({
 });
 ```
 
+### 重複防止ポリシー（anti-regression）
+
+- 同じ Arrange（モック生成・初期 state・provider 設定）を **3回以上** 書いたら、`setupXxx()` helper か factory へ抽出する
+- ドメインデータは手書きオブジェクトを増やさず、まず `createMockUser` / `createMockAttendance` / `createMockAppConfig` を使う
+- 入力と期待値の組み合わせだけが違うテストは `test.each` で表形式に寄せる（1ケース1 `it` のコピペを避ける）
+- 同じ挙動を Unit と Integration に二重で書かない。ロジック詳細は Unit、画面連携は Integration に責務分離する
+
 ---
 
 ## 4. `jest.mock` の標準パターン

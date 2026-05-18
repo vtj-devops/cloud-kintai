@@ -6,21 +6,7 @@ import {
   DailyReportFormChangeHandler,
 } from "@features/attendance/daily-report";
 import { sendDailyReportSubmissionNotification } from "@features/attendance/daily-report/lib/sendDailyReportSubmissionNotification";
-import { graphqlClient } from "@shared/api/amplify/graphqlClient";
-import {
-  buildVersionOrUpdatedAtCondition,
-  getGraphQLErrorMessage,
-  getNextVersion,
-} from "@shared/api/graphql/concurrency";
-import {
-  createDailyReport,
-  updateDailyReport,
-} from "@shared/api/graphql/documents/mutations";
-import type {
-  CreateDailyReportMutation,
-  DailyReport as DailyReportModel,
-  UpdateDailyReportMutation,
-} from "@shared/api/graphql/types";
+import type { DailyReport as DailyReportModel } from "@shared/api/graphql/types";
 import { DailyReportStatus } from "@shared/api/graphql/types";
 import { useAppNotification } from "@shared/lib/useAppNotification";
 import {
@@ -29,8 +15,7 @@ import {
   PageSection,
 } from "@shared/ui/layout";
 import Page from "@shared/ui/page/Page";
-import type { GraphQLResult } from "aws-amplify/api";
-import dayjs, { type Dayjs } from "dayjs";
+import { type Dayjs } from "dayjs";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -58,7 +43,14 @@ import type {
   DailyReportItem,
   EditableStatus,
 } from "./dailyReportTypes";
+import { useDailyReportAutoSave } from "./hooks/useDailyReportAutoSave";
 import { useDailyReportData } from "./hooks/useDailyReportData";
+import { useDailyReportSelectionTransition } from "./hooks/useDailyReportSelectionTransition";
+import { useDailyReportUrlSync } from "./hooks/useDailyReportUrlSync";
+import {
+  createDailyReportRecord,
+  updateDailyReportRecord,
+} from "./services/dailyReportMutations";
 
 const AUTO_SAVE_DELAY = 1000;
 const DATE_FORMAT = "YYYY-MM-DD";
@@ -70,10 +62,6 @@ export default function DailyReport() {
   const [createForm, setCreateForm] = useState<DailyReportForm>(() =>
     emptyForm(),
   );
-  const [calendarDate, setCalendarDate] = useState<Dayjs>(() =>
-    dayjs().startOf("day"),
-  );
-  const [isInitializedFromUrl, setIsInitializedFromUrl] = useState(false);
   const [isHeroDescriptionExpanded, setIsHeroDescriptionExpanded] =
     useState(false);
   const [editingReportId, setEditingReportId] = useState<string | null>(null);
@@ -91,8 +79,6 @@ export default function DailyReport() {
   const [editDraftLastSavedAt, setEditDraftLastSavedAt] = useState<
     string | null
   >(null);
-  const createFormAutoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const editDraftAutoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [createFormSavedState, setCreateFormSavedState] =
     useState<DailyReportForm>(() => emptyForm());
   const [editDraftSavedState, setEditDraftSavedState] =
@@ -156,8 +142,10 @@ export default function DailyReport() {
   );
   const isEditDraftDirty = useMemo(
     () =>
-      editDraft &&
-      JSON.stringify(editDraft) !== JSON.stringify(editDraftSavedState),
+      Boolean(
+        editDraft &&
+          JSON.stringify(editDraft) !== JSON.stringify(editDraftSavedState),
+      ),
     [editDraft, editDraftSavedState],
   );
   const canSubmit = Boolean(staffId && createForm.title.trim());
@@ -169,48 +157,16 @@ export default function DailyReport() {
   const showInitialLoading = isInitialViewPending;
   const isSelectedReportSubmitted =
     selectedReport?.status === DailyReportStatus.SUBMITTED;
-
-  useEffect(() => {
-    if (isInitializedFromUrl) return;
-
-    const dateParam = searchParams.get("date");
-    let targetDate = dayjs().startOf("day");
-
-    if (dateParam) {
-      const parsed = dayjs(dateParam, DATE_FORMAT);
-      if (parsed.isValid()) {
-        targetDate = parsed.startOf("day");
-      }
-    }
-
-    setCalendarDate(targetDate);
-    const dateKey = targetDate.format(DATE_FORMAT);
-    setCreateForm((prev) =>
-      emptyForm(dateKey, prev.author || resolvedAuthorName),
-    );
-
-    if (!dateParam || !dayjs(dateParam, DATE_FORMAT).isValid()) {
-      setSearchParams({ date: dateKey }, { replace: true });
-    }
-
-    setIsInitializedFromUrl(true);
-  }, []);
-
-  useEffect(() => {
-    const nextDateString = selectedReport ? selectedReport.date : null;
-
-    if (!nextDateString) return;
-
-    const dateParam = searchParams.get("date");
-    if (dateParam) {
-      return;
-    }
-
-    setCalendarDate((current) => {
-      const nextDate = dayjs(nextDateString).startOf("day");
-      return current.isSame(nextDate, "day") ? current : nextDate;
-    });
-  }, [selectedReport, searchParams]);
+  const { calendarDate, syncCalendarDateToUrl } = useDailyReportUrlSync({
+    dateFormat: DATE_FORMAT,
+    searchParams,
+    setSearchParams,
+    onInitialize: (dateKey) => {
+      setCreateForm((prev) =>
+        emptyForm(dateKey, prev.author || resolvedAuthorName),
+      );
+    },
+  });
 
   useEffect(() => {
     if (!authorName) return;
@@ -224,49 +180,23 @@ export default function DailyReport() {
     );
   }, [authorName, resolvedAuthorName]);
 
-  useEffect(() => {
-    if (selectedReportId === "create") {
-      return;
-    }
-
-    if (reports.length === 0) {
-      setSelectedReportId(null);
-      setEditingReportId(null);
-      setEditDraft(null);
-      return;
-    }
-
-    if (selectedReportId && selectedReportId !== "create") {
-      const exists = reports.some((report) => report.id === selectedReportId);
-      if (!exists) {
-        setSelectedReportId(reports[0].id);
-      }
-      return;
-    }
-
-    const calendarKey = calendarDate.format("YYYY-MM-DD");
-    const reportForCalendarDate = reportsByDate.get(calendarKey) ?? null;
-
-    if (!selectedReportId && reportForCalendarDate) {
-      setSelectedReportId(reportForCalendarDate.id);
-    }
-  }, [calendarDate, reports, reportsByDate, selectedReportId, isAutoSaving]);
-
-  useEffect(() => {
-    setEditingReportId(null);
-    setEditDraft(null);
-    setEditDraftSavedState(null);
-    setEditDraftLastSavedAt(null);
-    setActionError(null);
-  }, [selectedReportId]);
+  useDailyReportSelectionTransition({
+    calendarDate,
+    reports,
+    reportsByDate,
+    selectedReportId,
+    isAutoSaving,
+    setSelectedReportId,
+    setEditingReportId,
+    setEditDraft,
+    setEditDraftSavedState,
+    setEditDraftLastSavedAt,
+    setActionError,
+  });
 
   const handleCalendarChange = (value: Dayjs | null) => {
     if (!value) return;
-    const normalized = value.startOf("day");
-    setCalendarDate(normalized);
-    const dateKey = normalized.format(DATE_FORMAT);
-
-    setSearchParams({ date: dateKey });
+    const { dateKey } = syncCalendarDateToUrl(value);
 
     const reportForDate = reportsByDate.get(dateKey);
     if (reportForDate) {
@@ -372,40 +302,14 @@ export default function DailyReport() {
         const concurrencyState = getReportConcurrencyState(
           createdReportIdRef.current,
         );
-
-        const response = (await graphqlClient.graphql({
-          query: updateDailyReport,
-          variables: {
-            input: {
-              id: createdReportIdRef.current,
-              reportDate: createForm.date,
-              title: createForm.title.trim(),
-              content: createForm.content,
-              status,
-              updatedAt: new Date().toISOString(),
-              version: getNextVersion(concurrencyState.version),
-            },
-            condition: buildVersionOrUpdatedAtCondition(
-              concurrencyState.version,
-              concurrencyState.updatedAt,
-            ),
-          },
-          authMode: "userPool",
-        })) as GraphQLResult<UpdateDailyReportMutation>;
-
-        if (response.errors?.length) {
-          throw new Error(
-            getGraphQLErrorMessage(
-              response.errors,
-              "日報の更新に失敗しました。",
-            ),
-          );
-        }
-
-        const updated = response.data?.updateDailyReport;
-        if (!updated) {
-          throw new Error("日報の更新に失敗しました。");
-        }
+        const updated = await updateDailyReportRecord({
+          id: createdReportIdRef.current,
+          reportDate: createForm.date,
+          title: createForm.title.trim(),
+          content: createForm.content,
+          status,
+          concurrencyState,
+        });
 
         if (showNotification && status === DailyReportStatus.SUBMITTED) {
           await notifyAdminsForSubmission(updated);
@@ -429,33 +333,13 @@ export default function DailyReport() {
           shouldClearCreatedReportId: true,
         });
       } else {
-        const response = (await graphqlClient.graphql({
-          query: createDailyReport,
-          variables: {
-            input: {
-              staffId,
-              reportDate: createForm.date,
-              title: createForm.title.trim(),
-              content: createForm.content,
-              status,
-              updatedAt: new Date().toISOString(),
-              reactions: [],
-              comments: [],
-            },
-          },
-          authMode: "userPool",
-        })) as GraphQLResult<CreateDailyReportMutation>;
-
-        if (response.errors?.length) {
-          throw new Error(
-            response.errors.map((error) => error.message).join("\n"),
-          );
-        }
-
-        const created = response.data?.createDailyReport;
-        if (!created) {
-          throw new Error("日報の作成に失敗しました。");
-        }
+        const created = await createDailyReportRecord({
+          staffId,
+          reportDate: createForm.date,
+          title: createForm.title.trim(),
+          content: createForm.content,
+          status,
+        });
 
         if (showNotification && status === DailyReportStatus.SUBMITTED) {
           await notifyAdminsForSubmission(created);
@@ -530,37 +414,14 @@ export default function DailyReport() {
     try {
       const beforeReport = reportsById.get(editingReportId) ?? null;
       const concurrencyState = getReportConcurrencyState(editingReportId);
-
-      const response = (await graphqlClient.graphql({
-        query: updateDailyReport,
-        variables: {
-          condition: buildVersionOrUpdatedAtCondition(
-            concurrencyState.version,
-            concurrencyState.updatedAt,
-          ),
-          input: {
-            id: editingReportId,
-            reportDate: editDraft.date,
-            title: editDraft.title.trim(),
-            content: editDraft.content,
-            status,
-            updatedAt: new Date().toISOString(),
-            version: getNextVersion(concurrencyState.version),
-          },
-        },
-        authMode: "userPool",
-      })) as GraphQLResult<UpdateDailyReportMutation>;
-
-      if (response.errors?.length) {
-        throw new Error(
-          getGraphQLErrorMessage(response.errors, "日報の更新に失敗しました。"),
-        );
-      }
-
-      const updated = response.data?.updateDailyReport;
-      if (!updated) {
-        throw new Error("日報の更新に失敗しました。");
-      }
+      const updated = await updateDailyReportRecord({
+        id: editingReportId,
+        reportDate: editDraft.date,
+        title: editDraft.title.trim(),
+        content: editDraft.content,
+        status,
+        concurrencyState,
+      });
 
       if (showNotification && status === DailyReportStatus.SUBMITTED) {
         await notifyAdminsForSubmission(updated);
@@ -643,58 +504,22 @@ export default function DailyReport() {
     }
   };
 
-  useEffect(() => {
-    if (createFormAutoSaveTimerRef.current) {
-      clearTimeout(createFormAutoSaveTimerRef.current);
-    }
-
-    if (
-      isCreateMode &&
-      isCreateFormDirty &&
-      createForm.title.trim() !== "" &&
-      createForm.content.trim() !== ""
-    ) {
-      createFormAutoSaveTimerRef.current = setTimeout(() => {
-        void handleCreateSubmit(DailyReportStatus.DRAFT, false);
-      }, AUTO_SAVE_DELAY);
-    }
-
-    return () => {
-      if (createFormAutoSaveTimerRef.current) {
-        clearTimeout(createFormAutoSaveTimerRef.current);
-      }
-    };
-  }, [createForm, isCreateFormDirty, isCreateMode, handleCreateSubmit]);
-
-  useEffect(() => {
-    if (editDraftAutoSaveTimerRef.current) {
-      clearTimeout(editDraftAutoSaveTimerRef.current);
-    }
-
-    if (
-      editingReportId &&
-      editDraft &&
-      isEditDraftDirty &&
-      !isSelectedReportSubmitted &&
-      editDraft.title.trim() !== ""
-    ) {
-      editDraftAutoSaveTimerRef.current = setTimeout(() => {
-        void handleSaveEdit(DailyReportStatus.DRAFT, false);
-      }, AUTO_SAVE_DELAY);
-    }
-
-    return () => {
-      if (editDraftAutoSaveTimerRef.current) {
-        clearTimeout(editDraftAutoSaveTimerRef.current);
-      }
-    };
-  }, [
+  useDailyReportAutoSave({
+    delay: AUTO_SAVE_DELAY,
+    isCreateMode,
+    createForm,
+    isCreateFormDirty,
+    onCreateDraftAutoSave: () => {
+      void handleCreateSubmit(DailyReportStatus.DRAFT, false);
+    },
+    editingReportId,
     editDraft,
     isEditDraftDirty,
-    editingReportId,
     isSelectedReportSubmitted,
-    handleSaveEdit,
-  ]);
+    onEditDraftAutoSave: () => {
+      void handleSaveEdit(DailyReportStatus.DRAFT, false);
+    },
+  });
 
   return (
     <Page title="日報" width="full" showDefaultHeader={false}>

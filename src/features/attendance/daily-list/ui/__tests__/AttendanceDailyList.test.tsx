@@ -16,9 +16,6 @@ import { useParams } from "react-router-dom";
 import { useAttendanceDailyFetch } from "../../model/useAttendanceDailyFetch";
 import AttendanceDailyList from "../AttendanceDailyList";
 
-// ─── Mock: styles ──────────────────────────────────────────────────────────────
-jest.mock("../styles.scss", () => ({}));
-
 // ─── Mock: sub-components ─────────────────────────────────────────────────────
 jest.mock("../ActionsTableCell", () => ({
   ActionsTableCell: (_props: unknown) => <td data-testid="actions-cell" />,

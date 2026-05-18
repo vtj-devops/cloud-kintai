@@ -5,18 +5,20 @@ import WORK_TYPE_OPTIONS from "@entities/staff/lib/workTypeOptions";
 import addUserToGroup from "@entities/staff/model/cognito/addUserToGroup";
 import createCognitoUser from "@entities/staff/model/cognito/createCognitoUser";
 import fetchStaffs from "@entities/staff/model/useStaffs/fetchStaffs";
-import {
-  StaffRole,
-  StaffType,
-} from "@entities/staff/model/useStaffs/useStaffs";
+import { StaffType } from "@entities/staff/model/useStaffs/useStaffs";
 import { handleSyncCognitoUser } from "@features/admin/staff/model/handleSyncCognitoUser";
+import {
+  buildCreateStaffUpdatePayload,
+  CREATE_STAFF_DEFAULT_VALUES,
+  CreateStaffFormValues,
+  ROLE_OPTIONS,
+  toShiftGroupOptions,
+} from "@features/admin/staff/model/staffForm";
+import { ApproverSettingTableRows } from "@features/admin/staff/ui/shared/ApproverSettingTableRows";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Autocomplete,
-  Button,
   Checkbox,
-  Chip,
-  CircularProgress,
   FormControlLabel,
   Radio,
   RadioGroup,
@@ -35,7 +37,7 @@ import { useDialogCloseGuard } from "@shared/ui/feedback/useDialogCloseGuard";
 import { SectionTitle } from "@shared/ui/typography";
 import dayjs from "dayjs";
 import { useContext, useMemo, useState } from "react";
-import { Control, Controller, useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import * as MESSAGE_CODE from "@/errors";
@@ -61,37 +63,10 @@ const createStaffSchema = z.object({
   developer: z.boolean().optional(),
 });
 
-type Inputs = z.infer<typeof createStaffSchema>;
-type AutocompleteOption = {
-  value: string;
-  label: string;
-  description?: string;
-};
-const defaultValues: Inputs = {
-  familyName: "",
-  givenName: "",
-  mailAddress: "",
-  role: StaffRole.STAFF,
-  owner: false,
-  sortKey: null,
-  usageStartDate: null,
-  workType: "weekday",
-  shiftGroup: null,
-  attendanceManagementEnabled: true,
-  approverSetting: ApproverSettingMode.ADMINS,
-  approverSingle: null,
-  approverMultiple: [],
-  approverMultipleMode: ApproverMultipleMode.ANY,
-  developer: false,
-};
+type Inputs = CreateStaffFormValues & z.infer<typeof createStaffSchema>;
 const LABEL_CELL_CLASS =
   "w-[220px] min-w-[180px] border-b border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900";
 const VALUE_CELL_CLASS = "border-b border-slate-200 px-4 py-3 align-middle";
-export const ROLE_OPTIONS = [
-  { value: StaffRole.ADMIN, label: "管理者" },
-  { value: StaffRole.STAFF, label: "スタッフ" },
-  { value: StaffRole.OPERATOR, label: "オペレーター" },
-];
 export default function CreateStaffDialog({
   staffs,
   refreshStaff,
@@ -117,28 +92,23 @@ export default function CreateStaffDialog({
     formState: { isDirty, isValid, isSubmitting },
   } = useForm<Inputs>({
     mode: "onChange",
-    defaultValues,
+    defaultValues: CREATE_STAFF_DEFAULT_VALUES,
     resolver: zodResolver(createStaffSchema),
   });
   const { dialog, requestClose, closeWithoutGuard } = useDialogCloseGuard({
     isDirty,
     isBusy: isSubmitting,
     onClose: () => {
-      reset(defaultValues);
+      reset(CREATE_STAFF_DEFAULT_VALUES);
       setOpen(false);
     },
   });
   const shiftGroupOptions = useMemo(
-    () =>
-      getShiftGroups().map((group) => ({
-        value: group.label,
-        label: group.label,
-        description: group.description ?? "",
-      })),
+    () => toShiftGroupOptions(getShiftGroups()),
     [getShiftGroups],
   );
   const handleClickOpen = () => {
-    reset(defaultValues);
+    reset(CREATE_STAFF_DEFAULT_VALUES);
     setOpen(true);
   };
   const onSubmit = async (data: Inputs) => {
@@ -199,31 +169,11 @@ export default function CreateStaffDialog({
         );
         return;
       }
-      const updatePayload: UpdateStaffInput = {
+      const updatePayload: UpdateStaffInput = buildCreateStaffUpdatePayload({
         id: targetStaff.id,
-        familyName,
-        givenName,
-        mailAddress,
-        role,
-        owner: data.owner,
-        sortKey: data.sortKey ?? null,
-        usageStartDate: data.usageStartDate ?? null,
-        workType: data.workType ?? "weekday",
-        shiftGroup: data.shiftGroup ?? null,
-        attendanceManagementEnabled: data.attendanceManagementEnabled ?? true,
-        approverSetting: data.approverSetting ?? ApproverSettingMode.ADMINS,
-      };
-      if (data.approverSetting === ApproverSettingMode.SINGLE) {
-        updatePayload.approverSingle = data.approverSingle ?? null;
-      }
-      if (data.approverSetting === ApproverSettingMode.MULTIPLE) {
-        updatePayload.approverMultiple = data.approverMultiple ?? [];
-        updatePayload.approverMultipleMode =
-          data.approverMultipleMode ?? ApproverMultipleMode.ANY;
-      }
-      if (cognitoUser?.owner) {
-        updatePayload.developer = data.developer ?? false;
-      }
+        data,
+        canEditDeveloper: Boolean(cognitoUser?.owner),
+      });
       await updateStaff(updatePayload);
       await refreshStaff();
       dispatch(
@@ -595,6 +545,8 @@ export default function CreateStaffDialog({
                       watch={watch}
                       staffs={staffs}
                       currentCognitoUserId={cognitoUser?.id}
+                      labelCellClassName={LABEL_CELL_CLASS}
+                      valueCellClassName={VALUE_CELL_CLASS}
                     />
 
                     {cognitoUser?.owner && (
@@ -628,263 +580,28 @@ export default function CreateStaffDialog({
               </section>
 
               <div className="flex justify-end gap-2 pb-1 pt-1">
-                <Button
+                <AppButton
                   type="button"
-                  variant="text"
-                  color="inherit"
+                  variant="ghost"
+                  tone="neutral"
                   onClick={requestClose}
                 >
                   キャンセル
-                </Button>
-                <Button
+                </AppButton>
+                <AppButton
                   type="button"
-                  variant="contained"
+                  variant="solid"
                   disabled={!isDirty || !isValid || isSubmitting}
-                  startIcon={
-                    isSubmitting ? <CircularProgress size={15} /> : undefined
-                  }
+                  loading={isSubmitting}
                   onClick={handleSubmit(onSubmit)}
                 >
                   登録
-                </Button>
+                </AppButton>
               </div>
             </div>
           </div>
         </div>
       ) : null}
-    </>
-  );
-}
-function ApproverSettingTableRows({
-  control,
-  watch,
-  staffs,
-  currentCognitoUserId,
-}: {
-  control: Control<Inputs>;
-  watch: <K extends keyof Inputs>(name: K) => Inputs[K];
-  staffs: StaffType[];
-  currentCognitoUserId?: string | null;
-}) {
-  const adminOptions = useMemo<AutocompleteOption[]>(() => {
-    return staffs
-      .filter(
-        (staff) =>
-          (staff.role === StaffRole.ADMIN || staff.owner) &&
-          staff.cognitoUserId !== currentCognitoUserId,
-      )
-      .map((staff) => ({
-        value: staff.cognitoUserId ?? "",
-        label:
-          [staff.familyName, staff.givenName]
-            .filter((n) => Boolean(n))
-            .join(" ") ||
-          staff.mailAddress ||
-          "",
-        description: staff.mailAddress ?? "",
-      }));
-  }, [staffs, currentCognitoUserId]);
-  const approverSetting = watch("approverSetting");
-  const approverMultiple = watch("approverMultiple") ?? [];
-  const approverMultipleMode = watch("approverMultipleMode");
-  const selectedMultipleOptions = approverMultiple
-    .filter((value): value is string => Boolean(value))
-    .map((value) => adminOptions.find((option) => option.value === value))
-    .filter((o): o is AutocompleteOption => Boolean(o));
-  return (
-    <>
-      {approverSetting === ApproverSettingMode.SINGLE && (
-        <tr>
-          <td className={LABEL_CELL_CLASS} />
-          <td className={VALUE_CELL_CLASS}>
-            <Controller
-              name="approverSingle"
-              control={control}
-              rules={{
-                validate: (value) => {
-                  if (approverSetting !== ApproverSettingMode.SINGLE) {
-                    return true;
-                  }
-                  return Boolean(value) || "承認者を選択してください";
-                },
-              }}
-              render={({ field, fieldState }) => {
-                const valueOption = adminOptions.find(
-                  (option) => option.value === field.value,
-                );
-                return (
-                  <Autocomplete
-                    value={valueOption ?? null}
-                    options={adminOptions}
-                    onChange={(_, newValue) => {
-                      field.onChange(newValue?.value ?? null);
-                    }}
-                    getOptionLabel={(option) => option.label}
-                    isOptionEqualToValue={(option, value) =>
-                      option.value === value.value
-                    }
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        size="small"
-                        sx={{ width: { xs: "100%", sm: 400 } }}
-                        label="承認者"
-                        placeholder="承認者を検索"
-                        error={Boolean(fieldState.error)}
-                        helperText={
-                          fieldState.error?.message ||
-                          "承認者を1名選択してください。"
-                        }
-                        onBlur={field.onBlur}
-                      />
-                    )}
-                  />
-                );
-              }}
-            />
-          </td>
-        </tr>
-      )}
-
-      {approverSetting === ApproverSettingMode.MULTIPLE && (
-        <>
-          <tr>
-            <td className={LABEL_CELL_CLASS} />
-            <td className={VALUE_CELL_CLASS}>
-              <Controller
-                name="approverMultiple"
-                control={control}
-                rules={{
-                  validate: (value) => {
-                    if (approverSetting !== ApproverSettingMode.MULTIPLE) {
-                      return true;
-                    }
-                    return (
-                      (value?.length ?? 0) > 0 || "承認者を選択してください"
-                    );
-                  },
-                }}
-                render={({ field, fieldState }) => {
-                  const valueOptions = (field.value ?? [])
-                    .map((v) => adminOptions.find((o) => o.value === v))
-                    .filter((opt): opt is AutocompleteOption => Boolean(opt));
-                  return (
-                    <Autocomplete<AutocompleteOption, true>
-                      multiple
-                      options={adminOptions}
-                      value={valueOptions}
-                      onChange={(_, newValue) => {
-                        field.onChange(newValue.map((option) => option.value));
-                      }}
-                      disableCloseOnSelect
-                      getOptionLabel={(option) => option.label}
-                      isOptionEqualToValue={(option, value) =>
-                        option.value === value.value
-                      }
-                      renderTags={(tagValue, getTagProps) =>
-                        tagValue.map((option, index) => (
-                          <Chip
-                            {...getTagProps({ index })}
-                            key={option.value}
-                            label={option.label}
-                            size="small"
-                          />
-                        ))
-                      }
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          size="small"
-                          sx={{ width: { xs: "100%", sm: 400 } }}
-                          label="承認者"
-                          placeholder="承認者を選択"
-                          error={Boolean(fieldState.error)}
-                          helperText={
-                            fieldState.error?.message ||
-                            (approverMultipleMode === ApproverMultipleMode.ORDER
-                              ? "選択した順番が承認順になります。"
-                              : "複数選択できます。")
-                          }
-                          onBlur={field.onBlur}
-                        />
-                      )}
-                    />
-                  );
-                }}
-              />
-            </td>
-          </tr>
-
-          <tr>
-            <td className={LABEL_CELL_CLASS} />
-            <td className={VALUE_CELL_CLASS}>
-              <Controller
-                name="approverMultipleMode"
-                control={control}
-                render={({ field }) => (
-                  <RadioGroup
-                    row
-                    value={field.value ?? ApproverMultipleMode.ANY}
-                    onChange={(event) => {
-                      const nextValue = event.target
-                        .value as ApproverMultipleMode;
-                      field.onChange(nextValue);
-                    }}
-                  >
-                    <FormControlLabel
-                      value={ApproverMultipleMode.ANY}
-                      control={<Radio />}
-                      label="誰か1人が承認すれば完了"
-                    />
-                    <FormControlLabel
-                      value={ApproverMultipleMode.ORDER}
-                      control={<Radio />}
-                      label="設定した順番で承認"
-                    />
-                  </RadioGroup>
-                )}
-              />
-            </td>
-          </tr>
-
-          {approverMultipleMode === ApproverMultipleMode.ORDER && (
-            <tr>
-              <td className={LABEL_CELL_CLASS} />
-              <td className={VALUE_CELL_CLASS}>
-                <div className="space-y-1">
-                  {selectedMultipleOptions.length === 0 ? (
-                    <p className="text-sm text-slate-500">
-                      承認順を設定するスタッフを選択してください。
-                    </p>
-                  ) : (
-                    selectedMultipleOptions.map((option, index) => (
-                      <div
-                        key={option.value}
-                        className="flex items-center gap-2"
-                      >
-                        <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full border border-slate-300 bg-slate-50 px-1 text-xs font-semibold text-slate-700">
-                          {index + 1}
-                        </span>
-                        <div>
-                          <p className="text-sm text-slate-900">
-                            {option.label}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            {option.description}
-                          </p>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                  <p className="text-xs text-slate-500">
-                    選択した順番が承認順として利用されます。
-                  </p>
-                </div>
-              </td>
-            </tr>
-          )}
-        </>
-      )}
     </>
   );
 }

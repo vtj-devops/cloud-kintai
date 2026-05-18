@@ -1,0 +1,806 @@
+{
+  "generatedAt": "2026-05-18T04:47:25.070Z",
+  "metricsVersion": 1,
+  "threshold": {
+    "oversizedFileLoc": 400
+  },
+  "summary": {
+    "nonGeneratedImplementationCodeLineCount": 101411,
+    "testCodeLineCount": 79009,
+    "oversizedFileCount": 44,
+    "directMuiImportCount": 221,
+    "scssUsageCount": 42,
+    "scssFileCount": 27,
+    "scssImportCount": 15
+  },
+  "details": {
+    "oversizedFiles": [
+      {
+        "path": "src/features/admin/staff/ui/actions/CreateStaffDialog.tsx",
+        "lines": 891
+      },
+      {
+        "path": "src/pages/admin/AdminLayout.tsx",
+        "lines": 829
+      },
+      {
+        "path": "src/pages/attendance/daily-report/DailyReport.tsx",
+        "lines": 812
+      },
+      {
+        "path": "src/features/attendance/daily-list/ui/AttendanceDailyList.tsx",
+        "lines": 802
+      },
+      {
+        "path": "src/pages/admin/AdminDailyReport/DailyReportCarouselDialog.tsx",
+        "lines": 784
+      },
+      {
+        "path": "src/features/admin/staff/ui/editor/AdminStaffEditor.tsx",
+        "lines": 782
+      },
+      {
+        "path": "src/features/admin-config-attendance/AttendanceSettingsContent.tsx",
+        "lines": 748
+      },
+      {
+        "path": "src/features/shift/collaborative/hooks/useCollaborativePageState.ts",
+        "lines": 724
+      },
+      {
+        "path": "src/features/shift/collaborative/hooks/useCollaborativeShiftData.ts",
+        "lines": 683
+      },
+      {
+        "path": "src/features/attendance/time-recorder/ui/TimeRecorder.tsx",
+        "lines": 663
+      },
+      {
+        "path": "src/features/shift/collaborative/providers/CollaborativeShiftProvider.tsx",
+        "lines": 652
+      },
+      {
+        "path": "src/features/shift/collaborative/hooks/useShiftEditLocks.ts",
+        "lines": 640
+      },
+      {
+        "path": "src/entities/attendance/api/attendanceApi.mutations.ts",
+        "lines": 632
+      },
+      {
+        "path": "src/features/workflow/notification/model/useWorkflowNotificationInbox.ts",
+        "lines": 623
+      },
+      {
+        "path": "src/pages/shift/collaborative/ShiftCollaborativePrototype.tsx",
+        "lines": 599
+      },
+      {
+        "path": "src/features/shift/collaborative/components/VirtualizedShiftTable.tsx",
+        "lines": 571
+      },
+      {
+        "path": "src/pages/admin/AdminDailyReport/AdminDailyReport.tsx",
+        "lines": 571
+      },
+      {
+        "path": "src/pages/admin/AdminWorkflow/components/WorkflowCarouselDialog.tsx",
+        "lines": 568
+      },
+      {
+        "path": "src/features/shift/collaborative/components/PrintShiftDialog.tsx",
+        "lines": 567
+      },
+      {
+        "path": "src/pages/admin/AdminDailyReport/hooks/useAdminDailyReportDetailState.ts",
+        "lines": 566
+      },
+      {
+        "path": "src/pages/admin/AdminWorkflow/AdminWorkflow.tsx",
+        "lines": 546
+      },
+      {
+        "path": "src/pages/admin/AdminLogs/AdminLogsClean.tsx",
+        "lines": 543
+      },
+      {
+        "path": "src/pages/shift/collaborative/ShiftCollaborative.tsx",
+        "lines": 543
+      },
+      {
+        "path": "src/features/shift/collaborative/components/CellCommentDialog.tsx",
+        "lines": 542
+      },
+      {
+        "path": "src/features/shift/collaborative/components/ShiftCellPanel.tsx",
+        "lines": 532
+      },
+      {
+        "path": "src/features/admin/layout/ui/SettingsPrimitives.tsx",
+        "lines": 527
+      },
+      {
+        "path": "src/features/shift/collaborative/hooks/useShiftPresence.ts",
+        "lines": 526
+      },
+      {
+        "path": "src/entities/calendar/api/calendarApi.ts",
+        "lines": 516
+      },
+      {
+        "path": "src/features/attendance/edit/ui/AttendanceEditor.tsx",
+        "lines": 499
+      },
+      {
+        "path": "src/entities/app-config/model/useAppConfig.ts",
+        "lines": 480
+      },
+      {
+        "path": "src/errors.ts",
+        "lines": 478
+      },
+      {
+        "path": "src/pages/workflow/new/NewWorkflow.tsx",
+        "lines": 476
+      },
+      {
+        "path": "src/entities/shift/api/shiftApi.ts",
+        "lines": 469
+      },
+      {
+        "path": "src/features/admin/dashboard/model/useAdminDashboard.ts",
+        "lines": 457
+      },
+      {
+        "path": "src/features/admin/jobTerm/ui/JobTermBulkRegister.tsx",
+        "lines": 450
+      },
+      {
+        "path": "src/features/attendance/edit/lib/attendanceMailTemplate.ts",
+        "lines": 449
+      },
+      {
+        "path": "src/features/attendance/edit/ui/AttendanceEditForm.tsx",
+        "lines": 443
+      },
+      {
+        "path": "src/shared/designSystem/tokens.ts",
+        "lines": 443
+      },
+      {
+        "path": "src/features/shift/collaborative/hooks/useShiftComments.ts",
+        "lines": 434
+      },
+      {
+        "path": "src/features/attendance/list/ui/DesktopCalendarView.tsx",
+        "lines": 431
+      },
+      {
+        "path": "src/features/attendance/statistics/ui/AttendanceStatistics.tsx",
+        "lines": 427
+      },
+      {
+        "path": "src/shared/ui/header/ExternalLinks.tsx",
+        "lines": 422
+      },
+      {
+        "path": "src/features/shift/management/model/useShiftRequestAssignments.ts",
+        "lines": 414
+      },
+      {
+        "path": "src/features/shift/day-view/ui/ShiftDayView.tsx",
+        "lines": 410
+      }
+    ],
+    "directMuiImports": {
+      "occurrences": 221,
+      "files": [
+        {
+          "path": "src/widgets/layout/header/NavigationMenu.tsx",
+          "count": 8
+        },
+        {
+          "path": "src/features/admin/holidayCalendar/ui/CompanyHolidayCalendar/CompanyHolidayCalendarEdit.tsx",
+          "count": 7
+        },
+        {
+          "path": "src/features/admin/holidayCalendar/ui/EventCalendar/EventCalendarEdit.tsx",
+          "count": 7
+        },
+        {
+          "path": "src/features/admin/holidayCalendar/ui/HolidayCalendar/HolidayCalendarEdit.tsx",
+          "count": 7
+        },
+        {
+          "path": "src/features/shift/collaborative/components/ShiftCellPanel.tsx",
+          "count": 7
+        },
+        {
+          "path": "src/features/shift/collaborative/components/ShiftSuggestionsPanel.tsx",
+          "count": 7
+        },
+        {
+          "path": "src/features/attendance/daily-list/ui/ActionsTableCell.tsx",
+          "count": 5
+        },
+        {
+          "path": "src/features/attendance/list/ui/DesktopCalendarView.tsx",
+          "count": 5
+        },
+        {
+          "path": "src/features/attendance/list/ui/AttendanceStatusTooltip.tsx",
+          "count": 4
+        },
+        {
+          "path": "src/shared/ui/button/AppActionIconButton.tsx",
+          "count": 4
+        },
+        {
+          "path": "src/features/admin/holidayCalendar/ui/components/AddCalendarDialogShell.tsx",
+          "count": 3
+        },
+        {
+          "path": "src/features/attendance/download-form/ui/DownloadForm.tsx",
+          "count": 3
+        },
+        {
+          "path": "src/features/attendance/edit/ui/PaidHolidayFlagInput.tsx",
+          "count": 3
+        },
+        {
+          "path": "src/features/shift/request-form/ui/ShiftRequestToolbar.tsx",
+          "count": 3
+        },
+        {
+          "path": "src/features/splitView/components/SplitModeToggle.tsx",
+          "count": 3
+        },
+        {
+          "path": "src/pages/shift/collaborative/ShiftCollaborativePrototype.tsx",
+          "count": 3
+        },
+        {
+          "path": "src/features/admin/holidayCalendar/ui/CompanyHolidayCalendar/CompanyHolidayCalendarCopy.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/features/admin/holidayCalendar/ui/EventCalendar/EventCalendarCopy.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/features/admin/holidayCalendar/ui/HolidayCalendar/ExcelFilePicker.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/features/admin/holidayCalendar/ui/HolidayCalendar/HolidayCalendarCopy.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/features/admin/staff/ui/actions/DeleteAccountMenuItem.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/features/admin/staff/ui/actions/DisableAccountMenuItem.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/features/admin/staff/ui/actions/EnableAccountMenuItem.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/features/admin/staff/ui/actions/MoreActionButton.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/features/attendance/daily-list/ui/AttendanceDailyList.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/features/attendance/daily-list/ui/MoveDateItem.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/features/attendance/download-form/ui/DateRangePresetChips.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/features/attendance/download-form/ui/StaffSelector.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/features/attendance/edit/ui/components/AttendanceVacationTabs.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/features/attendance/edit/ui/items/RestTimeItem/CommonRestTimePicker.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/features/attendance/list/ui/DesktopList.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/features/shift/collaborative/components/ActiveUsersList.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/features/shift/collaborative/components/CellCommentIndicator.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/features/shift/collaborative/components/ShiftCell.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/features/shift/collaborative/components/UndoRedoToolbar.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/features/shift/collaborative/components/VirtualizedShiftTable.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/features/shift/request-form/ui/ShiftPatternListDialog.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/features/shift/request-form/ui/ShiftStatusButtons.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/pages/notifications/WorkflowNotificationsPage.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/pages/profile/components/PasswordField.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/pages/profile/components/ProfileLinksTab.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/pages/register/RegisterContent.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/shared/providers/MuiXDateProvider.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/shared/ui/table/DateDisplayCell.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/shared/ui/table/TimeDisplayCell.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/widgets/layout/header/WorkflowNotificationButton.tsx",
+          "count": 2
+        },
+        {
+          "path": "src/app/providers/theme/ThemeProviderBridge.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/entities/attendance/ui/adminStaffAttendance/AttendanceRecordTableRow.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/entities/attendance/ui/adminStaffAttendance/RestTimeTableCell.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/entities/attendance/ui/adminStaffAttendance/SummaryTableCell.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/entities/attendance/ui/adminStaffAttendance/WorkDateTableCell.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/entities/attendance/ui/adminStaffAttendance/WorkTimeTableCell.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/entities/attendance/ui/rowVariant/index.ts",
+          "count": 1
+        },
+        {
+          "path": "src/entities/operation-log/ui/OperationLogDetailDialog.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin-config-workflow/AdminWorkflowSettingsContent.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/dashboard/ui/CurrentWorkingStaffCard.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/dashboard/ui/DailyReportStatusCard.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/dashboard/ui/StaffWorkStatusChartCard.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/holidayCalendar/ui/CompanyHolidayCalendar/AddCompanyHolidayCalendar.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/holidayCalendar/ui/CompanyHolidayCalendar/CompanyHolidayCalendarList.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/holidayCalendar/ui/components/BulkUploadDialogShell.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/holidayCalendar/ui/components/BulkUploadFileInput.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/holidayCalendar/ui/components/EventDateTableCell.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/holidayCalendar/ui/components/EventNameTableCell.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/holidayCalendar/ui/components/HolidayDateTableCell.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/holidayCalendar/ui/components/HolidayNameTableCell.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/holidayCalendar/ui/EventCalendar/AddEventCalendar.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/holidayCalendar/ui/EventCalendar/CSVFilePicker.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/holidayCalendar/ui/HolidayCalendar/AddHolidayCalendar.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/holidayCalendar/ui/HolidayCalendar/CSVFilePicker.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/layout/ui/ActiveMenuInfo.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/layout/ui/AdminHeader.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/layout/ui/AdminMenu.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/layout/ui/NavItemPanelMenu.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/staff/ui/actions/CreateStaffDialog.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/staff/ui/editor/AdminStaffEditor.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/staff/ui/editor/StaffNameTableCell.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/staff/ui/editor/StaffRoleTableCell.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/staff/ui/table/AccountStatusTableCell.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/staff/ui/table/AttendanceManagementTableCell.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/staff/ui/table/RoleTableCell.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/staff/ui/table/StaffNameTableCell.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/staff/ui/table/StatusTableCell.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/staff/ui/table/WorkTypeTableCell.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/admin/staffAttendanceList/ui/components/ChangeRequestQuickViewButton.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/attendance/download-form/ui/AggregateExportButton.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/attendance/download-form/ui/ExportButton.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/attendance/edit/ui/ChangeRequestDialog/ChangeRequestDialog.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/attendance/edit/ui/items/HourlyPaidHolidayTimeItem.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/attendance/edit/ui/items/HourlyPaidHolidayTimeItemMobile.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/attendance/edit/ui/items/ProductionTimeItem.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/attendance/edit/ui/items/ReasonRemarksItem.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/attendance/edit/ui/items/RestTimeItem/RestEndTimeInput.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/attendance/edit/ui/items/RestTimeItem/RestStartTimeInput.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/attendance/edit/ui/items/RestTimeItem/RestTimeItem.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/attendance/edit/ui/items/SeparatorItem.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/attendance/edit/ui/items/SubstituteHolidayDateInput.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/attendance/edit/ui/items/WorkDateItem.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/attendance/edit/ui/items/WorkTimeItem/WorkTimeItem.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/attendance/edit/ui/shared/ComparisonTableRow.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/attendance/list/ui/AttendanceRecordActionCell.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/shift/collaborative/components/CellCommentDialog.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/shift/collaborative/components/CollaborativeHeader.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/shift/collaborative/components/CommentsList.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/shift/collaborative/components/KeyboardShortcutsHelp.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/shift/collaborative/components/PrintShiftDialog.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/shift/collaborative/hooks/useShiftCalendar.ts",
+          "count": 1
+        },
+        {
+          "path": "src/features/shift/request-form/ui/constants.ts",
+          "count": 1
+        },
+        {
+          "path": "src/features/shift/request-form/ui/ShiftCalendarPanel.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/shift/request-form/ui/ShiftDayDetailPanel.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/shift/request-form/ui/ShiftRequestForm.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/shift/request-form/ui/ShiftRequestHeader.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/shift/request-form/ui/ShiftRequestNoteForm.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/shift/staff-shift-list/ui/StaffShiftList.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/splitView/components/PanelContainer.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/splitView/components/PanelHeader.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/workflow/detail-panel/ui/WorkflowDetailActions.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/pages/admin/AdminAttendance.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/pages/admin/AdminLogs/AdminLogsClean.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/pages/preview/DesignTokenPreviewPage.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/pages/Register.test.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/pages/shift/management/index.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/shared/lib/theme/components.ts",
+          "count": 1
+        },
+        {
+          "path": "src/shared/lib/theme/index.ts",
+          "count": 1
+        },
+        {
+          "path": "src/shared/ui/card/ChartCard.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/shared/ui/feedback/EmptyState.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/shared/ui/feedback/FormSkeleton.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/shared/ui/feedback/TableSkeleton.tsx",
+          "count": 1
+        }
+      ]
+    },
+    "scssUsage": {
+      "scssFiles": [
+        "src/features/admin/staff/ui/styles.scss",
+        "src/features/attendance/daily-list/ui/styles.scss",
+        "src/features/attendance/daily-report/ui/DailyReportCalendar.scss",
+        "src/features/attendance/list/ui/AttendanceList.scss",
+        "src/features/attendance/list/ui/AttendanceListCard.scss",
+        "src/features/attendance/list/ui/AttendanceListHeader.scss",
+        "src/features/attendance/list/ui/MobileList/MobileCalendar.scss",
+        "src/features/attendance/list/ui/MobileList/styles.scss",
+        "src/features/attendance/time-recorder/ui/styles.scss",
+        "src/features/workflow/application-form/ui/WorkflowTypeFields.module.scss",
+        "src/features/workflow/detail-panel/ui/WorkflowDetailActions.module.scss",
+        "src/features/workflow/detail-panel/ui/WorkflowDetailHeader.module.scss",
+        "src/pages/Login/styles.scss",
+        "src/pages/admin/AdminMasterLayout.scss",
+        "src/pages/attendance/daily-report/styles.scss",
+        "src/pages/attendance/edit/styles.scss",
+        "src/pages/register/styles.scss",
+        "src/pages/workflow/detail/WorkflowDetail.module.scss",
+        "src/pages/workflow/edit/WorkflowEdit.module.scss",
+        "src/pages/workflow/list/components/workflow-list-filters/DateRangeField.module.scss",
+        "src/pages/workflow/list/components/workflow-list-filters/SelectField.module.scss",
+        "src/pages/workflow/list/components/workflow-list-filters/StatusField.module.scss",
+        "src/pages/workflow/list/styles.scss",
+        "src/pages/workflow/new/NewWorkflow.module.scss",
+        "src/shared/ui/button/buttonStyles.scss",
+        "src/shared/ui/button/time-recorder/ActionCardButton.scss",
+        "src/shared/ui/clock/Clock.scss"
+      ],
+      "importFiles": [
+        {
+          "path": "src/features/workflow/application-form/ui/fields/DateField.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/workflow/application-form/ui/fields/DateRangeField.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/workflow/application-form/ui/fields/TemplateSelectField.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/workflow/application-form/ui/fields/TextareaField.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/workflow/application-form/ui/fields/TextField.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/workflow/application-form/ui/fields/TimeField.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/workflow/application-form/ui/fields/TimeRangeField.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/workflow/detail-panel/ui/WorkflowDetailActions.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/features/workflow/detail-panel/ui/WorkflowDetailHeader.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/pages/workflow/detail/WorkflowDetail.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/pages/workflow/edit/WorkflowEdit.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/pages/workflow/list/components/workflow-list-filters/DateRangeField.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/pages/workflow/list/components/workflow-list-filters/SelectField.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/pages/workflow/list/components/workflow-list-filters/StatusField.tsx",
+          "count": 1
+        },
+        {
+          "path": "src/pages/workflow/new/NewWorkflow.tsx",
+          "count": 1
+        }
+      ]
+    }
+  }
+}

@@ -2,13 +2,10 @@ import {
   GoDirectlyFlag,
   ReturnDirectlyFlag,
 } from "@entities/attendance/lib/actions/attendanceActions";
-import type { CognitoUser } from "@entities/staff/model/useCognitoUser";
-import type { Dispatch } from "@reduxjs/toolkit";
-import type { Attendance, Staff } from "@shared/api/graphql/types";
-import type { Logger } from "@shared/lib/logger";
 
 import { goDirectlyCallback } from "../goDirectlyCallback";
 import { returnDirectlyCallback } from "../returnDirectlyCallback";
+import { createCallbackFixtures, OCCURRED_AT } from "./callbackTestUtils";
 
 jest.mock("@shared/lib/mail/TimeRecordMailSender", () => ({
   TimeRecordMailSender: jest.fn().mockImplementation(() => ({
@@ -25,26 +22,13 @@ jest.mock("@entities/attendance/lib/AttendanceDateTime", () => ({
   })),
 }));
 
-const mockCognitoUser: CognitoUser = {
-  id: "user-1",
-  givenName: "Test",
-  familyName: "User",
-  mailAddress: "test@example.com",
-  owner: false,
-  roles: [],
-  emailVerified: true,
-};
-const mockStaff = { id: "user-1" } as Staff;
-const mockAttendance = { id: "att-1" } as Attendance;
-const mockDispatch = jest.fn() as unknown as Dispatch;
-const mockLogger: Logger = {
-  debug: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-  info: jest.fn(),
-} as unknown as Logger;
-
-const OCC = "2024-03-15T09:00:00.000Z";
+const {
+  mockCognitoUser,
+  mockStaff,
+  mockAttendance,
+  mockDispatch,
+  mockLogger,
+} = createCallbackFixtures();
 
 beforeEach(() => jest.clearAllMocks());
 
@@ -58,7 +42,7 @@ describe("goDirectlyCallback", () => {
       clockIn,
       mockLogger,
       undefined,
-      OCC,
+      OCCURRED_AT,
     );
     expect(clockIn).not.toHaveBeenCalled();
   });
@@ -72,7 +56,7 @@ describe("goDirectlyCallback", () => {
       clockIn,
       mockLogger,
       undefined,
-      OCC,
+      OCCURRED_AT,
     );
     expect(clockIn).toHaveBeenCalledWith(
       "user-1",
@@ -92,7 +76,7 @@ describe("goDirectlyCallback", () => {
       clockIn,
       mockLogger,
       "2024-03-15T08:30:00.000Z",
-      OCC,
+      OCCURRED_AT,
     );
     expect(clockIn).toHaveBeenCalledWith(
       "user-1",
@@ -111,7 +95,7 @@ describe("goDirectlyCallback", () => {
       clockIn,
       mockLogger,
       undefined,
-      OCC,
+      OCCURRED_AT,
     );
     expect(mockLogger.error).toHaveBeenCalled();
     expect(mockDispatch).toHaveBeenCalled();
@@ -140,7 +124,7 @@ describe("returnDirectlyCallback", () => {
       clockOut,
       mockLogger,
       undefined,
-      OCC,
+      OCCURRED_AT,
     );
     expect(clockOut).toHaveBeenCalledWith(
       "user-1",
@@ -160,7 +144,7 @@ describe("returnDirectlyCallback", () => {
       clockOut,
       mockLogger,
       "2024-03-15T18:00:00.000Z",
-      OCC,
+      OCCURRED_AT,
     );
     expect(clockOut).toHaveBeenCalledWith(
       "user-1",
@@ -179,7 +163,7 @@ describe("returnDirectlyCallback", () => {
       clockOut,
       mockLogger,
       undefined,
-      OCC,
+      OCCURRED_AT,
     );
     expect(mockDispatch).toHaveBeenCalled();
   });

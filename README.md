@@ -124,9 +124,15 @@ npm run test:unit
 
 PR 作成前に次を確認してください。
 
-- `npm run lint`
-- `npm run typecheck`
-- `npm run test:unit`
+- コード削減作業では次の順で実行する（実務標準）  
+  1. `npm run lint`  
+  2. `npm run typecheck`  
+  3. 変更箇所に対する targeted Jest（例: `npm run test:unit -- src/features/xxx/__tests__/yyy.test.tsx`）  
+  4. 必要時のみ広域 Unit（`npm run test:unit`）
+- 再利用用スクリプト
+  - `npm run validate:reduction`（lint -> typecheck）
+  - `npm run validate:reduction:targeted -- src/path/to/file.test.tsx`（lint -> typecheck -> targeted Jest）
+  - `npm run validate:reduction:unit`（lint -> typecheck -> unit 全体）
 - 変更した画面の表示崩れがないこと（PC とモバイルの主要表示）
 - 既存機能への影響がないこと（最低1つの関連画面で動作確認）
 
@@ -135,6 +141,12 @@ PR 作成前に次を確認してください。
 - 新規実装では `@mui/material` / `@mui/icons-material` / `@mui/x-*` を追加しない
 - 既存 MUI 利用箇所を改修する場合は、可能な限り TailwindCSS ベースへ寄せる
 - MUI を残す必要がある場合は、PR に理由と将来の置換方針を明記する
+
+### リファクタ後のレビュー基準（抜粋）
+
+- **コンポーネント/Hook 分割**: 1ファイルが目安 200 行超、または副作用が複数系統に増えたら `ui` と `model/hooks` へ分割する
+- **テスト重複防止**: 同じ前提データを3回以上書く場合は `@shared/test-utils` の factory かローカル helper に集約し、分岐ケースは `test.each` を優先する
+- **MUI/SCSS 移行安全策**: 既存 MUI を触るPRは「ラッパー利用へ置換した箇所」と「未置換理由」を明記する。SCSSを触った場合は差分を `sx + designTokenVar()` へ移し、新規 SCSS 追加はしない
 
 ## 初回30分チェックリスト
 

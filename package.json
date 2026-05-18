@@ -89,6 +89,9 @@
     "lint": "eslint ./src/ --ext .ts,.tsx",
     "eslint": "npx eslint ./src/",
     "typecheck": "tsc --noEmit",
+    "validate:reduction": "npm run lint && npm run typecheck",
+    "validate:reduction:targeted": "npm run validate:reduction && npm run test:unit --",
+    "validate:reduction:unit": "npm run validate:reduction && npm run test:unit",
     "test": "jest --passWithNoTests",
     "test:unit": "jest --passWithNoTests",
     "test:watch": "jest --watch",
@@ -96,6 +99,7 @@
     "test:e2e": "npx playwright test",
     "test:e2e:setup": "npx playwright test --project=setup",
     "test:all": "npm run test:unit && npm run test:e2e",
+    "metrics:baseline": "node scripts/collect-baseline-metrics.mjs",
     "hooks:install": "git config core.hooksPath .githooks",
     "prepare": "npm run hooks:install",
     "prepush:verify": "npm run typecheck"
