@@ -1,6 +1,5 @@
+import { StaffRole } from "@entities/staff/lib/staffRoleMapping";
 import dayjs from "dayjs";
-
-import { StaffRole } from "./useStaffs";
 
 export interface Staff {
   sub: string;

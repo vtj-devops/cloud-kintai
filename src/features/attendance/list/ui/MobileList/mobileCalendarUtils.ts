@@ -1,12 +1,18 @@
 import { AttendanceStatus } from "@entities/attendance/lib/AttendanceState";
 import { normalizeHolidayName } from "@entities/attendance/lib/Holiday";
 import {
+  attendanceStatusLabelMap,
+  attendanceStatusTextColorMap,
+  getAttendanceStatusBadgeMeta,
+} from "@entities/attendance/lib/statusPresentation";
+import {
   Attendance,
   CloseDate,
   CompanyHolidayCalendar,
   HolidayCalendar,
   Staff,
 } from "@shared/api/graphql/types";
+import { formatISOTimeRange } from "@shared/lib/time";
 import dayjs, { Dayjs } from "dayjs";
 
 import { getStatus, isHolidayLike } from "../../lib/attendanceStatusUtils";
@@ -36,22 +42,8 @@ export type DayCellMeta = {
 
 const DATE_KEY_FORMAT = "YYYY-MM-DD";
 
-export const statusLabelMap: Record<AttendanceStatus, string> = {
-  [AttendanceStatus.Ok]: "OK",
-  [AttendanceStatus.Error]: "要確認",
-  [AttendanceStatus.Requesting]: "申請中",
-  [AttendanceStatus.Late]: "遅刻",
-  [AttendanceStatus.Working]: "勤務中",
-  [AttendanceStatus.None]: "",
-};
-
-export const statusTextColorMap: Partial<Record<AttendanceStatus, string>> = {
-  [AttendanceStatus.Ok]: "var(--mui-palette-success-main)",
-  [AttendanceStatus.Error]: "var(--mui-palette-error-main)",
-  [AttendanceStatus.Late]: "var(--mui-palette-warning-main)",
-  [AttendanceStatus.Requesting]: "var(--mui-palette-info-main)",
-  [AttendanceStatus.Working]: "var(--mui-palette-info-main)",
-};
+export const statusLabelMap = attendanceStatusLabelMap;
+export const statusTextColorMap = attendanceStatusTextColorMap;
 
 export const formatDateKey = (date: Dayjs) => date.format(DATE_KEY_FORMAT);
 
@@ -184,45 +176,19 @@ export const getDayCellMeta = ({
   };
 };
 
-export const getStatusBadgeMeta = (status: AttendanceStatus) => {
-  if (status === AttendanceStatus.Error) {
-    return {
-      label: "エラー",
-      backgroundColor: "rgba(211, 47, 47, 0.14)",
-      color: "#8f1d1d",
-    };
-  }
-  if (status === AttendanceStatus.Late) {
-    return {
-      label: "遅刻",
-      backgroundColor: "rgba(237, 108, 2, 0.18)",
-      color: "#8a3b00",
-    };
-  }
-  if (status === AttendanceStatus.Ok) {
-    return {
-      label: "正常",
-      backgroundColor: "rgba(46, 125, 50, 0.14)",
-      color: "#1f5f24",
-    };
-  }
-  return {
-    label: "未入力",
-    backgroundColor: "var(--mui-palette-grey-200)",
-    color: "var(--mui-palette-text-secondary)",
-  };
-};
+export const getStatusBadgeMeta = getAttendanceStatusBadgeMeta;
 
 export const formatTimeRange = (
   startTime?: string | null,
   endTime?: string | null,
   emptyLabel = "--:--",
 ) => {
-  const formattedStart = startTime ? dayjs(startTime).format("HH:mm") : "--:--";
-  const formattedEnd = endTime ? dayjs(endTime).format("HH:mm") : "--:--";
-
-  if (!startTime && !endTime) return emptyLabel;
-  return `${formattedStart} 〜 ${formattedEnd}`;
+  return (
+    formatISOTimeRange(startTime, endTime, {
+      emptyLabel,
+      missingTimeLabel: "--:--",
+    }) ?? emptyLabel
+  );
 };
 
 export const resolveMonthlyTerms = (

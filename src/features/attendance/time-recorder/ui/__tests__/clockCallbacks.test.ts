@@ -1,10 +1,6 @@
-import type { CognitoUser } from "@entities/staff/model/useCognitoUser";
-import type { Dispatch } from "@reduxjs/toolkit";
-import type { Attendance, Staff } from "@shared/api/graphql/types";
-import type { Logger } from "@shared/lib/logger";
-
 import { clockInCallback } from "../clockInCallback";
 import { clockOutCallback } from "../clockOutCallback";
+import { createCallbackFixtures, OCCURRED_AT } from "./callbackTestUtils";
 
 jest.mock("@shared/lib/mail/TimeRecordMailSender", () => ({
   TimeRecordMailSender: jest.fn().mockImplementation(() => ({
@@ -13,52 +9,29 @@ jest.mock("@shared/lib/mail/TimeRecordMailSender", () => ({
   })),
 }));
 
-const mockCognitoUser: CognitoUser = {
-  id: "user-1",
-  givenName: "Test",
-  familyName: "User",
-  mailAddress: "test@example.com",
-  owner: false,
-  roles: [],
-  emailVerified: true,
-};
-const mockStaff = { id: "user-1" } as Staff;
-const mockAttendance = { id: "att-1" } as Attendance;
-const mockDispatch = jest.fn() as unknown as Dispatch;
-const mockLogger: Logger = {
-  debug: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-  info: jest.fn(),
-} as unknown as Logger;
-
-const OCC = "2024-03-15T09:00:00.000Z";
+const {
+  mockCognitoUser,
+  mockStaff,
+  mockAttendance,
+  mockDispatch,
+  mockLogger,
+} = createCallbackFixtures();
 
 beforeEach(() => jest.clearAllMocks());
 
 describe("clockInCallback", () => {
-  it("cognitoUser がない場合はスキップする", async () => {
+  it.each([
+    { label: "cognitoUser がない場合", cognitoUser: null, staff: mockStaff },
+    { label: "staff がない場合", cognitoUser: mockCognitoUser, staff: null },
+  ])("$labelはスキップする", async ({ cognitoUser, staff }) => {
     const clockIn = jest.fn();
     await clockInCallback(
-      null,
+      cognitoUser,
       clockIn,
       mockDispatch,
-      mockStaff,
+      staff,
       mockLogger,
-      OCC,
-    );
-    expect(clockIn).not.toHaveBeenCalled();
-  });
-
-  it("staff がない場合はスキップする", async () => {
-    const clockIn = jest.fn();
-    await clockInCallback(
-      mockCognitoUser,
-      clockIn,
-      mockDispatch,
-      null,
-      mockLogger,
-      OCC,
+      OCCURRED_AT,
     );
     expect(clockIn).not.toHaveBeenCalled();
   });
@@ -71,9 +44,9 @@ describe("clockInCallback", () => {
       mockDispatch,
       mockStaff,
       mockLogger,
-      OCC,
+      OCCURRED_AT,
     );
-    expect(clockIn).toHaveBeenCalledWith("user-1", "2024-03-15", OCC);
+    expect(clockIn).toHaveBeenCalledWith("user-1", "2024-03-15", OCCURRED_AT);
     expect(mockDispatch).toHaveBeenCalled();
   });
 
@@ -85,7 +58,7 @@ describe("clockInCallback", () => {
       mockDispatch,
       mockStaff,
       mockLogger,
-      OCC,
+      OCCURRED_AT,
     );
     expect(mockLogger.error).toHaveBeenCalled();
     expect(mockDispatch).toHaveBeenCalled();
@@ -106,7 +79,7 @@ describe("clockInCallback", () => {
         mockDispatch,
         mockStaff,
         mockLogger,
-        OCC,
+        OCCURRED_AT,
       ),
     ).resolves.not.toThrow();
     expect(mockLogger.error).toHaveBeenCalled();
@@ -114,21 +87,12 @@ describe("clockInCallback", () => {
 });
 
 describe("clockOutCallback", () => {
-  it("cognitoUser がない場合はスキップする", async () => {
+  it.each([
+    { label: "cognitoUser がない場合", cognitoUser: null, staff: mockStaff },
+    { label: "staff がない場合", cognitoUser: mockCognitoUser, staff: null },
+  ])("$labelはスキップする", async ({ cognitoUser, staff }) => {
     const clockOut = jest.fn();
-    await clockOutCallback(null, clockOut, mockDispatch, mockStaff, mockLogger);
-    expect(clockOut).not.toHaveBeenCalled();
-  });
-
-  it("staff がない場合はスキップする", async () => {
-    const clockOut = jest.fn();
-    await clockOutCallback(
-      mockCognitoUser,
-      clockOut,
-      mockDispatch,
-      null,
-      mockLogger,
-    );
+    await clockOutCallback(cognitoUser, clockOut, mockDispatch, staff, mockLogger);
     expect(clockOut).not.toHaveBeenCalled();
   });
 
@@ -141,9 +105,9 @@ describe("clockOutCallback", () => {
       mockStaff,
       mockLogger,
       undefined,
-      OCC,
+      OCCURRED_AT,
     );
-    expect(clockOut).toHaveBeenCalledWith("user-1", "2024-03-15", OCC);
+    expect(clockOut).toHaveBeenCalledWith("user-1", "2024-03-15", OCCURRED_AT);
     expect(mockDispatch).toHaveBeenCalled();
   });
 
@@ -156,7 +120,7 @@ describe("clockOutCallback", () => {
       mockStaff,
       mockLogger,
       "2024-03-15T18:00:00.000Z",
-      OCC,
+      OCCURRED_AT,
     );
     expect(clockOut).toHaveBeenCalledWith(
       "user-1",
@@ -174,7 +138,7 @@ describe("clockOutCallback", () => {
       mockStaff,
       mockLogger,
       undefined,
-      OCC,
+      OCCURRED_AT,
     );
     expect(mockLogger.error).toHaveBeenCalled();
     expect(mockDispatch).toHaveBeenCalled();

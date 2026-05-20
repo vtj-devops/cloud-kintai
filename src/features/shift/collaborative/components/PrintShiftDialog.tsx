@@ -149,7 +149,7 @@ const PrintShiftDialogComponent = ({
               }
               
               body {
-                font-family: "Arial", sans-serif;
+                font-family: "Arial", sans-serif; // Print context: Arial for universal compatibility and print readability
                 color: #333;
                 background-color: white;
               }

@@ -1,9 +1,8 @@
 import { store } from "@app/store";
 import { attendanceApi } from "@entities/attendance/api/attendanceApi";
-import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
+import { getAttendanceMonthRangeInput } from "@entities/attendance/lib/attendanceQueryRange";
 import { calendarApi } from "@entities/calendar/api/calendarApi";
 import { fetchAuthSession } from "aws-amplify/auth";
-import dayjs from "dayjs";
 
 async function resolveCognitoUserId(): Promise<string | null> {
   try {
@@ -17,8 +16,7 @@ async function resolveCognitoUserId(): Promise<string | null> {
 
 export async function attendanceListLoader(): Promise<null> {
   const userId = await resolveCognitoUserId();
-  const startDate = dayjs().startOf("month").format(AttendanceDate.DataFormat);
-  const endDate = dayjs().endOf("month").format(AttendanceDate.DataFormat);
+  const { startDate, endDate } = getAttendanceMonthRangeInput();
 
   const tasks: Array<Promise<unknown>> = [
     store

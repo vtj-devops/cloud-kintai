@@ -17,6 +17,12 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event";
 import React from "react";
 
+import {
+  clickRegister,
+  fillCalendarFormAndEnableRegister,
+  openCalendarDialog,
+  setDatePickerValue,
+} from "../../__tests__/calendarFormTestHelpers";
 import { AddHolidayCalendar } from "../AddHolidayCalendar";
 
 // ── react-hook-form: trigger をキャプチャするためにラップ ────────────────────
@@ -201,11 +207,6 @@ function renderComponent(
   );
 }
 
-async function openDialog() {
-  const user = userEvent.setup();
-  await user.click(screen.getByRole("button", { name: /休日を追加/ }));
-}
-
 async function triggerValidation() {
   await act(async () => {
     await capturedTrigger!();
@@ -247,13 +248,13 @@ describe("AddHolidayCalendar", () => {
 
   it("ボタンをクリックするとダイアログが開く", async () => {
     renderComponent();
-    await openDialog();
+    await openCalendarDialog(/休日を追加/);
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
   it("ダイアログタイトルに「休日を追加」が表示される", async () => {
     renderComponent();
-    await openDialog();
+    await openCalendarDialog(/休日を追加/);
     expect(
       screen.getByRole("heading", { name: "休日を追加" }),
     ).toBeInTheDocument();
@@ -261,21 +262,21 @@ describe("AddHolidayCalendar", () => {
 
   it("「開始日」「終了日 (任意)」のフィールドが表示される", async () => {
     renderComponent();
-    await openDialog();
+    await openCalendarDialog(/休日を追加/);
     expect(screen.getByTestId("datepicker-開始日")).toBeInTheDocument();
     expect(screen.getByTestId("datepicker-終了日 (任意)")).toBeInTheDocument();
   });
 
   it("「休日名」テキストフィールドが表示される", async () => {
     renderComponent();
-    await openDialog();
+    await openCalendarDialog(/休日を追加/);
     expect(screen.getByLabelText(/休日名/)).toBeInTheDocument();
   });
 
   it("キャンセルボタンをクリックするとダイアログが閉じる", async () => {
     const user = userEvent.setup();
     renderComponent();
-    await openDialog();
+    await openCalendarDialog(/休日を追加/);
     await user.click(screen.getByRole("button", { name: "キャンセル" }));
     await waitFor(() => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -286,16 +287,14 @@ describe("AddHolidayCalendar", () => {
 
   it("開始日と休日名が未入力の場合、登録ボタンが disabled になっている", async () => {
     renderComponent();
-    await openDialog();
+    await openCalendarDialog(/休日を追加/);
     expect(screen.getByRole("button", { name: "登録" })).toBeDisabled();
   });
 
   it("開始日のみ入力した場合、登録ボタンが disabled のまま", async () => {
     renderComponent();
-    await openDialog();
-    fireEvent.change(screen.getByTestId("datepicker-開始日"), {
-      target: { value: "2024-01-01" },
-    });
+    await openCalendarDialog(/休日を追加/);
+    setDatePickerValue("開始日", "2024-01-01");
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "登録" })).toBeDisabled();
     });
@@ -303,39 +302,28 @@ describe("AddHolidayCalendar", () => {
 
   it("開始日と休日名を入力し trigger() を呼ぶと登録ボタンが有効になる", async () => {
     renderComponent();
-    await openDialog();
-    fireEvent.change(screen.getByTestId("datepicker-開始日"), {
-      target: { value: "2024-01-01" },
-    });
-    fireEvent.change(screen.getByLabelText(/休日名/), {
-      target: { value: "元日" },
-    });
-    await triggerValidation();
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: "登録" })).not.toBeDisabled();
+    await openCalendarDialog(/休日を追加/);
+    await fillCalendarFormAndEnableRegister({
+      startDate: "2024-01-01",
+      name: "元日",
+      triggerValidation,
     });
   });
 
   // ── 単日登録フロー ────────────────────────────────────────────────────────
 
   it("開始日のみ指定した場合 createHolidayCalendar が呼ばれる", async () => {
-    const user = userEvent.setup();
     const createMock = jest
       .fn()
       .mockResolvedValue({ id: "1", holidayDate: "2024-01-01T00:00:00.000Z", name: "元日" });
     renderComponent(createMock);
-    await openDialog();
-    fireEvent.change(screen.getByTestId("datepicker-開始日"), {
-      target: { value: "2024-01-01" },
+    await openCalendarDialog(/休日を追加/);
+    await fillCalendarFormAndEnableRegister({
+      startDate: "2024-01-01",
+      name: "元日",
+      triggerValidation,
     });
-    fireEvent.change(screen.getByLabelText(/休日名/), {
-      target: { value: "元日" },
-    });
-    await triggerValidation();
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "登録" })).not.toBeDisabled(),
-    );
-    await user.click(screen.getByRole("button", { name: "登録" }));
+    await clickRegister();
 
     await waitFor(() => {
       expect(createMock).toHaveBeenCalledTimes(1);
@@ -347,23 +335,17 @@ describe("AddHolidayCalendar", () => {
   });
 
   it("単日登録成功時に success 通知が dispatch される", async () => {
-    const user = userEvent.setup();
     const createMock = jest
       .fn()
       .mockResolvedValue({ id: "1", holidayDate: "2024-01-01T00:00:00.000Z", name: "元日" });
     renderComponent(createMock);
-    await openDialog();
-    fireEvent.change(screen.getByTestId("datepicker-開始日"), {
-      target: { value: "2024-01-01" },
+    await openCalendarDialog(/休日を追加/);
+    await fillCalendarFormAndEnableRegister({
+      startDate: "2024-01-01",
+      name: "元日",
+      triggerValidation,
     });
-    fireEvent.change(screen.getByLabelText(/休日名/), {
-      target: { value: "元日" },
-    });
-    await triggerValidation();
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "登録" })).not.toBeDisabled(),
-    );
-    await user.click(screen.getByRole("button", { name: "登録" }));
+    await clickRegister();
 
     await waitFor(() => {
       expect(pushNotificationMock).toHaveBeenCalledWith(
@@ -373,23 +355,17 @@ describe("AddHolidayCalendar", () => {
   });
 
   it("単日登録成功後にダイアログが閉じる", async () => {
-    const user = userEvent.setup();
     const createMock = jest
       .fn()
       .mockResolvedValue({ id: "1", holidayDate: "2024-01-01T00:00:00.000Z", name: "元日" });
     renderComponent(createMock);
-    await openDialog();
-    fireEvent.change(screen.getByTestId("datepicker-開始日"), {
-      target: { value: "2024-01-01" },
+    await openCalendarDialog(/休日を追加/);
+    await fillCalendarFormAndEnableRegister({
+      startDate: "2024-01-01",
+      name: "元日",
+      triggerValidation,
     });
-    fireEvent.change(screen.getByLabelText(/休日名/), {
-      target: { value: "元日" },
-    });
-    await triggerValidation();
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "登録" })).not.toBeDisabled(),
-    );
-    await user.click(screen.getByRole("button", { name: "登録" }));
+    await clickRegister();
 
     await waitFor(() => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -399,7 +375,6 @@ describe("AddHolidayCalendar", () => {
   // ── 期間登録フロー ────────────────────────────────────────────────────────
 
   it("開始日と終了日を指定した場合 bulkCreateHolidayCalendar が呼ばれる", async () => {
-    const user = userEvent.setup();
     mockBuildHolidayDateRange.mockReturnValue([
       "2024-01-01T00:00:00.000Z",
       "2024-01-02T00:00:00.000Z",
@@ -407,21 +382,14 @@ describe("AddHolidayCalendar", () => {
     ]);
     const bulkMock = jest.fn().mockResolvedValue([]);
     renderComponent(jest.fn(), bulkMock);
-    await openDialog();
-    fireEvent.change(screen.getByTestId("datepicker-開始日"), {
-      target: { value: "2024-01-01" },
+    await openCalendarDialog(/休日を追加/);
+    await fillCalendarFormAndEnableRegister({
+      startDate: "2024-01-01",
+      endDate: "2024-01-03",
+      name: "年末年始",
+      triggerValidation,
     });
-    fireEvent.change(screen.getByTestId("datepicker-終了日 (任意)"), {
-      target: { value: "2024-01-03" },
-    });
-    fireEvent.change(screen.getByLabelText(/休日名/), {
-      target: { value: "年末年始" },
-    });
-    await triggerValidation();
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "登録" })).not.toBeDisabled(),
-    );
-    await user.click(screen.getByRole("button", { name: "登録" }));
+    await clickRegister();
 
     await waitFor(() => {
       expect(bulkMock).toHaveBeenCalledTimes(1);
@@ -434,28 +402,20 @@ describe("AddHolidayCalendar", () => {
   });
 
   it("期間登録成功時に件数入り success 通知が dispatch される", async () => {
-    const user = userEvent.setup();
     mockBuildHolidayDateRange.mockReturnValue([
       "2024-01-01T00:00:00.000Z",
       "2024-01-02T00:00:00.000Z",
     ]);
     const bulkMock = jest.fn().mockResolvedValue([]);
     renderComponent(jest.fn(), bulkMock);
-    await openDialog();
-    fireEvent.change(screen.getByTestId("datepicker-開始日"), {
-      target: { value: "2024-01-01" },
+    await openCalendarDialog(/休日を追加/);
+    await fillCalendarFormAndEnableRegister({
+      startDate: "2024-01-01",
+      endDate: "2024-01-02",
+      name: "年末",
+      triggerValidation,
     });
-    fireEvent.change(screen.getByTestId("datepicker-終了日 (任意)"), {
-      target: { value: "2024-01-02" },
-    });
-    fireEvent.change(screen.getByLabelText(/休日名/), {
-      target: { value: "年末" },
-    });
-    await triggerValidation();
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "登録" })).not.toBeDisabled(),
-    );
-    await user.click(screen.getByRole("button", { name: "登録" }));
+    await clickRegister();
 
     await waitFor(() => {
       const successCall = pushNotificationMock.mock.calls.find(
@@ -467,14 +427,13 @@ describe("AddHolidayCalendar", () => {
   });
 
   it("期間登録成功後にダイアログが閉じる", async () => {
-    const user = userEvent.setup();
     mockBuildHolidayDateRange.mockReturnValue([
       "2024-01-01T00:00:00.000Z",
       "2024-01-02T00:00:00.000Z",
     ]);
     const bulkMock = jest.fn().mockResolvedValue([]);
     renderComponent(jest.fn(), bulkMock);
-    await openDialog();
+    await openCalendarDialog(/休日を追加/);
     fireEvent.change(screen.getByTestId("datepicker-開始日"), {
       target: { value: "2024-01-01" },
     });
@@ -488,7 +447,7 @@ describe("AddHolidayCalendar", () => {
     await waitFor(() =>
       expect(screen.getByRole("button", { name: "登録" })).not.toBeDisabled(),
     );
-    await user.click(screen.getByRole("button", { name: "登録" }));
+    await clickRegister();
 
     await waitFor(() => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -498,21 +457,15 @@ describe("AddHolidayCalendar", () => {
   // ── エラーハンドリング ────────────────────────────────────────────────────
 
   it("createHolidayCalendar が失敗した場合 error 通知が dispatch される", async () => {
-    const user = userEvent.setup();
     const createMock = jest.fn().mockRejectedValue(new Error("Server Error"));
     renderComponent(createMock);
-    await openDialog();
-    fireEvent.change(screen.getByTestId("datepicker-開始日"), {
-      target: { value: "2024-01-01" },
+    await openCalendarDialog(/休日を追加/);
+    await fillCalendarFormAndEnableRegister({
+      startDate: "2024-01-01",
+      name: "元日",
+      triggerValidation,
     });
-    fireEvent.change(screen.getByLabelText(/休日名/), {
-      target: { value: "元日" },
-    });
-    await triggerValidation();
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "登録" })).not.toBeDisabled(),
-    );
-    await user.click(screen.getByRole("button", { name: "登録" }));
+    await clickRegister();
 
     await waitFor(() => {
       expect(pushNotificationMock).toHaveBeenCalledWith(
@@ -522,7 +475,6 @@ describe("AddHolidayCalendar", () => {
   });
 
   it("HolidayDateRangeError が throw された場合、そのメッセージで error 通知が dispatch される", async () => {
-    const user = userEvent.setup();
     const { HolidayDateRangeError: MockHolidayDateRangeError } =
       jest.requireMock(
         "@features/admin/holidayCalendar/lib/buildHolidayDateRange",
@@ -537,18 +489,13 @@ describe("AddHolidayCalendar", () => {
       throw rangeError;
     });
     renderComponent();
-    await openDialog();
-    fireEvent.change(screen.getByTestId("datepicker-開始日"), {
-      target: { value: "2024-01-01" },
+    await openCalendarDialog(/休日を追加/);
+    await fillCalendarFormAndEnableRegister({
+      startDate: "2024-01-01",
+      name: "長期休暇",
+      triggerValidation,
     });
-    fireEvent.change(screen.getByLabelText(/休日名/), {
-      target: { value: "長期休暇" },
-    });
-    await triggerValidation();
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "登録" })).not.toBeDisabled(),
-    );
-    await user.click(screen.getByRole("button", { name: "登録" }));
+    await clickRegister();
 
     await waitFor(() => {
       expect(pushNotificationMock).toHaveBeenCalledWith(
@@ -561,28 +508,20 @@ describe("AddHolidayCalendar", () => {
   });
 
   it("bulkCreateHolidayCalendar が失敗した場合 error 通知が dispatch される", async () => {
-    const user = userEvent.setup();
     mockBuildHolidayDateRange.mockReturnValue([
       "2024-01-01T00:00:00.000Z",
       "2024-01-02T00:00:00.000Z",
     ]);
     const bulkMock = jest.fn().mockRejectedValue(new Error("Bulk Error"));
     renderComponent(jest.fn(), bulkMock);
-    await openDialog();
-    fireEvent.change(screen.getByTestId("datepicker-開始日"), {
-      target: { value: "2024-01-01" },
+    await openCalendarDialog(/休日を追加/);
+    await fillCalendarFormAndEnableRegister({
+      startDate: "2024-01-01",
+      endDate: "2024-01-02",
+      name: "年末",
+      triggerValidation,
     });
-    fireEvent.change(screen.getByTestId("datepicker-終了日 (任意)"), {
-      target: { value: "2024-01-02" },
-    });
-    fireEvent.change(screen.getByLabelText(/休日名/), {
-      target: { value: "年末" },
-    });
-    await triggerValidation();
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "登録" })).not.toBeDisabled(),
-    );
-    await user.click(screen.getByRole("button", { name: "登録" }));
+    await clickRegister();
 
     await waitFor(() => {
       expect(pushNotificationMock).toHaveBeenCalledWith(

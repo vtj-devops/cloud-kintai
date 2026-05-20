@@ -18,6 +18,7 @@ import WorkTypeItem from "@features/attendance/edit/ui/items/WorkTypeItem";
 import QuickInputButtons from "@features/attendance/edit/ui/QuickInputButtons";
 import QuickInputButtonsMobile from "@features/attendance/edit/ui/QuickInputButtonsMobile";
 import { AppButton, AppIconButton } from "@shared/ui/button";
+import { FormErrorMessage } from "@shared/ui/form";
 import GroupContainer from "@shared/ui/group-container/GroupContainer";
 import GroupContainerMobile from "@shared/ui/group-container/GroupContainerMobile";
 import { useContext, useEffect, useMemo, useState } from "react";
@@ -69,6 +70,7 @@ export function AttendanceEditForm() {
     workDate,
     readOnly,
     errorMessages: contextErrorMessages,
+    submitErrorMessage,
   } = ctx;
   const { errors } = useFormState({ control });
   const { getStartTime } = useAppConfig();
@@ -132,6 +134,7 @@ export function AttendanceEditForm() {
           <div className="flex flex-col gap-2 p-2">
             <AttendanceEditPageHeader variant="mobile" />
             <AttendanceErrorSummary messages={errorMessages} variant="mobile" />
+            <FormErrorMessage message={submitErrorMessage} />
             <ChangeRequestingAlert changeRequests={changeRequests} />
           </div>
         ) : !restAppend || !restRemove || !restUpdate ? null : (
@@ -141,6 +144,7 @@ export function AttendanceEditForm() {
               variant="mobile"
             />
             <AttendanceErrorSummary messages={errorMessages} variant="mobile" />
+            <FormErrorMessage message={submitErrorMessage} />
             <div className="flex flex-col gap-2">
               <NoDataAlert />
               {setValue && restReplace && hourlyPaidHolidayTimeReplace && (
@@ -226,6 +230,7 @@ export function AttendanceEditForm() {
             <AttendanceEditPageHeader description="勤務時間、休憩、休暇、備考をひとつの画面で調整できます。必要な内容を入力して修正申請を行ってください。" />
             <div className="flex w-full flex-col gap-2">
               <AttendanceErrorSummary messages={errorMessages} />
+              <FormErrorMessage message={submitErrorMessage} />
               <div className="flex flex-col gap-2">
                 <ChangeRequestingAlert changeRequests={changeRequests} />
               </div>

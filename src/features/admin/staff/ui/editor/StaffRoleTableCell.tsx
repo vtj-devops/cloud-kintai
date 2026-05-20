@@ -1,4 +1,4 @@
-import { ROLE_OPTIONS } from "@features/admin/staff/ui/actions";
+import { ROLE_OPTIONS } from "@features/admin/staff/model/staffForm";
 import { Autocomplete, TextField } from "@mui/material";
 import type { Control, FieldValues, Path, UseFormSetValue } from "react-hook-form";
 import { Controller } from "react-hook-form";

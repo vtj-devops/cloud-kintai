@@ -4,6 +4,7 @@ import {
   HourlyPaidHolidayTimeInputs,
 } from "@features/attendance/edit/model/common";
 import { Attendance } from "@shared/api/graphql/types";
+import { parseTimeToISOOrNull } from "@shared/lib/time/timeConverter";
 import dayjs from "dayjs";
 import { useCallback, useEffect, useMemo } from "react";
 import {
@@ -157,20 +158,14 @@ export function useAttendanceEditFormSync({
       : targetWorkDate
         ? dayjs(targetWorkDate)
         : dayjs();
+    const lunchStartTime = lunchStartCfg.format("HH:mm");
+    const lunchEndTime = lunchEndCfg.format("HH:mm");
+    const lunchStartIso = parseTimeToISOOrNull(lunchStartTime, baseDay);
+    const lunchEndIso = parseTimeToISOOrNull(lunchEndTime, baseDay);
     const desiredRests = [
       {
-        startTime: baseDay
-          .hour(lunchStartCfg.hour())
-          .minute(lunchStartCfg.minute())
-          .second(0)
-          .millisecond(0)
-          .toISOString(),
-        endTime: baseDay
-          .hour(lunchEndCfg.hour())
-          .minute(lunchEndCfg.minute())
-          .second(0)
-          .millisecond(0)
-          .toISOString(),
+        startTime: lunchStartIso,
+        endTime: lunchEndIso,
       },
     ];
     const currentRests = getValues("rests") || [];

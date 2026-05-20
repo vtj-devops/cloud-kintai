@@ -74,6 +74,7 @@ To change GraphQL schema, edit `amplify/backend/api/garakufrontend/schema.graphq
 - Do **not** create new `.scss` files (SCSS is being phased out).
 - Page layout: wrap content in `Page` / `PageContent` / `PageSection` from `src/shared/ui/layout/`.
 - Design tokens: use `designTokenVar()` from `src/shared/designSystem/` — do not hardcode colors or spacing.
+- **Fonts**: Use `var(--ds-typography-font-family)` for all text. See `.github/instructions/font-strategy.md` for detailed font guidance, weight tokens, and special cases (monospace, etc.).
 
 ### State management
 
@@ -115,6 +116,7 @@ See `.github/instructions/shiftCollaborative.instructions.md` for guardrails.
 
 | File | Topic |
 |---|---|
+| `.github/instructions/font-strategy.md` | フォント戦略と使用方法 |
 | `.github/instructions/attendanceEdit.instructions.md` | 勤怠編集 |
 | `.github/instructions/attendanceList.instructions.md` | 勤怠一覧 |
 | `.github/instructions/register.instructions.md` | 打刻ページ |

@@ -3,8 +3,7 @@ import { Box, Stack, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import { useContext, useEffect, useState } from "react";
 
-import EndTimeInput from "./EndTimeInput";
-import StartTimeInput from "./StartTimeInput";
+import WorkTimeFieldInput from "./WorkTimeFieldInput";
 
 export function calcTotalWorkTime(
   startTime: string | null | undefined,
@@ -52,7 +51,7 @@ export function WorkTimeItem({
           <Box>
             <Stack direction="row" spacing={1}>
               <Box>
-                <StartTimeInput highlight={highlightStartTime} />
+                <WorkTimeFieldInput type="start" highlight={highlightStartTime} />
               </Box>
               <Box>
                 <Typography variant="body1" sx={{ py: 1 }}>
@@ -60,7 +59,7 @@ export function WorkTimeItem({
                 </Typography>
               </Box>
               <Box>
-                <EndTimeInput highlight={highlightEndTime} />
+                <WorkTimeFieldInput type="end" highlight={highlightEndTime} />
               </Box>
             </Stack>
           </Box>

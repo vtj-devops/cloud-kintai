@@ -120,7 +120,10 @@ export function OperationLogDetailDialog({
                   <Typography
                     variant="caption"
                     display="block"
-                    sx={{ fontFamily: "monospace", wordBreak: "break-all" }}
+                    sx={{
+                      fontFamily: "monospace", // User agent string display - monospace for readability
+                      wordBreak: "break-all",
+                    }}
                   >
                     ユーザーエージェント: {log.userAgent}
                   </Typography>

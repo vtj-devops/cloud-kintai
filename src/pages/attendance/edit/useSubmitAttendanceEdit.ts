@@ -28,6 +28,8 @@ type UseSubmitAttendanceEditParams = {
   targetWorkDate: string | undefined;
   attendanceListPath: string;
   runWithoutGuard: (fn: () => void) => void;
+  setSubmitError: (message: string) => void;
+  clearSubmitError: () => void;
 };
 
 export function useSubmitAttendanceEdit({
@@ -38,6 +40,8 @@ export function useSubmitAttendanceEdit({
   targetWorkDate,
   attendanceListPath,
   runWithoutGuard,
+  setSubmitError,
+  clearSubmitError,
 }: UseSubmitAttendanceEditParams) {
   const { notify } = useAppNotification();
   const navigate = useNavigate();
@@ -57,6 +61,7 @@ export function useSubmitAttendanceEdit({
   );
 
   const onSubmit = async (data: AttendanceEditInputs) => {
+    clearSubmitError();
     const changeRequestPayload = buildChangeRequestPayload(data);
 
     if (attendance) {
@@ -98,6 +103,7 @@ export function useSubmitAttendanceEdit({
           runWithoutGuard(() => navigate(attendanceListPath));
         })
         .catch(() => {
+          setSubmitError(MESSAGE_CODE.E02005);
           notify({
             title: "修正申請エラー",
             description: MESSAGE_CODE.E02005,
@@ -106,7 +112,10 @@ export function useSubmitAttendanceEdit({
           });
         });
     } else {
-      if (!staff || !targetWorkDate) return;
+      if (!staff || !targetWorkDate) {
+        setSubmitError(MESSAGE_CODE.E02005);
+        return;
+      }
 
       await createAttendance({
         staffId: staff.cognitoUserId,
@@ -145,6 +154,7 @@ export function useSubmitAttendanceEdit({
         })
         .catch((e) => {
           logger.error("Failed to update attendance:", e);
+          setSubmitError(MESSAGE_CODE.E02005);
           notify({
             title: "修正申請エラー",
             description: MESSAGE_CODE.E02005,

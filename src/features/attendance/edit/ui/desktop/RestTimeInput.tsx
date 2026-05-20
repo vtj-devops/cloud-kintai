@@ -4,8 +4,7 @@ import dayjs from "dayjs";
 import { useContext, useMemo } from "react";
 import { FieldArrayWithId, useWatch } from "react-hook-form";
 
-import RestEndTimeInput from "./RestEndTimeInput";
-import RestStartTimeInput from "./RestStartTimeInput";
+import RestDesktopTimeInput from "./RestDesktopTimeInput";
 
 export function calcTotalRestTime(
   startTime: string | null | undefined,
@@ -46,9 +45,9 @@ export function RestTimeInput({
 
   return (
     <div className="flex flex-col gap-2.5 md:flex-row md:items-center">
-      <RestStartTimeInput rest={rest} index={index} testIdPrefix="desktop" />
+      <RestDesktopTimeInput type="start" rest={rest} index={index} testIdPrefix="desktop" />
       <div className="text-sm text-slate-500">～</div>
-      <RestEndTimeInput rest={rest} index={index} testIdPrefix="desktop" />
+      <RestDesktopTimeInput type="end" rest={rest} index={index} testIdPrefix="desktop" />
       <button
         type="button"
         aria-label="休憩を削除"

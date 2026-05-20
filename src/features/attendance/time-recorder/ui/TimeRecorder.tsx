@@ -1,28 +1,15 @@
 import { AuthContext } from "@app/providers/auth/AuthContext";
 import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
 import {
-  type AttendanceUpsertAction,
   useGetAttendanceByStaffAndDateQuery,
   useListAttendancesByDateRangeWithPlaceholdersQuery,
-  useUpdateAttendanceMutation,
-  useUpsertAttendanceByStaffAndDateMutation,
 } from "@entities/attendance/api/attendanceApi";
-import {
-  clockInAction,
-  clockOutAction,
-  GoDirectlyFlag,
-  restEndAction,
-  restStartAction,
-  ReturnDirectlyFlag,
-} from "@entities/attendance/lib/actions/attendanceActions";
 import { getWorkStatus } from "@entities/attendance/lib/actions/workStatus";
 import {
   getEffectiveDateRange,
   getEffectivePastDateRangeEnd,
 } from "@entities/attendance/lib/aggregationDateRange";
 import { resolveCurrentBusinessWorkDate } from "@entities/attendance/lib/businessDate";
-import { buildAttendanceIdempotencyKey } from "@entities/attendance/lib/operationContext";
-import { getNowISOStringWithZeroSeconds } from "@entities/attendance/lib/time";
 import useCloseDates from "@entities/attendance/model/useCloseDates";
 import { useCalendars } from "@entities/calendar/model/useCalendars";
 import fetchStaff from "@entities/staff/model/useStaff/fetchStaff";
@@ -30,7 +17,6 @@ import { graphqlClient } from "@shared/api/amplify/graphqlClient";
 import { onUpdateAttendance } from "@shared/api/graphql/documents/subscriptions";
 import {
   Attendance,
-  CreateAttendanceInput,
   OnUpdateAttendanceSubscription,
   Staff,
 } from "@shared/api/graphql/types";
@@ -50,12 +36,6 @@ import { useDispatch } from "react-redux";
 import * as MESSAGE_CODE from "@/errors";
 
 import { WorkStatus } from "../lib/common";
-import { clockInCallback } from "./clockInCallback";
-import { clockOutCallback } from "./clockOutCallback";
-import { goDirectlyCallback } from "./goDirectlyCallback";
-import { restEndCallback } from "./restEndCallback";
-import { restStartCallback } from "./restStartCallback";
-import { returnDirectlyCallback } from "./returnDirectlyCallback";
 import {
   type TimeRecorderContextValue,
   TimeRecorderProvider,
@@ -66,9 +46,9 @@ import {
   resolveElapsedWorkInfo,
   summarizeAttendanceErrors,
   type TimeRecorderElapsedWorkInfo,
-  toConfiguredTimeISO,
 } from "./timeRecorderUtils";
 import { TimeRecorderLoadingView, TimeRecorderView } from "./TimeRecorderView";
+import { useAttendanceActions } from "./useAttendanceActions";
 
 type TimeRecorderProps = {
   onAttendanceErrorCountChange?: (attendanceErrorCount: number) => void;
@@ -79,13 +59,10 @@ export default function TimeRecorder({
   onAttendanceErrorCountChange,
   onElapsedWorkTimeChange,
 }: TimeRecorderProps): JSX.Element {
-  const LOCAL_ATTENDANCE_UPDATE_IGNORE_MS = 3000;
   const VISIBILITY_REFRESH_THRESHOLD_MINUTES = 5;
   const { cognitoUser } = useContext(AuthContext);
   const dispatch = useDispatch();
   const {
-    getStartTime,
-    getEndTime,
     getLunchRestStartTime,
     getLunchRestEndTime,
   } = useContext(AppConfigContext);
@@ -163,7 +140,7 @@ export default function TimeRecorder({
     },
     { skip: !shouldFetchAttendanceErrors },
   );
-  const attendance = attendanceData;
+  const attendance = attendanceData ?? undefined;
   const attendances: Attendance[] = attendancesData?.attendances ?? [];
   const attendanceLoading =
     !shouldFetchAttendance ||
@@ -176,176 +153,6 @@ export default function TimeRecorder({
       (isAttendancesInitialLoading ||
         isAttendancesFetching ||
         isAttendancesUninitialized));
-  const [upsertAttendanceMutation] =
-    useUpsertAttendanceByStaffAndDateMutation();
-  const [updateAttendanceMutation] = useUpdateAttendanceMutation();
-  const localAttendanceUpdateIgnoreUntilRef = useRef(0);
-  const resolveUpsertAction = useCallback(
-    (input: CreateAttendanceInput): AttendanceUpsertAction => {
-      if (input.goDirectlyFlag) return "go_directly";
-      if (input.returnDirectlyFlag) return "return_directly";
-      if (input.startTime) return "clock_in";
-      if (input.endTime) return "clock_out";
-      const rests = input.rests ?? [];
-      if (rests.some((rest) => Boolean(rest?.startTime) && !rest?.endTime)) {
-        return "rest_start";
-      }
-      if (rests.some((rest) => Boolean(rest?.endTime))) {
-        return "rest_end";
-      }
-      return "manual";
-    },
-    [],
-  );
-  const resolveOccurredAtFromCreateInput = useCallback(
-    (input: CreateAttendanceInput) =>
-      input.startTime ??
-      input.endTime ??
-      input.rests?.find((rest) => rest?.startTime)?.startTime ??
-      input.rests?.find((rest) => rest?.endTime)?.endTime ??
-      getNowISOStringWithZeroSeconds(),
-    [],
-  );
-  const createAttendance = useCallback(
-    (input: CreateAttendanceInput) => {
-      const occurredAt = resolveOccurredAtFromCreateInput(input);
-      const action = resolveUpsertAction(input);
-      const idempotencyKey = buildAttendanceIdempotencyKey({
-        action,
-        staffId: input.staffId,
-        occurredAt,
-      });
-      return upsertAttendanceMutation({
-        input,
-        action,
-        occurredAt,
-        idempotencyKey,
-      }).unwrap();
-    },
-    [
-      resolveOccurredAtFromCreateInput,
-      resolveUpsertAction,
-      upsertAttendanceMutation,
-    ],
-  );
-  const updateAttendance = useCallback(
-    (input: Parameters<typeof updateAttendanceMutation>[0]) => {
-      localAttendanceUpdateIgnoreUntilRef.current =
-        Date.now() + LOCAL_ATTENDANCE_UPDATE_IGNORE_MS;
-      return updateAttendanceMutation(input).unwrap();
-    },
-    [updateAttendanceMutation],
-  );
-  const refreshAttendanceData = useCallback(async () => {
-    if (!shouldFetchAttendance) {
-      return;
-    }
-    await refetchAttendance();
-    if (shouldFetchAttendanceErrors) {
-      await refetchAttendances();
-    }
-  }, [
-    refetchAttendance,
-    refetchAttendances,
-    shouldFetchAttendance,
-    shouldFetchAttendanceErrors,
-  ]);
-  const runAttendanceActionWithRefresh = useCallback(
-    async <T,>(action: () => Promise<T>) => {
-      const result = await action();
-      await refreshAttendanceData();
-      return result;
-    },
-    [refreshAttendanceData],
-  );
-  const clockIn = useCallback(
-    (
-      staffId: string,
-      workDate: string,
-      startTime: string,
-      goDirectlyFlag = GoDirectlyFlag.NO,
-    ) =>
-      runAttendanceActionWithRefresh(() =>
-        clockInAction({
-          attendance,
-          staffId,
-          workDate,
-          startTime,
-          goDirectlyFlag,
-          createAttendance,
-          updateAttendance,
-        }),
-      ),
-    [
-      attendance,
-      createAttendance,
-      runAttendanceActionWithRefresh,
-      updateAttendance,
-    ],
-  );
-  const clockOut = useCallback(
-    (
-      staffId: string,
-      workDate: string,
-      endTime: string,
-      returnDirectlyFlag = ReturnDirectlyFlag.NO,
-    ) =>
-      runAttendanceActionWithRefresh(() =>
-        clockOutAction({
-          attendance,
-          staffId,
-          workDate,
-          endTime,
-          returnDirectlyFlag,
-          createAttendance,
-          updateAttendance,
-        }),
-      ),
-    [
-      attendance,
-      createAttendance,
-      runAttendanceActionWithRefresh,
-      updateAttendance,
-    ],
-  );
-  const restStart = useCallback(
-    (staffId: string, workDate: string, startTime: string) =>
-      runAttendanceActionWithRefresh(() =>
-        restStartAction({
-          attendance,
-          staffId,
-          workDate,
-          time: startTime,
-          createAttendance,
-          updateAttendance,
-        }),
-      ),
-    [
-      attendance,
-      createAttendance,
-      runAttendanceActionWithRefresh,
-      updateAttendance,
-    ],
-  );
-  const restEnd = useCallback(
-    (staffId: string, workDate: string, endTime: string) =>
-      runAttendanceActionWithRefresh(() =>
-        restEndAction({
-          attendance,
-          staffId,
-          workDate,
-          time: endTime,
-          createAttendance,
-          updateAttendance,
-        }),
-      ),
-    [
-      attendance,
-      createAttendance,
-      runAttendanceActionWithRefresh,
-      updateAttendance,
-    ],
-  );
   const [workStatus, setWorkStatus] = useState<WorkStatus | null | undefined>(
     undefined,
   );
@@ -364,12 +171,29 @@ export default function TimeRecorder({
       window.clearInterval(intervalId);
     };
   }, []);
-  // 変更リクエスト中かどうか
   const hasChangeRequest = useMemo(
     () => hasPendingChangeRequests(attendance),
     [attendance],
   );
   const logger = new Logger("TimeRecorder", "DEBUG");
+  const {
+    localAttendanceUpdateIgnoreUntilRef,
+    refreshAttendanceData,
+    handleClockIn,
+    handleClockOut,
+    handleGoDirectly,
+    handleReturnDirectly,
+    handleRestStart,
+    handleRestEnd,
+  } = useAttendanceActions({
+    attendance,
+    staff,
+    logger,
+    shouldFetchAttendance,
+    shouldFetchAttendanceErrors,
+    refetchAttendance,
+    refetchAttendances,
+  });
   const refreshStaff = useCallback(async () => {
     if (!cognitoUser?.id) {
       return;
@@ -408,69 +232,6 @@ export default function TimeRecorder({
     () => formatClockDisplayText(attendance?.endTime, "退勤"),
     [attendance?.endTime],
   );
-  const handleClockIn = useCallback(() => {
-    const occurredAt = getNowISOStringWithZeroSeconds();
-    return clockInCallback(
-      cognitoUser,
-      clockIn,
-      dispatch,
-      staff,
-      logger,
-      occurredAt,
-    );
-  }, [clockIn, cognitoUser, dispatch, logger, staff]);
-  const handleClockOut = useCallback(() => {
-    const occurredAt = getNowISOStringWithZeroSeconds();
-    return clockOutCallback(
-      cognitoUser,
-      clockOut,
-      dispatch,
-      staff,
-      logger,
-      undefined,
-      occurredAt,
-    );
-  }, [clockOut, cognitoUser, dispatch, logger, staff]);
-  const handleGoDirectly = useCallback(() => {
-    const occurredAt = getNowISOStringWithZeroSeconds();
-    const startIso = toConfiguredTimeISO(occurredAt, getStartTime());
-    return goDirectlyCallback(
-      cognitoUser,
-      staff,
-      dispatch,
-      clockIn,
-      logger,
-      startIso,
-      occurredAt,
-    );
-  }, [cognitoUser, clockIn, dispatch, staff, logger, getStartTime]);
-  const handleReturnDirectly = useCallback(() => {
-    const occurredAt = getNowISOStringWithZeroSeconds();
-    const endIso = toConfiguredTimeISO(occurredAt, getEndTime());
-    return returnDirectlyCallback(
-      cognitoUser,
-      staff,
-      dispatch,
-      clockOut,
-      logger,
-      endIso,
-      occurredAt,
-    );
-  }, [cognitoUser, staff, dispatch, clockOut, logger, getEndTime]);
-  const handleRestStart = useCallback(() => {
-    const occurredAt = getNowISOStringWithZeroSeconds();
-    return restStartCallback(
-      cognitoUser,
-      dispatch,
-      restStart,
-      logger,
-      occurredAt,
-    );
-  }, [cognitoUser, dispatch, logger, restStart]);
-  const handleRestEnd = useCallback(() => {
-    const occurredAt = getNowISOStringWithZeroSeconds();
-    return restEndCallback(cognitoUser, restEnd, dispatch, logger, occurredAt);
-  }, [cognitoUser, dispatch, logger, restEnd]);
   const handleVisibilityChange = useCallback(() => {
     const now = dayjs();
     if (document.visibilityState !== "visible") {

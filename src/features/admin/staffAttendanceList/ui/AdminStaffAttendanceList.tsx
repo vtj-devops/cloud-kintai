@@ -28,6 +28,10 @@ import {
 } from "@mui/material";
 import { Attendance } from "@shared/api/graphql/types";
 import { designTokenVar } from "@shared/designSystem";
+import {
+  createMonthSearchParamsFromDate,
+  formatMonthQueryValue,
+} from "@shared/lib/monthQuery";
 import { ProgressBar } from "@shared/ui/feedback";
 import { PageSection } from "@shared/ui/layout";
 import dayjs, { type Dayjs } from "dayjs";
@@ -62,10 +66,7 @@ export default function AdminStaffAttendanceList() {
   );
 
   const monthQuery = useMemo(
-    () =>
-      new URLSearchParams({
-        [MONTH_QUERY_KEY]: currentMonth.startOf("month").format("YYYY-MM"),
-      }).toString(),
+    () => createMonthSearchParamsFromDate(currentMonth).toString(),
     [currentMonth],
   );
 
@@ -73,7 +74,7 @@ export default function AdminStaffAttendanceList() {
     (nextMonth: Dayjs) => {
       const normalizedMonth = nextMonth.startOf("month");
       const nextParams = new URLSearchParams(searchParams);
-      nextParams.set(MONTH_QUERY_KEY, normalizedMonth.format("YYYY-MM"));
+      nextParams.set(MONTH_QUERY_KEY, formatMonthQueryValue(normalizedMonth));
       setSearchParams(nextParams, { replace: true });
     },
     [searchParams, setSearchParams],

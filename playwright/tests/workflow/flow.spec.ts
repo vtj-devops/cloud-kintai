@@ -1,4 +1,9 @@
 import { expect, test } from "@playwright/test";
+import {
+  assertNoPageErrors,
+  collectPageErrors,
+  waitForOptionalLayoutLoading,
+} from "../helpers/pageTestHelpers";
 
 /**
  * ワークフロー E2E テスト: ページ表示確認
@@ -20,71 +25,6 @@ import { expect, test } from "@playwright/test";
  *   （存在しない場合は `npm run test:e2e:setup` で生成してください）
  */
 
-// ページごとのエラーを収集するヘルパー
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function collectErrorsForPage(page: any) {
-  const errors = {
-    console: [] as string[],
-    network: [] as string[],
-    pageErrors: [] as Error[],
-  };
-
-  // コンソールエラーをキャッチ（400系リソースロードエラーは除外）
-  page.on("console", (msg) => {
-    if (msg.type() === "error") {
-      const text = msg.text();
-      if (
-        !text.includes("status of 400") &&
-        !text.includes("status of 404")
-      ) {
-        errors.console.push(text);
-      }
-    }
-  });
-
-  // ネットワークエラー（5xx）をキャッチ
-  page.on("response", (response) => {
-    const status = response.status();
-    if (status >= 500) {
-      errors.network.push(`[${status}] ${response.url()}`);
-    }
-  });
-
-  // グローバルエラーをキャッチ
-  page.on("pageerror", (error: Error) => {
-    errors.pageErrors.push(error);
-  });
-
-  return errors;
-}
-
-// ローディングインジケーターの消去を待つヘルパー
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function waitForLoading(page: any) {
-  try {
-    const loading = page.getByTestId("layout-linear-progress");
-    await expect(loading).toBeHidden({ timeout: 10000 });
-  } catch {
-    // ローディング要素がないページでは無視する
-  }
-}
-
-// ページエラーが無いことをアサートするヘルパー
-function assertNoErrors(errors: ReturnType<typeof collectErrorsForPage>) {
-  expect(errors.console.length).toBe(
-    0,
-    `JavaScriptコンソールエラーが検出されました:\n${errors.console.join("\n")}`,
-  );
-  expect(errors.network.length).toBe(
-    0,
-    `サーバーエラー（5xx）が検出されました:\n${errors.network.join("\n")}`,
-  );
-  expect(errors.pageErrors.length).toBe(
-    0,
-    `ページエラーが検出されました:\n${errors.pageErrors.map((e) => e.message).join("\n")}`,
-  );
-}
-
 // ---------------------------------------------------------------------------
 // テストスイート
 // ---------------------------------------------------------------------------
@@ -105,14 +45,14 @@ test.describe("ワークフロー - ページ表示確認", () => {
         testInfo.skip();
       }
 
-      const errors = collectErrorsForPage(page);
+      const errors = collectPageErrors(page);
 
       await test.step("ページへナビゲート", async () => {
         await page.goto("/workflow", { waitUntil: "networkidle" });
       });
 
       await test.step("ローディング完了を待つ", async () => {
-        await waitForLoading(page);
+        await waitForOptionalLayoutLoading(page);
       });
 
       await test.step("ページ本体が表示されていること", async () => {
@@ -128,7 +68,7 @@ test.describe("ワークフロー - ページ表示確認", () => {
       });
 
       await test.step("エラーが発生していないこと", () => {
-        assertNoErrors(errors);
+        assertNoPageErrors(errors);
       });
     });
 
@@ -139,14 +79,14 @@ test.describe("ワークフロー - ページ表示確認", () => {
         testInfo.skip();
       }
 
-      const errors = collectErrorsForPage(page);
+      const errors = collectPageErrors(page);
 
       await test.step("ページへナビゲート", async () => {
         await page.goto("/workflow/new", { waitUntil: "networkidle" });
       });
 
       await test.step("ローディング完了を待つ", async () => {
-        await waitForLoading(page);
+        await waitForOptionalLayoutLoading(page);
       });
 
       await test.step("ページ本体が表示されていること", async () => {
@@ -154,7 +94,7 @@ test.describe("ワークフロー - ページ表示確認", () => {
       });
 
       await test.step("エラーが発生していないこと", () => {
-        assertNoErrors(errors);
+        assertNoPageErrors(errors);
       });
     });
   });
@@ -174,14 +114,14 @@ test.describe("ワークフロー - ページ表示確認", () => {
         testInfo.skip();
       }
 
-      const errors = collectErrorsForPage(page);
+      const errors = collectPageErrors(page);
 
       await test.step("ページへナビゲート", async () => {
         await page.goto("/admin/workflow", { waitUntil: "networkidle" });
       });
 
       await test.step("ローディング完了を待つ", async () => {
-        await waitForLoading(page);
+        await waitForOptionalLayoutLoading(page);
       });
 
       await test.step("ページ本体が表示されていること", async () => {
@@ -205,7 +145,7 @@ test.describe("ワークフロー - ページ表示確認", () => {
       });
 
       await test.step("JSエラー・サーバーエラーが発生していないこと", () => {
-        assertNoErrors(errors);
+        assertNoPageErrors(errors);
       });
     });
 
@@ -232,7 +172,7 @@ test.describe("ワークフロー - ページ表示確認", () => {
       });
 
       await test.step("ローディング完了を待つ", async () => {
-        await waitForLoading(page);
+        await waitForOptionalLayoutLoading(page);
       });
 
       await test.step("ページ本体が表示されていること", async () => {

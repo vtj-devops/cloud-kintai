@@ -1,4 +1,21 @@
-import dayjs from "dayjs";
+import dayjs, { type Dayjs } from "dayjs";
+
+const COMPLETE_TIME_PATTERN = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+const parseClockTime = (value: string): { hour: number; minute: number } | null => {
+  const match = COMPLETE_TIME_PATTERN.exec(value);
+  if (!match) {
+    return null;
+  }
+
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (Number.isNaN(hour) || Number.isNaN(minute)) {
+    return null;
+  }
+
+  return { hour, minute };
+};
 
 /**
  * ISO 8601形式の日時文字列をHH:mm形式に変換
@@ -11,6 +28,17 @@ import dayjs from "dayjs";
  */
 export function formatISOToTime(isoString: string): string {
   return dayjs(isoString).format("HH:mm");
+}
+
+export function formatISOToTimeOrEmpty(
+  isoString?: string | null,
+): string {
+  if (!isoString) {
+    return "";
+  }
+
+  const parsed = dayjs(isoString);
+  return parsed.isValid() ? parsed.format("HH:mm") : "";
 }
 
 /**
@@ -30,6 +58,23 @@ export function parseTimeToISO(timeString: string, baseDate: string): string {
     .toISOString();
 }
 
+export function parseTimeToISOOrNull(
+  timeString: string,
+  baseDate: string | Dayjs,
+): string | null {
+  const clockTime = parseClockTime(timeString);
+  if (!clockTime) {
+    return null;
+  }
+
+  return dayjs(baseDate)
+    .hour(clockTime.hour)
+    .minute(clockTime.minute)
+    .second(0)
+    .millisecond(0)
+    .toISOString();
+}
+
 /**
  * 日付をYYYY-MM-DD形式に変換
  *
@@ -40,7 +85,7 @@ export function parseTimeToISO(timeString: string, baseDate: string): string {
  * formatDateToString(new Date("2024-01-15")) // "2024-01-15"
  * formatDateToString(dayjs("2024-01-15")) // "2024-01-15"
  */
-export function formatDateToString(date: Date | dayjs.Dayjs): string {
+export function formatDateToString(date: Date | Dayjs): string {
   return dayjs(date).format("YYYY-MM-DD");
 }
 
@@ -65,4 +110,14 @@ export function formatMinutesToHHmm(totalMinutes: number): string {
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
   return `${hours}:${minutes.toString().padStart(2, "0")}`;
+}
+
+export function normalizeTimeDraft(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 4);
+  if (digits.length <= 2) return digits;
+  return `${digits.slice(0, 2)}:${digits.slice(2)}`;
+}
+
+export function isCompleteTime(value: string): boolean {
+  return COMPLETE_TIME_PATTERN.test(value);
 }

@@ -3,14 +3,13 @@ import { useGetAttendanceByStaffAndDateQuery } from "@entities/attendance/api/at
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import { StaffType, useStaffs } from "@entities/staff/model/useStaffs/useStaffs";
 import { Attendance } from "@shared/api/graphql/types";
+import { createMonthSearchParams,MONTH_QUERY_KEY } from "@shared/lib/monthQuery";
 import { useAppNotification } from "@shared/lib/useAppNotification";
 import dayjs from "dayjs";
 import { useContext, useEffect, useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 
 import * as MESSAGE_CODE from "@/errors";
-
-const MONTH_QUERY_KEY = "month";
 
 export function useAttendanceEditData() {
   const { notify } = useAppNotification();
@@ -24,9 +23,7 @@ export function useAttendanceEditData() {
       return "/attendance/list";
     }
 
-    return `/attendance/list?${new URLSearchParams({
-      [MONTH_QUERY_KEY]: month,
-    }).toString()}`;
+    return `/attendance/list?${createMonthSearchParams(month).toString()}`;
   }, [searchParams]);
 
   const isAuthenticated = authStatus === "authenticated";

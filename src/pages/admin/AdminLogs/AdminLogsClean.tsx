@@ -25,14 +25,13 @@ import {
   TextField,
   Tooltip,
   Typography,
-  useMediaQuery,
-  useTheme,
 } from "@mui/material";
 import {
   ModelOperationLogFilterInput,
   OperationLog,
   Staff,
 } from "@shared/api/graphql/types";
+import { useIsMobile } from "@shared/lib/hooks/useIsMobile";
 import { AppIconButton } from "@shared/ui/button";
 import { CenteredSpinner } from "@shared/ui/feedback";
 import { PageContent } from "@shared/ui/layout";
@@ -76,8 +75,7 @@ const resolveStaffDisplay = (
 };
 
 export default function AdminLogsClean() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useIsMobile();
   const [resourceFilter, setResourceFilter] = useState("");
   const [actorFilter, setActorFilter] = useState("");
   const [targetFilter, setTargetFilter] = useState("");

@@ -1,5 +1,8 @@
 import { useAuthenticator } from "@aws-amplify/ui-react";
-import { StaffRole } from "@entities/staff/model/useStaffs/useStaffs";
+import {
+  mapCognitoGroupsToStaffRoles,
+  StaffRole,
+} from "@entities/staff/lib/staffRoleMapping";
 import { fetchAuthSession } from "aws-amplify/auth";
 import { useEffect, useState } from "react";
 
@@ -11,6 +14,13 @@ export interface CognitoUser {
   owner: boolean;
   roles: StaffRole[];
   emailVerified: boolean;
+}
+
+export function mapTokenCognitoGroupsToRoles(groups: readonly string[]): StaffRole[] {
+  return mapCognitoGroupsToStaffRoles(groups, {
+    unknownGroupFallback: StaffRole.GUEST,
+    emptyGroupsFallback: [StaffRole.GUEST],
+  });
 }
 
 export default function useCognitoUser() {
@@ -63,22 +73,7 @@ export default function useCognitoUser() {
             ? emailVerifiedRaw === "true"
             : Boolean(emailVerifiedRaw);
 
-        const mappedRoles = userGroups.length
-          ? userGroups.map((group) => {
-              switch (group) {
-                case "Admin":
-                  return StaffRole.ADMIN;
-                case "StaffAdmin":
-                  return StaffRole.STAFF_ADMIN;
-                case "Staff":
-                  return StaffRole.STAFF;
-                case "Operator":
-                  return StaffRole.OPERATOR;
-                default:
-                  return StaffRole.GUEST;
-              }
-            })
-          : [StaffRole.GUEST];
+        const mappedRoles = mapTokenCognitoGroupsToRoles(userGroups);
 
         if (isMounted) {
           setCognitoUser({

@@ -6,8 +6,7 @@ import dayjs from "dayjs";
 import { useContext, useMemo } from "react";
 import { FieldArrayWithId } from "react-hook-form";
 
-import RestEndTimeInput from "./RestEndTimeInput";
-import RestStartTimeInput from "./RestStartTimeInput";
+import RestTimeFieldInput from "./RestTimeFieldInput";
 
 export function calcTotalRestTime(
   startTime: string | null | undefined,
@@ -44,13 +43,13 @@ export function RestTimeItem({
   return (
     <Box>
       <Stack direction="row" spacing={1}>
-        <RestStartTimeInput index={index} rest={rest} />
+        <RestTimeFieldInput type="start" index={index} rest={rest} />
         <Box>
           <Typography variant="body1" sx={{ my: 1 }}>
             ～
           </Typography>
         </Box>
-        <RestEndTimeInput index={index} rest={rest} />
+        <RestTimeFieldInput type="end" index={index} rest={rest} />
         <Box>
           <AppDeleteIconButton
             aria-label="休憩時間を削除"

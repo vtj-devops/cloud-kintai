@@ -1,5 +1,10 @@
 import dayjs, { Dayjs } from "dayjs";
 
+import {
+  getMonthDateRange,
+  getOverlappingCloseDateRanges,
+} from "./closeDateRangeUtils";
+
 export type CloseDatePeriod = {
   startDate?: string | null;
   endDate?: string | null;
@@ -16,20 +21,10 @@ export const getEffectiveDateRange = (
   currentMonth: Dayjs,
   closeDates: CloseDatePeriod[],
 ): DateRange & { hasValidPeriod: boolean } => {
-  const monthStart = currentMonth.startOf("month");
-  const monthEnd = currentMonth.endOf("month");
+  const { monthStart, monthEnd } = getMonthDateRange(currentMonth);
   const today = dayjs();
 
-  const applicableCloseDates = closeDates.filter((closeDate) => {
-    const start = dayjs(closeDate.startDate);
-    const end = dayjs(closeDate.endDate);
-    return (
-      start.isValid() &&
-      end.isValid() &&
-      !end.isBefore(monthStart, "day") &&
-      !start.isAfter(monthEnd, "day")
-    );
-  });
+  const applicableCloseDates = getOverlappingCloseDateRanges(currentMonth, closeDates);
 
   if (applicableCloseDates.length === 0) {
     return {
@@ -40,30 +35,31 @@ export const getEffectiveDateRange = (
   }
 
   const containingToday = applicableCloseDates.find((closeDate) => {
-    const start = dayjs(closeDate.startDate);
-    const end = dayjs(closeDate.endDate);
+    const { start, end } = closeDate;
     return !today.isBefore(start, "day") && !today.isAfter(end, "day");
   });
 
   if (containingToday) {
     return {
-      start: dayjs(containingToday.startDate),
-      end: dayjs(containingToday.endDate),
+      start: containingToday.start,
+      end: containingToday.end,
       hasValidPeriod: true,
     };
   }
 
   const latestCloseDate = applicableCloseDates.reduce((prev, current) => {
-    const prevUpdatedAt = dayjs(prev.updatedAt ?? prev.closeDate).valueOf();
+    const prevUpdatedAt = dayjs(
+      prev.source.updatedAt ?? prev.source.closeDate,
+    ).valueOf();
     const currentUpdatedAt = dayjs(
-      current.updatedAt ?? current.closeDate,
+      current.source.updatedAt ?? current.source.closeDate,
     ).valueOf();
     return currentUpdatedAt > prevUpdatedAt ? current : prev;
   });
 
   return {
-    start: dayjs(latestCloseDate.startDate),
-    end: dayjs(latestCloseDate.endDate),
+    start: latestCloseDate.start,
+    end: latestCloseDate.end,
     hasValidPeriod: true,
   };
 };
@@ -72,8 +68,7 @@ export const getAttendanceQueryDateRange = (
   currentMonth: Dayjs,
   effectiveDateRange: DateRange,
 ): DateRange => {
-  const monthStart = currentMonth.startOf("month");
-  const monthEnd = currentMonth.endOf("month");
+  const { monthStart, monthEnd } = getMonthDateRange(currentMonth);
 
   return {
     start: effectiveDateRange.start.isBefore(monthStart, "day")

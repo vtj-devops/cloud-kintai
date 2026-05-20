@@ -199,7 +199,7 @@ export default function AdminShiftSettingsContent({
           value={activeTab}
           onChange={setActiveTab}
           items={tabs}
-          appearance="mui-standard"
+          appearance="underline"
           panelPadding={0}
           tabsProps={{
             "aria-label": "シフト設定タブ",

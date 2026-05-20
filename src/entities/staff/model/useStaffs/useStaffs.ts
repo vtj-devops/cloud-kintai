@@ -8,6 +8,10 @@ import {
 } from "@entities/staff/api/staffApi";
 import { StaffExternalLink } from "@entities/staff/externalLink";
 import { isAttendanceManagementEnabled } from "@entities/staff/lib/attendanceManagement";
+import {
+  mapStaffRoleFromStaffRecord,
+  StaffRole,
+} from "@entities/staff/lib/staffRoleMapping";
 import { graphqlClient } from "@shared/api/amplify/graphqlClient";
 import {
   buildVersionOrUpdatedAtCondition,
@@ -33,15 +37,7 @@ import { useCallback, useEffect, useMemo } from "react";
 
 import fetchStaffs from "./fetchStaffs";
 
-export enum StaffRole {
-  OWNER = "Owner",
-  ADMIN = "Admin",
-  STAFF_ADMIN = "StaffAdmin",
-  STAFF = "Staff",
-  GUEST = "Guest",
-  OPERATOR = "Operator",
-  NONE = "None",
-}
+export { StaffRole } from "@entities/staff/lib/staffRoleMapping";
 
 export const roleLabelMap = new Map<StaffRole, string>([
   [StaffRole.OWNER, "オーナー"],
@@ -81,20 +77,7 @@ export type StaffType = {
 };
 
 export function mappingStaffRole(role: Staff["role"]): StaffRole {
-  switch (role) {
-    case StaffRole.ADMIN:
-      return StaffRole.ADMIN;
-    case StaffRole.STAFF_ADMIN:
-      return StaffRole.STAFF_ADMIN;
-    case StaffRole.STAFF:
-      return StaffRole.STAFF;
-    case StaffRole.GUEST:
-      return StaffRole.GUEST;
-    case StaffRole.OPERATOR:
-      return StaffRole.OPERATOR;
-    default:
-      return StaffRole.NONE;
-  }
+  return mapStaffRoleFromStaffRecord(role);
 }
 
 export type UseStaffsParams = {

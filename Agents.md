@@ -14,6 +14,14 @@
 - デザイントークンは `designTokenVar()` 経由で参照する
 - フォームは React Hook Form + Zod を基本にする
 
+## アンチリグレッション・レビュー基準（肥大化防止）
+
+- **コンポーネント分割**: 1ファイルが目安 `200` 行超、または `useEffect/useMemo/useCallback` が合計 `4` 個以上になったら分割を検討し、PR で「分割しない理由」か「分割先」を明記する
+- **Hook 抽出**: UI イベント処理以外の副作用が `2` 系統以上（例: API + URL クエリ同期）ある場合は custom hook へ分離する
+- **Page の責務**: `src/pages/**` はオーケストレーション中心に保ち、表示ロジックは `features/**/ui`、データ整形は `features/**/model` か `entities/**` に移す
+- **MUI ラッパー移行**: 既存コードを触る際、同等ラッパーが `src/shared/ui/**` にあるなら直接 MUI import を増やさず置換する。未整備ならラッパー追加→利用側置換を同一PRで最小1箇所行う
+- **SCSS → sx/token 移行**: 変更対象コンポーネントでは、触ったスタイル差分を `sx + designTokenVar()` へ寄せる。SCSS は「未移行部分のみ暫定残置」を許可し、残課題を PR に記載する
+
 ## Skill 参照
 
 - 開発コマンドと検証手順は `.agents/skills/garaku-dev-commands/SKILL.md` を参照

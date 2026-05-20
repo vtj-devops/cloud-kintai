@@ -1,4 +1,4 @@
-import { ShiftState } from "@features/shift/management/lib/generateMockShifts";
+import type { ShiftState } from "@entities/shift/lib/statusMapping";
 import StatusChip from "@shared/ui/chips/StatusChip";
 
 type FeedbackKey = "success" | "warning" | "danger" | "info";

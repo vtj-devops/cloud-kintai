@@ -5,7 +5,7 @@ import {
   SettingsTextAreaField,
   SettingsTextField,
 } from "@features/admin/layout/ui/SettingsPrimitives";
-import { Tab, Tabs } from "@mui/material";
+import { AppTabs } from "@shared/ui/tabs";
 import { formatDateSlash } from "@shared/lib/time";
 import { SectionTitle, SubsectionTitle } from "@shared/ui/typography";
 import { useState } from "react";
@@ -284,24 +284,26 @@ export default function AdminWorkflowSettingsContent({
   const [activeTab, setActiveTab] = useState<SettingsTabKey>("categories");
 
   return (
-    <div className="flex flex-col">
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-        <Tabs
-          value={activeTab}
-          onChange={(_, nextValue: SettingsTabKey) => setActiveTab(nextValue)}
-          aria-label="ワークフロー設定タブ"
-          variant="fullWidth"
-        >
-          <Tab label="ワークフロー種別" value="categories" />
-          <Tab label="ワークフローテンプレート" value="templates" />
-        </Tabs>
-      </div>
-
-      {activeTab === "categories" ? (
-        <WorkflowCategoryTabPanel state={state} />
-      ) : (
-        <WorkflowTemplateTabPanel state={state} />
-      )}
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <AppTabs
+        value={activeTab}
+        onChange={setActiveTab}
+        appearance="underline"
+        panelPadding={0}
+        tabsProps={{ "aria-label": "ワークフロー設定タブ", variant: "fullWidth" }}
+        items={[
+          {
+            value: "categories",
+            label: "ワークフロー種別",
+            content: <WorkflowCategoryTabPanel state={state} />,
+          },
+          {
+            value: "templates",
+            label: "ワークフローテンプレート",
+            content: <WorkflowTemplateTabPanel state={state} />,
+          },
+        ]}
+      />
     </div>
   );
 }
