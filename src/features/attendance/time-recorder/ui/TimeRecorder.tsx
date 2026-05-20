@@ -140,7 +140,7 @@ export default function TimeRecorder({
     },
     { skip: !shouldFetchAttendanceErrors },
   );
-  const attendance = attendanceData;
+  const attendance = attendanceData ?? undefined;
   const attendances: Attendance[] = attendancesData?.attendances ?? [];
   const attendanceLoading =
     !shouldFetchAttendance ||

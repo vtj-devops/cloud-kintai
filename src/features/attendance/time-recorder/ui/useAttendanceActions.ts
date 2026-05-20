@@ -16,7 +16,7 @@ import {
 import { buildAttendanceIdempotencyKey } from "@entities/attendance/lib/operationContext";
 import { getNowISOStringWithZeroSeconds } from "@entities/attendance/lib/time";
 import { CognitoUser } from "@entities/staff/model/useCognitoUser";
-import { Attendance, CreateAttendanceInput } from "@shared/api/graphql/types";
+import { Attendance, CreateAttendanceInput, Staff } from "@shared/api/graphql/types";
 import { Logger } from "@shared/lib/logger";
 import { useCallback, useContext, useRef } from "react";
 import { useDispatch } from "react-redux";
@@ -31,7 +31,7 @@ import { toConfiguredTimeISO } from "./timeRecorderUtils";
 
 type UseAttendanceActionsParams = {
   attendance: Attendance | undefined;
-  staff: { id: string } | null | undefined;
+  staff: Staff | null | undefined;
   logger: Logger;
   shouldFetchAttendance: boolean;
   shouldFetchAttendanceErrors: boolean;
