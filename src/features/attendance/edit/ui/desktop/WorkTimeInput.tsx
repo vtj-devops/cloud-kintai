@@ -1,6 +1,5 @@
 import { AttendanceEditContext } from "@features/attendance/edit/model/AttendanceEditProvider";
-import EndTimeInput from "@features/attendance/edit/ui/items/WorkTimeItem/EndTimeInput";
-import StartTimeInput from "@features/attendance/edit/ui/items/WorkTimeItem/StartTimeInput";
+import WorkTimeFieldInput from "@features/attendance/edit/ui/items/WorkTimeItem/WorkTimeFieldInput";
 import dayjs from "dayjs";
 import { useContext, useEffect, useState } from "react";
 
@@ -54,9 +53,9 @@ export function WorkTimeInput({
       </div>
       <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center md:gap-4">
         <div className="flex items-center gap-2.5">
-          <StartTimeInput highlight={highlightStartTime} />
+          <WorkTimeFieldInput type="start" highlight={highlightStartTime} />
           <div className="text-sm text-slate-500">～</div>
-          <EndTimeInput highlight={highlightEndTime} />
+          <WorkTimeFieldInput type="end" highlight={highlightEndTime} />
         </div>
         <div className="text-sm text-slate-700 md:ml-auto md:whitespace-nowrap md:text-right">
           {totalWorkTime.toFixed(1)}時間

@@ -2,8 +2,7 @@ import useAppConfig from "@entities/app-config/model/useAppConfig";
 import { buildPaidHolidayToggleValues } from "@features/attendance/edit/lib/paidHolidayToggle";
 import { AttendanceEditInputs } from "@features/attendance/edit/model/common";
 import { Box, Checkbox, Stack } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-import useMediaQuery from "@mui/material/useMediaQuery";
+import { useIsMobile } from "@shared/lib/hooks/useIsMobile";
 import { Controller, UseFieldArrayReplace } from "react-hook-form";
 
 import {
@@ -37,8 +36,7 @@ export default function PaidHolidayFlagInput({
   restReplace,
   getValues,
 }: PaidHolidayFlagInputProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useIsMobile();
 
   const {
     getStartTime,

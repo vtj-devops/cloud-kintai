@@ -11,8 +11,7 @@ import {
   UseFieldArrayRemove,
 } from "react-hook-form";
 
-import RestEndTimeInput from "../desktop/RestEndTimeInput";
-import RestStartTimeInput from "../desktop/RestStartTimeInput";
+import RestDesktopTimeInput from "../desktop/RestDesktopTimeInput";
 
 type RestTimeInputProps = {
   restFields: FieldArrayWithId<AttendanceEditInputs, "rests", "id">[];
@@ -47,7 +46,8 @@ export function RestTimeInput({
               開始時刻
             </div>
             <div className="min-w-0 space-y-2 px-3 py-2">
-              <RestStartTimeInput
+              <RestDesktopTimeInput
+                type="start"
                 rest={rest}
                 index={index}
                 testIdPrefix="mobile"
@@ -69,7 +69,8 @@ export function RestTimeInput({
               終了時刻
             </div>
             <div className="min-w-0 space-y-2 px-3 py-2">
-              <RestEndTimeInput
+              <RestDesktopTimeInput
+                type="end"
                 rest={rest}
                 index={index}
                 testIdPrefix="mobile"

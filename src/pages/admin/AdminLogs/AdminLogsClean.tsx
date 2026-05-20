@@ -25,9 +25,8 @@ import {
   TextField,
   Tooltip,
   Typography,
-  useMediaQuery,
-  useTheme,
 } from "@mui/material";
+import { useIsMobile } from "@shared/lib/hooks/useIsMobile";
 import {
   ModelOperationLogFilterInput,
   OperationLog,
@@ -76,8 +75,7 @@ const resolveStaffDisplay = (
 };
 
 export default function AdminLogsClean() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useIsMobile();
   const [resourceFilter, setResourceFilter] = useState("");
   const [actorFilter, setActorFilter] = useState("");
   const [targetFilter, setTargetFilter] = useState("");
