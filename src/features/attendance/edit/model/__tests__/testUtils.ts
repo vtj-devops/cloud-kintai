@@ -1,6 +1,5 @@
 import { Logger } from "@shared/lib/logger";
 import type {
-  UseFormGetValues,
   UseFormReset,
   UseFormSetValue,
 } from "react-hook-form";
@@ -21,7 +20,6 @@ export type MockAttendanceRecordParams = {
   reset: UseFormReset<AttendanceEditInputs>;
   restReplace: ReplaceFn<RestInputs>;
   hourlyPaidHolidayTimeReplace: ReplaceFn<HourlyPaidHolidayTimeInputs>;
-  getValues: UseFormGetValues<AttendanceEditInputs>;
   logger: Logger;
 };
 
@@ -44,7 +42,6 @@ export const createMockAttendanceRecordParams = (
   restReplace: jest.fn() as unknown as ReplaceFn<RestInputs>,
   hourlyPaidHolidayTimeReplace:
     jest.fn() as unknown as ReplaceFn<HourlyPaidHolidayTimeInputs>,
-  getValues: jest.fn() as unknown as UseFormGetValues<AttendanceEditInputs>,
   logger: createMockLogger(),
   ...overrides,
 });
