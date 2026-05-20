@@ -150,13 +150,6 @@ export function useAttendanceSubmit({
                 startTime: rest.startTime,
                 endTime: rest.endTime,
               })),
-          systemComments: (data.systemComments || []).map(
-            ({ comment, confirmed, createdAt }) => ({
-              comment,
-              confirmed,
-              createdAt,
-            }),
-          ),
           hourlyPaidHolidayTimes: data.paidHolidayFlag
             ? []
             : buildHourlyPaidHolidayTimes(data.hourlyPaidHolidayTimes),
@@ -246,13 +239,6 @@ export function useAttendanceSubmit({
                 startTime: rest.startTime,
                 endTime: rest.endTime,
               })),
-          systemComments: (data.systemComments || []).map(
-            ({ comment, confirmed, createdAt }) => ({
-              comment,
-              confirmed,
-              createdAt,
-            }),
-          ),
           hourlyPaidHolidayTimes: data.paidHolidayFlag
             ? []
             : buildHourlyPaidHolidayTimes(data.hourlyPaidHolidayTimes),

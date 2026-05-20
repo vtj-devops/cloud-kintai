@@ -196,7 +196,6 @@ describe("useAttendanceRecord", () => {
       const mockSetValue = jest.fn();
       const mockRestReplace = jest.fn();
       const mockHourlyPaidHolidayTimeReplace = jest.fn();
-      const mockSystemCommentReplace = jest.fn();
 
       mockTriggerGetAttendance.mockReturnValue({
         unwrap: () => Promise.resolve(null),
@@ -209,7 +208,6 @@ describe("useAttendanceRecord", () => {
       reset: mockReset,
       restReplace: mockRestReplace,
       hourlyPaidHolidayTimeReplace: mockHourlyPaidHolidayTimeReplace,
-      systemCommentReplace: mockSystemCommentReplace,
       getValues: jest.fn(() => []) as unknown as UseFormGetValues<AttendanceEditInputs>,
     });
 
@@ -274,7 +272,6 @@ describe("useAttendanceRecord", () => {
         endTime: null,
         histories: [historyEntry],
         rests: [],
-        systemComments: [],
         hourlyPaidHolidayTimes: [],
         changeRequests: [],
       };
@@ -465,7 +462,6 @@ describe("useAttendanceRecord", () => {
         endTime: null,
         histories: [older, newer], // 古い順で渡す
         rests: [],
-        systemComments: [],
         hourlyPaidHolidayTimes: [],
         changeRequests: [],
       };

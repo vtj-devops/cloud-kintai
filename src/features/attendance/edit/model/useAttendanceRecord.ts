@@ -3,7 +3,7 @@ import { AttendanceDateTime } from "@entities/attendance/lib/AttendanceDateTime"
 import fetchStaff from "@entities/staff/model/useStaff/fetchStaff";
 import { mappingStaffRole, StaffType } from "@entities/staff/model/useStaffs/useStaffs";
 import { AttendanceEditInputs, defaultValues, HourlyPaidHolidayTimeInputs, RestInputs, } from "@features/attendance/edit/model/common";
-import { AttendanceHistory, SystemCommentInput, } from "@shared/api/graphql/types";
+import { AttendanceHistory, } from "@shared/api/graphql/types";
 import { Logger } from "@shared/lib/logger";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
 import dayjs from "dayjs";
@@ -22,7 +22,6 @@ type UseAttendanceRecordParams = {
     reset: UseFormReset<AttendanceEditInputs>;
     restReplace: ReplaceFn<RestInputs>;
     hourlyPaidHolidayTimeReplace: ReplaceFn<HourlyPaidHolidayTimeInputs>;
-    systemCommentReplace: ReplaceFn<SystemCommentInput>;
     getValues: UseFormGetValues<AttendanceEditInputs>;
     logger: Logger;
 };
@@ -53,7 +52,7 @@ const hasSameStaffSnapshot = (next: StaffType | null | undefined, prev: StaffTyp
         next.role === prev.role &&
         next.mailAddress === prev.mailAddress);
 };
-export const useAttendanceRecord = ({ targetStaffId, targetWorkDate, readOnly, setValue, reset, restReplace, hourlyPaidHolidayTimeReplace, systemCommentReplace, getValues, logger, }: UseAttendanceRecordParams) => {
+export const useAttendanceRecord = ({ targetStaffId, targetWorkDate, readOnly, setValue, reset, restReplace, hourlyPaidHolidayTimeReplace, getValues, logger, }: UseAttendanceRecordParams) => {
     const dispatch = useDispatch();
     const [triggerGetAttendance, { data: attendanceData }] = useLazyGetAttendanceByStaffAndDateQuery();
     const attendance = attendanceData ?? null;
@@ -211,7 +210,6 @@ export const useAttendanceRecord = ({ targetStaffId, targetWorkDate, readOnly, s
                 reset(defaultValues);
                 restReplace([]);
                 hourlyPaidHolidayTimeReplace([]);
-                systemCommentReplace([]);
                 setValue("workDate", new AttendanceDateTime()
                     .setDateString(targetWorkDate)
                     .toDataFormat());
@@ -243,7 +241,6 @@ export const useAttendanceRecord = ({ targetStaffId, targetWorkDate, readOnly, s
         reset,
         restReplace,
         hourlyPaidHolidayTimeReplace,
-        systemCommentReplace,
         setValue,
     ]);
     useEffect(() => {
@@ -293,16 +290,6 @@ export const useAttendanceRecord = ({ targetStaffId, targetWorkDate, readOnly, s
             const changeRequests = attendance.changeRequests.filter((item): item is NonNullable<typeof item> => item !== null);
             setValue("changeRequests", changeRequests);
         }
-        if (attendance.systemComments) {
-            const systemComments = attendance.systemComments
-                .filter((item): item is NonNullable<typeof item> => item !== null)
-                .map(({ comment, confirmed, createdAt }) => ({
-                comment,
-                confirmed,
-                createdAt,
-            } as SystemCommentInput));
-            systemCommentReplace(systemComments);
-        }
         if (attendance.hourlyPaidHolidayTimes) {
             const hourlyPaidHolidayTimes = attendance.hourlyPaidHolidayTimes
                 .filter((item): item is NonNullable<typeof item> => item !== null)
@@ -316,7 +303,6 @@ export const useAttendanceRecord = ({ targetStaffId, targetWorkDate, readOnly, s
         attendance,
         getValues,
         restReplace,
-        systemCommentReplace,
         hourlyPaidHolidayTimeReplace,
         setValue,
     ]);

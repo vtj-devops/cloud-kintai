@@ -197,13 +197,6 @@ export const getCalendarDaySurfaceState = ({
   };
 };
 
-export const hasSystemComment = (attendance: Attendance | undefined): boolean =>
-  Boolean(
-    attendance &&
-    Array.isArray(attendance.systemComments) &&
-    attendance.systemComments.length > 0,
-  );
-
 /**
  * 指定日付の勤怠ステータスを判定
  */
@@ -245,10 +238,6 @@ export const getStatus = (
     }
 
     // 過去の営業日で打刻データなし → Error
-    return AttendanceStatus.Error;
-  }
-
-  if (hasSystemComment(attendance)) {
     return AttendanceStatus.Error;
   }
 

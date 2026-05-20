@@ -173,14 +173,6 @@ export function DuplicateAttendanceManager({
       });
       return items.length ? items.join(" | ") : "-";
     };
-    const formatSystemComments = (
-      systemComments?: Attendance["systemComments"],
-    ) => {
-      const items = (systemComments ?? [])
-        .filter(Boolean)
-        .map((comment) => comment?.comment);
-      return items.length ? items.join(" | ") : "-";
-    };
     const row = (label: string, value: (record: Attendance) => string) => ({
       label,
       value,
@@ -210,9 +202,6 @@ export function DuplicateAttendanceManager({
       ),
       row("振替日", (record) => formatDate(record.substituteHolidayDate)),
       row("変更申請", (record) => formatChangeRequests(record.changeRequests)),
-      row("システムコメント", (record) =>
-        formatSystemComments(record.systemComments),
-      ),
       row("改訂番号", (record) =>
         typeof record.revision === "number" ? `${record.revision}` : "-",
       ),

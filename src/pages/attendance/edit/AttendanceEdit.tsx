@@ -141,7 +141,6 @@ export default function AttendanceEdit() {
     restUpdate,
     restReplace,
     changeRequests,
-    systemCommentFields: [],
     hourlyPaidHolidayTimeFields,
     hourlyPaidHolidayTimeAppend,
     hourlyPaidHolidayTimeRemove,

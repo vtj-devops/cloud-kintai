@@ -49,19 +49,6 @@ type AttendanceEditFormContextProps = {
   getValues?: UseFormGetValues<AttendanceEditInputs>;
   watch?: UseFormWatch<AttendanceEditInputs>;
   handleSubmit?: UseFormHandleSubmit<AttendanceEditInputs>;
-  systemCommentFields: FieldArrayWithId<
-    AttendanceEditInputs,
-    "systemComments",
-    "id"
-  >[];
-  systemCommentUpdate?: UseFieldArrayUpdate<
-    AttendanceEditInputs,
-    "systemComments"
-  >;
-  systemCommentReplace?: UseFieldArrayReplace<
-    AttendanceEditInputs,
-    "systemComments"
-  >;
   hourlyPaidHolidayTimeFields: FieldArrayWithId<
     AttendanceEditInputs,
     "hourlyPaidHolidayTimes",
@@ -112,7 +99,6 @@ const defaultUiContextValue: AttendanceEditUiContextProps = {
 
 const defaultFormContextValue: AttendanceEditFormContextProps = {
   restFields: [],
-  systemCommentFields: [],
   hourlyPaidHolidayTimeFields: [],
   hourlyPaidHolidayTimeAppend: () => {},
   hourlyPaidHolidayTimeRemove: () => {},
@@ -195,9 +181,6 @@ export default function AttendanceEditProvider({
     getValues: value.getValues,
     watch: value.watch,
     handleSubmit: value.handleSubmit,
-    systemCommentFields: value.systemCommentFields,
-    systemCommentUpdate: value.systemCommentUpdate,
-    systemCommentReplace: value.systemCommentReplace,
     hourlyPaidHolidayTimeFields: value.hourlyPaidHolidayTimeFields,
     hourlyPaidHolidayTimeAppend: value.hourlyPaidHolidayTimeAppend,
     hourlyPaidHolidayTimeRemove: value.hourlyPaidHolidayTimeRemove,

@@ -52,12 +52,6 @@ const hourlyPaidHolidayTimeSchema = createTimeRangeValidator(
   },
 );
 
-const systemCommentSchema = z.object({
-  comment: z.string(),
-  confirmed: z.boolean(),
-  createdAt: isoDateTimeSchema,
-});
-
 export const attendanceEditSchema = z
   .object({
     workDate: dateField.optional(),
@@ -81,7 +75,6 @@ export const attendanceEditSchema = z
     staffComment: z.string().optional(),
     histories: z.any().optional(),
     changeRequests: z.any().optional(),
-    systemComments: z.array(systemCommentSchema).optional(),
     revision: z.number().optional().nullable(),
   })
   .superRefine((data, ctx) => {
