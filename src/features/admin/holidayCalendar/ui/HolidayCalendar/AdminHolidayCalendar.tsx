@@ -62,7 +62,7 @@ export default function AdminHolidayCalendar() {
           value={value}
           onChange={handleChange}
           items={tabs}
-          appearance="mui-standard"
+          appearance="underline"
           panelPadding={3}
           tabsProps={{
             "aria-label": "祝日カレンダータブ",

@@ -1,6 +1,8 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
 
+import { type AppTabAppearance } from "@shared/ui/tabs";
+
 import { VacationTabs } from "./VacationTabs";
 
 const items = [
@@ -20,9 +22,9 @@ const items = [
 ];
 
 function TestHarness({
-  appearance = "pill",
+  appearance = "underline",
 }: {
-  appearance?: "pill" | "mui-standard";
+  appearance?: AppTabAppearance;
 }) {
   const [value, setValue] = useState(0);
 
@@ -38,19 +40,30 @@ function TestHarness({
 }
 
 describe("VacationTabs", () => {
-  it("デフォルトでは既存のピル型スタイルを維持する", () => {
+  it("デフォルトでは下線付きタブスタイルを表示する", () => {
     render(<TestHarness />);
 
     const activeTab = screen.getByRole("tab", { name: "タブ1" });
 
     expect(activeTab).toHaveAttribute("aria-selected", "true");
-    expect(activeTab).toHaveClass("rounded-full");
-    expect(activeTab).toHaveClass("bg-emerald-500");
+    expect(activeTab).toHaveClass("after:bg-emerald-600");
+    expect(activeTab).toHaveClass("font-semibold");
     expect(screen.getByRole("tabpanel")).toHaveTextContent("パネル1");
   });
 
-  it("mui-standard 指定時は下線付きタブとして切り替えられる", () => {
-    render(<TestHarness appearance="mui-standard" />);
+  it("chip 指定時はピル型スタイルで表示する", () => {
+    render(<TestHarness appearance="chip" />);
+
+    const activeTab = screen.getByRole("tab", { name: "タブ1" });
+
+    expect(activeTab).toHaveClass("rounded-full");
+    expect(activeTab).toHaveClass("bg-emerald-500");
+    expect(activeTab).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tabpanel")).toHaveTextContent("パネル1");
+  });
+
+  it("タブをクリックすると対応するパネルに切り替わる", () => {
+    render(<TestHarness />);
 
     const firstTab = screen.getByRole("tab", { name: "タブ1" });
     const secondTab = screen.getByRole("tab", { name: "タブ2" });
@@ -66,7 +79,7 @@ describe("VacationTabs", () => {
   });
 
   it("矢印キーで次の有効タブへ移動する", () => {
-    render(<TestHarness appearance="mui-standard" />);
+    render(<TestHarness />);
 
     const firstTab = screen.getByRole("tab", { name: "タブ1" });
     const secondTab = screen.getByRole("tab", { name: "タブ2" });

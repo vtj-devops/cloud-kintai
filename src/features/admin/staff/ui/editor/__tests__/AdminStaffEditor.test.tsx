@@ -311,7 +311,7 @@ describe("AdminStaffEditor", () => {
 
     it("「高度設定」タブが表示される", () => {
       renderComponent();
-      expect(screen.getByTestId("advanced-tab")).toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: "高度設定" })).toBeInTheDocument();
     });
 
     it("汎用コードフィールドが表示される", () => {
@@ -462,9 +462,8 @@ describe("AdminStaffEditor", () => {
           emailVerified: true,
         } as CognitoUser,
       });
-      const advancedTab = screen.getByTestId("advanced-tab");
-      // MUI Tab の disabled は Mui-disabled クラスで表現される
-      expect(advancedTab).toHaveClass("Mui-disabled");
+      const advancedTab = screen.getByRole("tab", { name: "高度設定" });
+      expect(advancedTab).toBeDisabled();
     });
 
     it("cognitoUser.owner=true のとき「高度設定」タブが有効化されている", () => {
@@ -479,7 +478,7 @@ describe("AdminStaffEditor", () => {
           emailVerified: true,
         } as CognitoUser,
       });
-      const advancedTab = screen.getByTestId("advanced-tab");
+      const advancedTab = screen.getByRole("tab", { name: "高度設定" });
       expect(advancedTab).not.toHaveAttribute("aria-disabled", "true");
     });
   });
@@ -499,7 +498,7 @@ describe("AdminStaffEditor", () => {
           emailVerified: true,
         } as CognitoUser,
       });
-      expect(screen.queryByText("開発者フラグ")).not.toBeInTheDocument();
+      expect(screen.queryByText("開発者フラグ")).not.toBeVisible();
     });
 
     it("「高度設定」タブをクリックすると「開発者フラグ」が表示される", async () => {
@@ -514,7 +513,7 @@ describe("AdminStaffEditor", () => {
           emailVerified: true,
         } as CognitoUser,
       });
-      const advancedTab = screen.getByTestId("advanced-tab");
+      const advancedTab = screen.getByRole("tab", { name: "高度設定" });
       await userEvent.click(advancedTab);
       expect(screen.getByText("開発者フラグ")).toBeInTheDocument();
     });
@@ -531,7 +530,7 @@ describe("AdminStaffEditor", () => {
           emailVerified: true,
         } as CognitoUser,
       });
-      await userEvent.click(screen.getByTestId("advanced-tab"));
+      await userEvent.click(screen.getByRole("tab", { name: "高度設定" }));
       expect(screen.getByTestId("developer-flag-checkbox")).toBeInTheDocument();
     });
 
@@ -547,8 +546,8 @@ describe("AdminStaffEditor", () => {
           emailVerified: true,
         } as CognitoUser,
       });
-      await userEvent.click(screen.getByTestId("advanced-tab"));
-      expect(screen.queryByText("スタッフ名")).not.toBeInTheDocument();
+      await userEvent.click(screen.getByRole("tab", { name: "高度設定" }));
+      expect(screen.queryByText("スタッフ名")).not.toBeVisible();
     });
   });
 

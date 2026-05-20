@@ -688,7 +688,7 @@ export default function AttendanceSettingsContent() {
         value={activeTab}
         onChange={setActiveTab}
         items={tabs}
-        appearance="mui-standard"
+        appearance="underline"
         panelPadding={3}
         tabsProps={{
           "aria-label": "勤怠設定タブ",

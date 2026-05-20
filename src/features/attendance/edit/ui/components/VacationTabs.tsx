@@ -1,4 +1,4 @@
-import { AppTabs } from "@shared/ui/tabs";
+import { AppTabs, type AppTabAppearance } from "@shared/ui/tabs";
 import { type ReactNode } from "react";
 
 type VacationTabsProps = {
@@ -9,7 +9,7 @@ type VacationTabsProps = {
     content: ReactNode;
     disabled?: boolean;
   }[];
-  appearance?: "pill" | "mui-standard";
+  appearance?: AppTabAppearance;
   tabsProps?: {
     "aria-label"?: string;
     variant?: "standard" | "scrollable" | "fullWidth";
@@ -22,7 +22,7 @@ export function VacationTabs({
   value,
   onChange,
   items,
-  appearance = "pill",
+  appearance = "underline",
   tabsProps,
   panelPadding = 2,
 }: VacationTabsProps) {
