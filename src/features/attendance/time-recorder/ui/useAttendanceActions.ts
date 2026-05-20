@@ -18,11 +18,8 @@ import { getNowISOStringWithZeroSeconds } from "@entities/attendance/lib/time";
 import { CognitoUser } from "@entities/staff/model/useCognitoUser";
 import { Attendance, CreateAttendanceInput } from "@shared/api/graphql/types";
 import { Logger } from "@shared/lib/logger";
-import { pushNotification } from "@shared/lib/store/notificationSlice";
 import { useCallback, useContext, useRef } from "react";
 import { useDispatch } from "react-redux";
-
-import * as MESSAGE_CODE from "@/errors";
 
 import { clockInCallback } from "./clockInCallback";
 import { clockOutCallback } from "./clockOutCallback";

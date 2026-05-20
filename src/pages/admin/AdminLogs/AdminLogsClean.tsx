@@ -26,12 +26,12 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { useIsMobile } from "@shared/lib/hooks/useIsMobile";
 import {
   ModelOperationLogFilterInput,
   OperationLog,
   Staff,
 } from "@shared/api/graphql/types";
+import { useIsMobile } from "@shared/lib/hooks/useIsMobile";
 import { AppIconButton } from "@shared/ui/button";
 import { CenteredSpinner } from "@shared/ui/feedback";
 import { PageContent } from "@shared/ui/layout";
