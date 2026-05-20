@@ -2,7 +2,7 @@ import {
   STAFF_EXTERNAL_LINKS_LIMIT,
 } from "@entities/staff/externalLink";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import { AppButton, AppDeleteIconButton } from "@shared/ui/button";
 import React from "react";
 import { Controller } from "react-hook-form";
 
@@ -84,14 +84,12 @@ export const ProfileLinksTab = React.memo(function ProfileLinksTab({
                       </label>
                     )}
                   />
-                  <button
+                  <AppDeleteIconButton
                     type="button"
                     aria-label="リンクを削除"
+                    outlined
                     onClick={() => handleRemoveLink(index)}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
-                  >
-                    <DeleteOutlineIcon fontSize="small" />
-                  </button>
+                  />
                 </div>
               </div>
               <div className="grid max-w-[760px] gap-4">
@@ -153,15 +151,17 @@ export const ProfileLinksTab = React.memo(function ProfileLinksTab({
         ))}
       </div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <button
+        <AppButton
           type="button"
           onClick={handleAddLink}
           disabled={!canAddMoreLinks}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-[1rem] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+          variant="outline"
+          tone="primary"
+          startIcon={<AddCircleOutlineIcon fontSize="small" />}
+          className="w-full sm:w-auto"
         >
-          <AddCircleOutlineIcon fontSize="small" />
           リンクを追加
-        </button>
+        </AppButton>
         {!canAddMoreLinks ? (
           <p className="text-xs text-slate-500">
             最大{STAFF_EXTERNAL_LINKS_LIMIT}件まで追加できます。

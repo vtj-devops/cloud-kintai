@@ -1,3 +1,4 @@
+import { AppButton } from "@shared/ui/button";
 import React from "react";
 
 import { InfoCard } from "./InfoCard";
@@ -30,13 +31,14 @@ export const ProfileGeneralTab = React.memo(function ProfileGeneralTab({
       <div className="rounded-[1.35rem] border border-rose-100 bg-rose-50/70 p-4">
         <p className="text-sm font-medium text-slate-900">ログアウト</p>
         <p className="mt-1 text-sm leading-5 text-slate-500">現在の端末からサインアウトします。</p>
-        <button
+        <AppButton
           type="button"
           onClick={signOut}
-          className="mt-3 inline-flex w-full items-center justify-center rounded-[1rem] border border-rose-200 bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700 sm:w-auto"
+          tone="danger"
+          className="mt-3 w-full sm:w-auto"
         >
           ログアウト
-        </button>
+        </AppButton>
       </div>
     </div>
   );

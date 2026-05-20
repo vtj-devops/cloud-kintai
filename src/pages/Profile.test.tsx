@@ -2,7 +2,7 @@ import { AuthContext, type AuthContextProps } from "@app/providers/auth/AuthCont
 import fetchStaff from "@entities/staff/model/useStaff/fetchStaff";
 import updateStaff from "@entities/staff/model/useStaff/updateStaff";
 import { StaffRole } from "@entities/staff/model/useStaffs/useStaffs";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { updatePassword } from "aws-amplify/auth";
 import {
@@ -152,12 +152,14 @@ describe("Profile", () => {
 
     expect(screen.queryByRole("button", { name: "保存" })).not.toBeInTheDocument();
     await screen.findByRole("button", { name: "ログアウト" });
-    await user.click(screen.getByRole("button", { name: "通知設定" }));
+    await user.click(screen.getByRole("tab", { name: "通知設定" }));
     await screen.findByText("勤務開始メール");
 
     await user.click(screen.getByRole("checkbox", { name: "勤務開始メール" }));
 
-    expect(screen.getByText("保存待ち")).toBeInTheDocument();
+    expect(
+      within(screen.getByRole("tabpanel", { name: "通知設定" })).getByText("保存待ち"),
+    ).toBeInTheDocument();
 
     act(() => {
       jest.advanceTimersByTime(999);
@@ -180,7 +182,7 @@ describe("Profile", () => {
 
     expect(screen.queryByRole("button", { name: "保存" })).not.toBeInTheDocument();
     await screen.findByRole("button", { name: "ログアウト" });
-    await user.click(screen.getByRole("button", { name: "個人リンク設定" }));
+    await user.click(screen.getByRole("tab", { name: "個人リンク設定" }));
     await screen.findByRole("button", { name: "リンクを追加" });
 
     await user.click(screen.getByRole("button", { name: "リンクを追加" }));
@@ -216,7 +218,7 @@ describe("Profile", () => {
     const { user } = renderProfile();
 
     await screen.findByRole("button", { name: "ログアウト" });
-    await user.click(screen.getByRole("button", { name: "個人リンク設定" }));
+    await user.click(screen.getByRole("tab", { name: "個人リンク設定" }));
     await user.click(screen.getByRole("button", { name: "リンクを追加" }));
 
     expect(
@@ -241,7 +243,7 @@ describe("Profile", () => {
     const { user } = renderProfile();
 
     await screen.findByRole("button", { name: "ログアウト" });
-    await user.click(screen.getByRole("button", { name: "通知設定" }));
+    await user.click(screen.getByRole("tab", { name: "通知設定" }));
     await user.click(screen.getByRole("checkbox", { name: "勤務開始メール" }));
 
     act(() => {
@@ -276,7 +278,7 @@ describe("Profile", () => {
     const { user } = renderProfile();
 
     await screen.findByRole("button", { name: "ログアウト" });
-    await user.click(screen.getByRole("button", { name: "セキュリティ" }));
+    await user.click(screen.getByRole("tab", { name: "セキュリティ" }));
 
     const currentPasswordField = screen
       .getByText("現在のパスワード")
