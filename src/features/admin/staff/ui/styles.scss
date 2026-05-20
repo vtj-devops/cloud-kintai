@@ -92,11 +92,11 @@
 
 .admin-staff-id {
   color: #6b7280;
-  font-family: "SFMono-Regular", "Consolas", "Monaco", monospace;
+  font-family: "SFMono-Regular", "Consolas", "Monaco", monospace; // Staff ID display - monospace for code-like identifiers
 }
 
 .admin-staff-sort-key {
-  font-family: "SFMono-Regular", "Consolas", "Monaco", monospace;
+  font-family: "SFMono-Regular", "Consolas", "Monaco", monospace; // Sort key display - monospace for code-like sorting identifiers
   color: #374151;
 }
 
@@ -115,7 +115,7 @@
   border: 1px solid rgba(16, 185, 129, 0.24) !important;
   color: #0f766e !important;
   background-color: rgba(240, 253, 250, 0.75) !important;
-  font-family: "SFMono-Regular", "Consolas", "Monaco", monospace;
+  font-family: "SFMono-Regular", "Consolas", "Monaco", monospace; // ID chip display - monospace for code-like identifiers
 }
 
 .admin-staff-editor-tabs {

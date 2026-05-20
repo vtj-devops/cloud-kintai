@@ -39,7 +39,21 @@ export const createComponents = (
           {
             fontFamily: "Noto Sans JP",
             fontStyle: "normal",
-            fontWeight: 700,
+            fontWeight: 400,
+            fontDisplay: "swap",
+            src: "local('Noto Sans JP')",
+          },
+          {
+            fontFamily: "Noto Sans JP",
+            fontStyle: "normal",
+            fontWeight: 500,
+            fontDisplay: "swap",
+            src: "local('Noto Sans JP')",
+          },
+          {
+            fontFamily: "Noto Sans JP",
+            fontStyle: "normal",
+            fontWeight: 600,
             fontDisplay: "swap",
             src: "local('Noto Sans JP')",
           },
