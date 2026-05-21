@@ -1,6 +1,5 @@
 import {
   Rest,
-  SystemCommentInput,
   UpdateAttendanceInput,
 } from "@shared/api/graphql/types";
 
@@ -32,7 +31,6 @@ export type AttendanceEditInputs = {
   staffComment?: string;
   histories?: UpdateAttendanceInput["histories"];
   changeRequests?: UpdateAttendanceInput["changeRequests"];
-  systemComments?: SystemCommentInput[];
   revision?: UpdateAttendanceInput["revision"];
 };
 
@@ -50,5 +48,4 @@ export const defaultValues: AttendanceEditInputs = {
   remarks: "",
   remarkTags: [],
   rests: [],
-  systemComments: [],
 };

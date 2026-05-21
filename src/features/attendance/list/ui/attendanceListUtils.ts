@@ -5,11 +5,11 @@ import {
   getAttendanceQueryDateRange,
   getEffectiveDateRange,
 } from "@entities/attendance/lib/aggregationDateRange";
+import { MONTH_QUERY_KEY } from "@shared/lib/monthQuery";
 import dayjs, { Dayjs } from "dayjs";
 
-export const MONTH_QUERY_KEY = "month";
-
 export type { CloseDatePeriod, DateRange };
+export { MONTH_QUERY_KEY };
 
 export const getCurrentMonthFromQuery = (monthParam: string | null): Dayjs => {
   if (!monthParam) {

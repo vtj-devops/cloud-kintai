@@ -1,11 +1,8 @@
 import { AppConfigContext } from "@entities/app-config/model/AppConfigContext";
-import { attendanceEditSchema } from "@entities/attendance/validation/attendanceEditSchema";
-import { AttendanceEditInputs, defaultValues } from "@features/attendance/edit/model/common";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useAttendanceEditForm } from "@features/attendance/edit/model/useAttendanceEditForm";
 import { Attendance } from "@shared/api/graphql/types";
 import { usePageLeaveGuard } from "@shared/ui/feedback/usePageLeaveGuard";
 import { useContext } from "react";
-import { useFieldArray,useForm } from "react-hook-form";
 
 import { useAttendanceEditFormSync } from "./useAttendanceEditFormSync";
 
@@ -40,34 +37,24 @@ export function useAttendanceForm({
     watch,
     handleSubmit,
     reset,
-    formState: { isDirty, isValid, isSubmitting, errors },
-  } = useForm<AttendanceEditInputs>({
-    mode: "onChange",
-    defaultValues,
-    resolver: zodResolver(attendanceEditSchema),
-  });
-
-  const {
-    fields: restFields,
-    append: restAppend,
-    remove: restRemove,
-    update: restUpdate,
-    replace: restReplace,
-  } = useFieldArray({
-    control,
-    name: "rests",
-  });
-
-  const {
-    fields: hourlyPaidHolidayTimeFields,
-    append: hourlyPaidHolidayTimeAppend,
-    remove: hourlyPaidHolidayTimeRemove,
-    update: hourlyPaidHolidayTimeUpdate,
-    replace: hourlyPaidHolidayTimeReplace,
-  } = useFieldArray({
-    control,
-    name: "hourlyPaidHolidayTimes",
-  });
+    errors,
+    isDirty,
+    isValid,
+    isSubmitting,
+    restFields,
+    restAppend,
+    restRemove,
+    restUpdate,
+    restReplace,
+    hourlyPaidHolidayTimeFields,
+    hourlyPaidHolidayTimeAppend,
+    hourlyPaidHolidayTimeRemove,
+    hourlyPaidHolidayTimeUpdate,
+    hourlyPaidHolidayTimeReplace,
+    submitErrorMessage,
+    setSubmitError,
+    clearSubmitError,
+  } = useAttendanceEditForm();
 
   const { dialog, runWithoutGuard } = usePageLeaveGuard({
     isDirty,
@@ -79,8 +66,6 @@ export function useAttendanceForm({
     setValue,
     getValues,
     reset,
-    restReplace,
-    hourlyPaidHolidayTimeReplace,
     attendance,
     targetWorkDate,
     targetWorkDateISO,
@@ -116,5 +101,8 @@ export function useAttendanceForm({
     isOnBreak,
     dialog,
     runWithoutGuard,
+    submitErrorMessage,
+    setSubmitError,
+    clearSubmitError,
   };
 }

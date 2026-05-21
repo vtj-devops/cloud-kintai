@@ -13,9 +13,13 @@
  * - isSubmitting 中のボタン disabled
  * - キャンセルボタンでダイアログが閉じる
  */
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
+import {
+  openFileBulkAddDialog,
+  simulateCsvUpload,
+} from "../../__tests__/filePickerTestHelpers";
 import { CSVFilePicker } from "../CSVFilePicker";
 
 // ── Module mocks ──────────────────────────────────────────────────────────────
@@ -59,57 +63,7 @@ function renderComponent(bulkCreateMock = defaultBulkCreateMock) {
 }
 
 async function openDialog() {
-  const user = userEvent.setup();
-  await user.click(
-    screen.getByRole("button", { name: /ファイルからまとめて追加/ }),
-  );
-}
-
-/**
- * FileReader をモックして CSV の onload を疑似的に発火させる。
- * FileInput の input[type=file] に対して change イベントを送り、
- * FileReader.onload が実行されるようにする。
- */
-function simulateFileUpload(csvContent: string, fileName = "test.csv") {
-  const file = new File([csvContent], fileName, { type: "text/csv" });
-  type FileReaderOnloadHandler = (event: ProgressEvent<FileReader>) => void;
-
-  // FileReader をモック
-  const mockReadAsText = jest.fn();
-  const readerCallbacks: { onload?: FileReaderOnloadHandler } = {};
-
-  const mockReader = {
-    readAsText: mockReadAsText,
-    result: csvContent,
-    set onload(cb: NonNullable<FileReader["onload"]>) {
-      readerCallbacks.onload = cb as FileReaderOnloadHandler;
-    },
-  } as unknown as FileReader;
-
-  jest.spyOn(window, "FileReader").mockImplementation(() => mockReader);
-
-  // file input に change イベントを発行
-  const fileInput = document.querySelector(
-    'input[type="file"]',
-  ) as HTMLInputElement;
-  const fileList = {
-    0: file,
-    length: 1,
-    item: (index: number) => (index === 0 ? file : null),
-    [Symbol.iterator]: function* () {
-      yield file;
-    },
-  };
-  Object.defineProperty(fileInput, "files", {
-    value: fileList,
-    configurable: true,
-  });
-  fireEvent.change(fileInput);
-
-  // onload を手動でトリガー
-  if (readerCallbacks.onload) {
-    readerCallbacks.onload({} as ProgressEvent<FileReader>);
-  }
+  return openFileBulkAddDialog();
 }
 
 // ── Tests ──────────────────────────────────────────────────────────────────
@@ -196,7 +150,7 @@ describe("CSVFilePicker", () => {
     renderComponent(bulkMock);
     await openDialog();
 
-    simulateFileUpload(
+    simulateCsvUpload(
       "eventDate,name,description\n2026-04-01,花見,桜を見る会\n",
     );
 
@@ -215,7 +169,7 @@ describe("CSVFilePicker", () => {
     renderComponent();
     await openDialog();
 
-    simulateFileUpload(
+    simulateCsvUpload(
       "eventDate,name,description\n2026-04-01,花見,桜を見る会\n",
     );
 
@@ -233,7 +187,7 @@ describe("CSVFilePicker", () => {
     renderComponent(bulkMock);
     await openDialog();
 
-    simulateFileUpload(
+    simulateCsvUpload(
       "eventDate,name,description\n2026-04-01,花見,桜を見る会\n",
     );
 
@@ -256,7 +210,7 @@ describe("CSVFilePicker", () => {
     renderComponent(bulkMock);
     await openDialog();
 
-    simulateFileUpload(
+    simulateCsvUpload(
       "eventDate,name,description\n2026-04-01,花見,桜を見る会\n",
     );
 
@@ -277,7 +231,7 @@ describe("CSVFilePicker", () => {
     renderComponent(bulkMock);
     await openDialog();
 
-    simulateFileUpload(
+    simulateCsvUpload(
       "eventDate,name,description\n2026-04-01,花見,桜を見る会\n",
     );
 
@@ -300,7 +254,7 @@ describe("CSVFilePicker", () => {
     renderComponent(bulkMock);
     await openDialog();
 
-    simulateFileUpload(
+    simulateCsvUpload(
       "eventDate,name,description\n2026-04-01,花見,桜を見る会\n",
     );
 
@@ -321,7 +275,7 @@ describe("CSVFilePicker", () => {
     renderComponent(bulkMock);
     await openDialog();
 
-    simulateFileUpload(
+    simulateCsvUpload(
       "eventDate,name,description\n2026-04-01,花見,桜を見る会\n",
     );
 
@@ -345,7 +299,7 @@ describe("CSVFilePicker", () => {
     renderComponent();
     await openDialog();
 
-    simulateFileUpload(
+    simulateCsvUpload(
       "eventDate,name,description\n2026-04-01,花見,桜を見る会\n2026-04-02,花見2,\n",
     );
 
@@ -358,7 +312,7 @@ describe("CSVFilePicker", () => {
     renderComponent();
     await openDialog();
 
-    simulateFileUpload(
+    simulateCsvUpload(
       "eventDate,name,description\n2026-04-01,花見,桜を見る会\n2026-04-02,花見2,\n",
     );
 
@@ -373,7 +327,7 @@ describe("CSVFilePicker", () => {
     await openDialog();
 
     // invalid-date は除外される
-    simulateFileUpload(
+    simulateCsvUpload(
       "eventDate,name,description\n2026-04-01,花見,桜を見る会\ninvalid-date,無効,\n",
     );
 
@@ -389,7 +343,7 @@ describe("CSVFilePicker", () => {
     renderComponent();
     await openDialog();
 
-    simulateFileUpload(
+    simulateCsvUpload(
       "eventDate,name,description\n2026-04-01,花見,桜を見る会\n",
     );
 

@@ -1,5 +1,8 @@
+import {
+  mapStaffRoleFromCognitoGroup,
+  StaffRole,
+} from "@entities/staff/lib/staffRoleMapping";
 import { Staff } from "@entities/staff/model/useStaffs/common";
-import { StaffRole } from "@entities/staff/model/useStaffs/useStaffs";
 import { adminGet } from "@shared/api/amplify/adminQueriesClient";
 import dayjs from "dayjs";
 
@@ -29,6 +32,12 @@ type CognitoGroup = {
 type ListGroupsForUserResponse = {
   Groups?: CognitoGroup[];
 };
+
+export function mapAdminCognitoGroupsToRoles(groups: readonly CognitoGroup[]): StaffRole[] {
+  return groups.map((group) =>
+    mapStaffRoleFromCognitoGroup(group.GroupName, { fallback: StaffRole.NONE }),
+  );
+}
 
 export default async function fetchCognitoUsers(): Promise<Staff[]> {
   const params = {
@@ -79,22 +88,7 @@ export default async function fetchCognitoUsers(): Promise<Staff[]> {
         throw new Error(MESSAGE_CODE.E05008);
       }
 
-      const roles = groups.map((group) => {
-        switch (group.GroupName as string) {
-          case "Admin":
-            return StaffRole.ADMIN;
-          case "StaffAdmin":
-            return StaffRole.STAFF_ADMIN;
-          case "Staff":
-            return StaffRole.STAFF;
-          case "Guest":
-            return StaffRole.GUEST;
-          case "Operator":
-            return StaffRole.OPERATOR;
-          default:
-            return StaffRole.NONE;
-        }
-      });
+      const roles = mapAdminCognitoGroupsToRoles(groups);
 
       // オーナー権限
       const ownerAttribute = attributes.find(

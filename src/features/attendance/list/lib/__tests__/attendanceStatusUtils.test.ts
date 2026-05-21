@@ -40,21 +40,6 @@ describe("attendanceStatusUtils.getStatus", () => {
     },
   ];
 
-  const buildAttendance = (overrides: Partial<Attendance> = {}): Attendance =>
-    ({
-      __typename: "Attendance",
-      id: "attendance-1",
-      staffId: "staff-shift",
-      workDate: "2020-01-02",
-      startTime: "2020-01-02T09:00:00.000Z",
-      endTime: "2020-01-02T18:00:00.000Z",
-      changeRequests: [],
-      systemComments: [],
-      createdAt: "2020-01-02T00:00:00.000Z",
-      updatedAt: "2020-01-02T00:00:00.000Z",
-      ...overrides,
-    }) as Attendance;
-
   it("treats shift worker as evaluation target on holidays when attendance is missing", () => {
     const status = getStatus(
       undefined,
@@ -77,27 +62,6 @@ describe("attendanceStatusUtils.getStatus", () => {
     );
 
     expect(status).toBe(AttendanceStatus.None);
-  });
-
-  it("returns error when attendance has system comments", () => {
-    const status = getStatus(
-      buildAttendance({
-        systemComments: [
-          {
-            __typename: "SystemComment",
-            comment: "自動補正が未完了です",
-            confirmed: false,
-            createdAt: "2020-01-02T00:00:00.000Z",
-          },
-        ],
-      }),
-      buildStaff("weekday"),
-      [],
-      [],
-      dayjs("2020-01-02"),
-    );
-
-    expect(status).toBe(AttendanceStatus.Error);
   });
 });
 

@@ -3,7 +3,6 @@ import {
   Attendance,
   CreateAttendanceInput,
   RestInput,
-  SystemCommentInput,
   UpdateAttendanceInput,
 } from "@shared/api/graphql/types";
 import dayjs from "dayjs";
@@ -91,18 +90,6 @@ export async function clockOutAction({
     const noon = new AttendanceDateTime().setNoon().toDayjs();
     const isWorkStartBeforeNoon = startTime.isBefore(noon);
     const isWorkEndBeforeNoon = dayjs(endTime).isBefore(noon);
-    const systemComments = attendance.systemComments
-      ? attendance.systemComments
-          .filter((item): item is NonNullable<typeof item> => item !== null)
-          .map(
-            ({ comment, confirmed, createdAt }) =>
-              ({
-                comment,
-                confirmed,
-                createdAt,
-              } as SystemCommentInput)
-          )
-      : [];
 
     const rests = (() => {
       const prevRests = attendance.rests
@@ -124,13 +111,6 @@ export async function clockOutAction({
       const lunchBreakEnd = new AttendanceDateTime().setRestEnd().toDayjs();
 
       if (prevRests.length > 0) {
-        systemComments.push({
-          comment:
-            "既に休憩時間が登録されていたため、退勤時に昼休憩を自動追加しませんでした。",
-          confirmed: false,
-          createdAt: dayjs().toISOString(),
-        });
-
         return prevRests;
       }
 
@@ -148,7 +128,6 @@ export async function clockOutAction({
       returnDirectlyFlag: returnDirectlyFlag === ReturnDirectlyFlag.YES,
       rests,
       isDeemedHoliday: attendance.isDeemedHoliday,
-      systemComments,
       revision: attendance.revision,
     });
   }

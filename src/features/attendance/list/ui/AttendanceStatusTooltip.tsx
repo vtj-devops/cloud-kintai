@@ -11,7 +11,7 @@ import {
 } from "@shared/api/graphql/types";
 import dayjs from "dayjs";
 
-import { getStatus, hasSystemComment } from "../lib/attendanceStatusUtils";
+import { getStatus } from "../lib/attendanceStatusUtils";
 
 export function AttendanceStatusTooltip({
   staff,
@@ -26,14 +26,6 @@ export function AttendanceStatusTooltip({
 }) {
   if (!staff) {
     return <DefaultTooltip />;
-  }
-
-  if (hasSystemComment(attendance)) {
-    return (
-      <Tooltip title="システムコメントがあります">
-        <ErrorIcon color="error" />
-      </Tooltip>
-    );
   }
 
   const attendanceState = getStatus(

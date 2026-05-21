@@ -14,9 +14,15 @@
  * ため、fireEvent.change でフォーム値を設定した後に trigger() を呼んで
  * バリデーションを強制実行してから登録ボタンをクリックする。
  */
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
+import {
+  clickRegister,
+  fillCalendarFormAndEnableRegister,
+  openCalendarDialog,
+  setDatePickerValue,
+} from "../../__tests__/calendarFormTestHelpers";
 import { AddEventCalendar } from "../AddEventCalendar";
 
 // ── react-hook-form: trigger をキャプチャするためにラップ ────────────────────
@@ -143,11 +149,6 @@ function renderComponent(
   );
 }
 
-async function openDialog() {
-  const user = userEvent.setup();
-  await user.click(screen.getByRole("button", { name: /イベントを追加/ }));
-}
-
 /**
  * react-hook-form v7 では onChange イベントだけでは isValid が自動更新されないため、
  * trigger() を明示的に呼んでバリデーションを強制実行し isValid を true にする。
@@ -191,13 +192,13 @@ describe("AddEventCalendar", () => {
 
   it("ボタンをクリックするとダイアログが開く", async () => {
     renderComponent();
-    await openDialog();
+    await openCalendarDialog(/イベントを追加/);
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
   it("ダイアログタイトルに「イベントを追加」が表示される", async () => {
     renderComponent();
-    await openDialog();
+    await openCalendarDialog(/イベントを追加/);
     expect(
       screen.getByRole("heading", { name: "イベントを追加" }),
     ).toBeInTheDocument();
@@ -205,7 +206,7 @@ describe("AddEventCalendar", () => {
 
   it("「開始日」「終了日 (任意)」「イベント名」のフィールドが表示される", async () => {
     renderComponent();
-    await openDialog();
+    await openCalendarDialog(/イベントを追加/);
     expect(screen.getByTestId("datepicker-開始日")).toBeInTheDocument();
     expect(screen.getByTestId("datepicker-終了日 (任意)")).toBeInTheDocument();
     expect(screen.getByLabelText(/イベント名/)).toBeInTheDocument();
@@ -213,14 +214,14 @@ describe("AddEventCalendar", () => {
 
   it("「詳細 (任意)」フィールドが表示される", async () => {
     renderComponent();
-    await openDialog();
+    await openCalendarDialog(/イベントを追加/);
     expect(screen.getByLabelText(/詳細/)).toBeInTheDocument();
   });
 
   it("キャンセルボタンをクリックするとダイアログが閉じる", async () => {
     const user = userEvent.setup();
     renderComponent();
-    await openDialog();
+    await openCalendarDialog(/イベントを追加/);
     await user.click(screen.getByRole("button", { name: "キャンセル" }));
     await waitFor(() => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -231,16 +232,14 @@ describe("AddEventCalendar", () => {
 
   it("開始日とイベント名が未入力の場合、登録ボタンが disabled になっている", async () => {
     renderComponent();
-    await openDialog();
+    await openCalendarDialog(/イベントを追加/);
     expect(screen.getByRole("button", { name: "登録" })).toBeDisabled();
   });
 
   it("開始日のみ入力した場合、登録ボタンが disabled のまま", async () => {
     renderComponent();
-    await openDialog();
-    fireEvent.change(screen.getByTestId("datepicker-開始日"), {
-      target: { value: "2026-04-01" },
-    });
+    await openCalendarDialog(/イベントを追加/);
+    setDatePickerValue("開始日", "2026-04-01");
     await waitFor(() => {
       // isDirty=true になるが name が空なので isValid=false のまま
       expect(screen.getByRole("button", { name: "登録" })).toBeDisabled();
@@ -249,39 +248,30 @@ describe("AddEventCalendar", () => {
 
   it("開始日とイベント名を入力し trigger() を呼ぶと登録ボタンが有効になる", async () => {
     renderComponent();
-    await openDialog();
-    fireEvent.change(screen.getByTestId("datepicker-開始日"), {
-      target: { value: "2026-04-01" },
-    });
-    fireEvent.change(screen.getByLabelText(/イベント名/), {
-      target: { value: "花見" },
-    });
-    await triggerValidation();
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: "登録" })).not.toBeDisabled();
+    await openCalendarDialog(/イベントを追加/);
+    await fillCalendarFormAndEnableRegister({
+      startDate: "2026-04-01",
+      name: "花見",
+      nameLabel: /イベント名/,
+      triggerValidation,
     });
   });
 
   // ── 単日登録フロー ────────────────────────────────────────────────────────
 
   it("開始日のみ指定した場合 createEventCalendar が呼ばれる", async () => {
-    const user = userEvent.setup();
     const createMock = jest
       .fn()
       .mockResolvedValue({ id: "1", eventDate: "2026-04-01", name: "花見" });
     renderComponent(createMock);
-    await openDialog();
-    fireEvent.change(screen.getByTestId("datepicker-開始日"), {
-      target: { value: "2026-04-01" },
+    await openCalendarDialog(/イベントを追加/);
+    await fillCalendarFormAndEnableRegister({
+      startDate: "2026-04-01",
+      name: "花見",
+      nameLabel: /イベント名/,
+      triggerValidation,
     });
-    fireEvent.change(screen.getByLabelText(/イベント名/), {
-      target: { value: "花見" },
-    });
-    await triggerValidation();
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "登録" })).not.toBeDisabled(),
-    );
-    await user.click(screen.getByRole("button", { name: "登録" }));
+    await clickRegister();
 
     await waitFor(() => {
       expect(createMock).toHaveBeenCalledTimes(1);
@@ -294,23 +284,18 @@ describe("AddEventCalendar", () => {
   });
 
   it("単日登録成功時に success 通知が dispatch される", async () => {
-    const user = userEvent.setup();
     const createMock = jest
       .fn()
       .mockResolvedValue({ id: "1", eventDate: "2026-04-01", name: "花見" });
     renderComponent(createMock);
-    await openDialog();
-    fireEvent.change(screen.getByTestId("datepicker-開始日"), {
-      target: { value: "2026-04-01" },
+    await openCalendarDialog(/イベントを追加/);
+    await fillCalendarFormAndEnableRegister({
+      startDate: "2026-04-01",
+      name: "花見",
+      nameLabel: /イベント名/,
+      triggerValidation,
     });
-    fireEvent.change(screen.getByLabelText(/イベント名/), {
-      target: { value: "花見" },
-    });
-    await triggerValidation();
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "登録" })).not.toBeDisabled(),
-    );
-    await user.click(screen.getByRole("button", { name: "登録" }));
+    await clickRegister();
 
     await waitFor(() => {
       expect(pushNotificationMock).toHaveBeenCalledWith(
@@ -320,23 +305,18 @@ describe("AddEventCalendar", () => {
   });
 
   it("単日登録成功後にダイアログが閉じる", async () => {
-    const user = userEvent.setup();
     const createMock = jest
       .fn()
       .mockResolvedValue({ id: "1", eventDate: "2026-04-01", name: "花見" });
     renderComponent(createMock);
-    await openDialog();
-    fireEvent.change(screen.getByTestId("datepicker-開始日"), {
-      target: { value: "2026-04-01" },
+    await openCalendarDialog(/イベントを追加/);
+    await fillCalendarFormAndEnableRegister({
+      startDate: "2026-04-01",
+      name: "花見",
+      nameLabel: /イベント名/,
+      triggerValidation,
     });
-    fireEvent.change(screen.getByLabelText(/イベント名/), {
-      target: { value: "花見" },
-    });
-    await triggerValidation();
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "登録" })).not.toBeDisabled(),
-    );
-    await user.click(screen.getByRole("button", { name: "登録" }));
+    await clickRegister();
 
     await waitFor(() => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -344,26 +324,19 @@ describe("AddEventCalendar", () => {
   });
 
   it("description を入力すると createEventCalendar に description が渡される", async () => {
-    const user = userEvent.setup();
     const createMock = jest
       .fn()
       .mockResolvedValue({ id: "1", eventDate: "2026-04-01", name: "花見" });
     renderComponent(createMock);
-    await openDialog();
-    fireEvent.change(screen.getByTestId("datepicker-開始日"), {
-      target: { value: "2026-04-01" },
+    await openCalendarDialog(/イベントを追加/);
+    await fillCalendarFormAndEnableRegister({
+      startDate: "2026-04-01",
+      name: "花見",
+      nameLabel: /イベント名/,
+      description: "桜を見る会",
+      triggerValidation,
     });
-    fireEvent.change(screen.getByLabelText(/イベント名/), {
-      target: { value: "花見" },
-    });
-    fireEvent.change(screen.getByLabelText(/詳細/), {
-      target: { value: "桜を見る会" },
-    });
-    await triggerValidation();
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "登録" })).not.toBeDisabled(),
-    );
-    await user.click(screen.getByRole("button", { name: "登録" }));
+    await clickRegister();
 
     await waitFor(() => {
       expect(createMock).toHaveBeenCalledWith(
@@ -375,7 +348,6 @@ describe("AddEventCalendar", () => {
   // ── 期間登録フロー ────────────────────────────────────────────────────────
 
   it("開始日と終了日を指定した場合 bulkCreateEventCalendar が呼ばれる", async () => {
-    const user = userEvent.setup();
     mockBuildHolidayDateRange.mockReturnValue([
       "2026-04-01",
       "2026-04-02",
@@ -383,21 +355,15 @@ describe("AddEventCalendar", () => {
     ]);
     const bulkMock = jest.fn().mockResolvedValue([]);
     renderComponent(jest.fn(), bulkMock);
-    await openDialog();
-    fireEvent.change(screen.getByTestId("datepicker-開始日"), {
-      target: { value: "2026-04-01" },
+    await openCalendarDialog(/イベントを追加/);
+    await fillCalendarFormAndEnableRegister({
+      startDate: "2026-04-01",
+      endDate: "2026-04-03",
+      name: "花見期間",
+      nameLabel: /イベント名/,
+      triggerValidation,
     });
-    fireEvent.change(screen.getByTestId("datepicker-終了日 (任意)"), {
-      target: { value: "2026-04-03" },
-    });
-    fireEvent.change(screen.getByLabelText(/イベント名/), {
-      target: { value: "花見期間" },
-    });
-    await triggerValidation();
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "登録" })).not.toBeDisabled(),
-    );
-    await user.click(screen.getByRole("button", { name: "登録" }));
+    await clickRegister();
 
     await waitFor(() => {
       expect(bulkMock).toHaveBeenCalledTimes(1);
@@ -410,25 +376,18 @@ describe("AddEventCalendar", () => {
   });
 
   it("期間登録成功時に件数入り success 通知が dispatch される", async () => {
-    const user = userEvent.setup();
     mockBuildHolidayDateRange.mockReturnValue(["2026-04-01", "2026-04-02"]);
     const bulkMock = jest.fn().mockResolvedValue([]);
     renderComponent(jest.fn(), bulkMock);
-    await openDialog();
-    fireEvent.change(screen.getByTestId("datepicker-開始日"), {
-      target: { value: "2026-04-01" },
+    await openCalendarDialog(/イベントを追加/);
+    await fillCalendarFormAndEnableRegister({
+      startDate: "2026-04-01",
+      endDate: "2026-04-02",
+      name: "花見",
+      nameLabel: /イベント名/,
+      triggerValidation,
     });
-    fireEvent.change(screen.getByTestId("datepicker-終了日 (任意)"), {
-      target: { value: "2026-04-02" },
-    });
-    fireEvent.change(screen.getByLabelText(/イベント名/), {
-      target: { value: "花見" },
-    });
-    await triggerValidation();
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "登録" })).not.toBeDisabled(),
-    );
-    await user.click(screen.getByRole("button", { name: "登録" }));
+    await clickRegister();
 
     await waitFor(() => {
       const successCall = pushNotificationMock.mock.calls.find(
@@ -442,21 +401,16 @@ describe("AddEventCalendar", () => {
   // ── エラーハンドリング ────────────────────────────────────────────────────
 
   it("createEventCalendar が失敗した場合 error 通知が dispatch される", async () => {
-    const user = userEvent.setup();
     const createMock = jest.fn().mockRejectedValue(new Error("Server Error"));
     renderComponent(createMock);
-    await openDialog();
-    fireEvent.change(screen.getByTestId("datepicker-開始日"), {
-      target: { value: "2026-04-01" },
+    await openCalendarDialog(/イベントを追加/);
+    await fillCalendarFormAndEnableRegister({
+      startDate: "2026-04-01",
+      name: "花見",
+      nameLabel: /イベント名/,
+      triggerValidation,
     });
-    fireEvent.change(screen.getByLabelText(/イベント名/), {
-      target: { value: "花見" },
-    });
-    await triggerValidation();
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "登録" })).not.toBeDisabled(),
-    );
-    await user.click(screen.getByRole("button", { name: "登録" }));
+    await clickRegister();
 
     await waitFor(() => {
       expect(pushNotificationMock).toHaveBeenCalledWith(
@@ -466,7 +420,6 @@ describe("AddEventCalendar", () => {
   });
 
   it("HolidayDateRangeError が throw された場合、そのメッセージで error 通知が dispatch される", async () => {
-    const user = userEvent.setup();
     const { HolidayDateRangeError: MockHolidayDateRangeError } =
       jest.requireMock(
         "@features/admin/holidayCalendar/lib/buildHolidayDateRange",
@@ -481,18 +434,14 @@ describe("AddEventCalendar", () => {
       throw rangeError;
     });
     renderComponent();
-    await openDialog();
-    fireEvent.change(screen.getByTestId("datepicker-開始日"), {
-      target: { value: "2026-04-01" },
+    await openCalendarDialog(/イベントを追加/);
+    await fillCalendarFormAndEnableRegister({
+      startDate: "2026-04-01",
+      name: "長期イベント",
+      nameLabel: /イベント名/,
+      triggerValidation,
     });
-    fireEvent.change(screen.getByLabelText(/イベント名/), {
-      target: { value: "長期イベント" },
-    });
-    await triggerValidation();
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "登録" })).not.toBeDisabled(),
-    );
-    await user.click(screen.getByRole("button", { name: "登録" }));
+    await clickRegister();
 
     await waitFor(() => {
       expect(pushNotificationMock).toHaveBeenCalledWith(
@@ -505,21 +454,16 @@ describe("AddEventCalendar", () => {
   });
 
   it("登録失敗時はダイアログが開いたまま", async () => {
-    const user = userEvent.setup();
     const createMock = jest.fn().mockRejectedValue(new Error("Server Error"));
     renderComponent(createMock);
-    await openDialog();
-    fireEvent.change(screen.getByTestId("datepicker-開始日"), {
-      target: { value: "2026-04-01" },
+    await openCalendarDialog(/イベントを追加/);
+    await fillCalendarFormAndEnableRegister({
+      startDate: "2026-04-01",
+      name: "花見",
+      nameLabel: /イベント名/,
+      triggerValidation,
     });
-    fireEvent.change(screen.getByLabelText(/イベント名/), {
-      target: { value: "花見" },
-    });
-    await triggerValidation();
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "登録" })).not.toBeDisabled(),
-    );
-    await user.click(screen.getByRole("button", { name: "登録" }));
+    await clickRegister();
 
     await waitFor(() => {
       expect(pushNotificationMock).toHaveBeenCalledWith(

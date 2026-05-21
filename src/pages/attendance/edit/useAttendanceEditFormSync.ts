@@ -4,11 +4,11 @@ import {
   HourlyPaidHolidayTimeInputs,
 } from "@features/attendance/edit/model/common";
 import { Attendance } from "@shared/api/graphql/types";
+import { parseTimeToISOOrNull } from "@shared/lib/time/timeConverter";
 import dayjs from "dayjs";
 import { useCallback, useEffect, useMemo } from "react";
 import {
   Control,
-  UseFieldArrayReplace,
   UseFormGetValues,
   UseFormReset,
   UseFormSetValue,
@@ -22,11 +22,6 @@ type UseAttendanceEditFormSyncParams = {
   setValue: UseFormSetValue<AttendanceEditInputs>;
   getValues: UseFormGetValues<AttendanceEditInputs>;
   reset: UseFormReset<AttendanceEditInputs>;
-  restReplace: UseFieldArrayReplace<AttendanceEditInputs, "rests">;
-  hourlyPaidHolidayTimeReplace: UseFieldArrayReplace<
-    AttendanceEditInputs,
-    "hourlyPaidHolidayTimes"
-  >;
   attendance: Attendance | null;
   targetWorkDate?: string;
   targetWorkDateISO: string | null;
@@ -42,8 +37,6 @@ export function useAttendanceEditFormSync({
   setValue,
   getValues,
   reset,
-  restReplace,
-  hourlyPaidHolidayTimeReplace,
   attendance,
   targetWorkDate,
   targetWorkDateISO,
@@ -70,26 +63,26 @@ export function useAttendanceEditFormSync({
       return;
     }
 
-    setValue("startTime", attendance.startTime);
-    setValue("endTime", attendance.endTime);
-    setValue("paidHolidayFlag", attendance.paidHolidayFlag || false);
-    setValue("specialHolidayFlag", attendance.specialHolidayFlag || false);
-    setValue("goDirectlyFlag", attendance.goDirectlyFlag || false);
-    setValue("substituteHolidayDate", attendance.substituteHolidayDate);
-    setValue("returnDirectlyFlag", attendance.returnDirectlyFlag || false);
-
     const { tags, remarks } = splitRemarks(attendance.remarks);
-    setValue("remarkTags", tags);
-    setValue("remarks", remarks);
-
     const normalizedRests = normalizeTimeRanges(attendance.rests);
-    setValue("rests", normalizedRests);
-
     const normalizedHourlyPaidHolidayTimes = normalizeTimeRanges(
       attendance.hourlyPaidHolidayTimes,
     );
-    setValue("hourlyPaidHolidayTimes", normalizedHourlyPaidHolidayTimes);
-  }, [attendance, targetWorkDateISO, setValue]);
+
+    reset({
+      startTime: attendance.startTime,
+      endTime: attendance.endTime,
+      paidHolidayFlag: attendance.paidHolidayFlag || false,
+      specialHolidayFlag: attendance.specialHolidayFlag || false,
+      goDirectlyFlag: attendance.goDirectlyFlag || false,
+      substituteHolidayDate: attendance.substituteHolidayDate,
+      returnDirectlyFlag: attendance.returnDirectlyFlag || false,
+      remarkTags: tags,
+      remarks,
+      rests: normalizedRests,
+      hourlyPaidHolidayTimes: normalizedHourlyPaidHolidayTimes,
+    });
+  }, [attendance, targetWorkDateISO, reset]);
 
   const absentFlagValue = useWatch({ control, name: "absentFlag" });
 
@@ -98,12 +91,13 @@ export function useAttendanceEditFormSync({
     const tags: string[] = (getValues("remarkTags") as string[]) || [];
     const has = tags.includes("欠勤");
     if (flag && !has) {
-      setValue("remarkTags", [...tags, "欠勤"]);
+      setValue("remarkTags", [...tags, "欠勤"], { shouldDirty: false });
     }
     if (!flag && has) {
       setValue(
         "remarkTags",
         tags.filter((t) => t !== "欠勤"),
+        { shouldDirty: false },
       );
     }
   }, [absentFlagValue, setValue, getValues]);
@@ -114,13 +108,14 @@ export function useAttendanceEditFormSync({
       const has = tags.includes(tag);
 
       if (shouldInclude && !has) {
-        setValue("remarkTags", [...tags, tag]);
+        setValue("remarkTags", [...tags, tag], { shouldDirty: false });
       }
 
       if (!shouldInclude && has) {
         setValue(
           "remarkTags",
           tags.filter((t) => t !== tag),
+          { shouldDirty: false },
         );
       }
     },
@@ -142,11 +137,11 @@ export function useAttendanceEditFormSync({
     );
 
     if (getValues("startTime") !== desiredStart) {
-      setValue("startTime", desiredStart);
+      setValue("startTime", desiredStart, { shouldDirty: false });
     }
 
     if (getValues("endTime") !== desiredEnd) {
-      setValue("endTime", desiredEnd);
+      setValue("endTime", desiredEnd, { shouldDirty: false });
     }
 
     const dateStr = (getValues("workDate") as string) || "";
@@ -157,26 +152,20 @@ export function useAttendanceEditFormSync({
       : targetWorkDate
         ? dayjs(targetWorkDate)
         : dayjs();
+    const lunchStartTime = lunchStartCfg.format("HH:mm");
+    const lunchEndTime = lunchEndCfg.format("HH:mm");
+    const lunchStartIso = parseTimeToISOOrNull(lunchStartTime, baseDay);
+    const lunchEndIso = parseTimeToISOOrNull(lunchEndTime, baseDay);
     const desiredRests = [
       {
-        startTime: baseDay
-          .hour(lunchStartCfg.hour())
-          .minute(lunchStartCfg.minute())
-          .second(0)
-          .millisecond(0)
-          .toISOString(),
-        endTime: baseDay
-          .hour(lunchEndCfg.hour())
-          .minute(lunchEndCfg.minute())
-          .second(0)
-          .millisecond(0)
-          .toISOString(),
+        startTime: lunchStartIso,
+        endTime: lunchEndIso,
       },
     ];
     const currentRests = getValues("rests") || [];
 
     if (JSON.stringify(currentRests) !== JSON.stringify(desiredRests)) {
-      restReplace(desiredRests);
+      setValue("rests", desiredRests, { shouldDirty: false });
     }
   }, [
     attendance?.workDate,
@@ -185,7 +174,6 @@ export function useAttendanceEditFormSync({
     getLunchRestStartTime,
     getStartTime,
     getValues,
-    restReplace,
     setValue,
     targetWorkDate,
   ]);
@@ -196,9 +184,9 @@ export function useAttendanceEditFormSync({
       | undefined;
 
     if (currentHourly && currentHourly.length > 0) {
-      hourlyPaidHolidayTimeReplace([]);
+      setValue("hourlyPaidHolidayTimes", [], { shouldDirty: false });
     }
-  }, [getValues, hourlyPaidHolidayTimeReplace]);
+  }, [getValues, setValue]);
 
   const syncHolidayEffects = useCallback(
     (

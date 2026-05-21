@@ -29,6 +29,7 @@ type AttendanceEditUiContextProps = {
   isDirty: boolean;
   isValid: boolean;
   isSubmitting: boolean;
+  submitErrorMessage?: string | null;
   errorMessages?: string[];
   changeRequests: AttendanceChangeRequest[];
   readOnly?: boolean;
@@ -48,19 +49,6 @@ type AttendanceEditFormContextProps = {
   getValues?: UseFormGetValues<AttendanceEditInputs>;
   watch?: UseFormWatch<AttendanceEditInputs>;
   handleSubmit?: UseFormHandleSubmit<AttendanceEditInputs>;
-  systemCommentFields: FieldArrayWithId<
-    AttendanceEditInputs,
-    "systemComments",
-    "id"
-  >[];
-  systemCommentUpdate?: UseFieldArrayUpdate<
-    AttendanceEditInputs,
-    "systemComments"
-  >;
-  systemCommentReplace?: UseFieldArrayReplace<
-    AttendanceEditInputs,
-    "systemComments"
-  >;
   hourlyPaidHolidayTimeFields: FieldArrayWithId<
     AttendanceEditInputs,
     "hourlyPaidHolidayTimes",
@@ -101,6 +89,7 @@ const defaultUiContextValue: AttendanceEditUiContextProps = {
   isDirty: false,
   isValid: false,
   isSubmitting: false,
+  submitErrorMessage: null,
   errorMessages: [],
   changeRequests: [],
   readOnly: false,
@@ -110,7 +99,6 @@ const defaultUiContextValue: AttendanceEditUiContextProps = {
 
 const defaultFormContextValue: AttendanceEditFormContextProps = {
   restFields: [],
-  systemCommentFields: [],
   hourlyPaidHolidayTimeFields: [],
   hourlyPaidHolidayTimeAppend: () => {},
   hourlyPaidHolidayTimeRemove: () => {},
@@ -174,6 +162,7 @@ export default function AttendanceEditProvider({
     isDirty: value.isDirty,
     isValid: value.isValid,
     isSubmitting: value.isSubmitting,
+    submitErrorMessage: value.submitErrorMessage,
     errorMessages: value.errorMessages,
     changeRequests: value.changeRequests,
     readOnly: value.readOnly,
@@ -192,9 +181,6 @@ export default function AttendanceEditProvider({
     getValues: value.getValues,
     watch: value.watch,
     handleSubmit: value.handleSubmit,
-    systemCommentFields: value.systemCommentFields,
-    systemCommentUpdate: value.systemCommentUpdate,
-    systemCommentReplace: value.systemCommentReplace,
     hourlyPaidHolidayTimeFields: value.hourlyPaidHolidayTimeFields,
     hourlyPaidHolidayTimeAppend: value.hourlyPaidHolidayTimeAppend,
     hourlyPaidHolidayTimeRemove: value.hourlyPaidHolidayTimeRemove,

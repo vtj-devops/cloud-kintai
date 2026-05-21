@@ -4,8 +4,12 @@ import {
   extractDateFromISO,
   formatDateToString,
   formatISOToTime,
+  formatISOToTimeOrEmpty,
   formatMinutesToHHmm,
+  isCompleteTime,
+  normalizeTimeDraft,
   parseTimeToISO,
+  parseTimeToISOOrNull,
 } from "../timeConverter";
 
 describe("formatISOToTime", () => {
@@ -22,6 +26,19 @@ describe("parseTimeToISO", () => {
     const parsed = dayjs(iso);
     expect(parsed.format("YYYY-MM-DD")).toBe("2024-01-15");
     expect(parsed.format("HH:mm")).toBe("09:30");
+  });
+
+  describe("parseTimeToISOOrNull", () => {
+    it("有効な HH:mm 文字列を ISO に変換する", () => {
+      const iso = parseTimeToISOOrNull("09:30", "2024-01-15");
+      expect(iso).not.toBeNull();
+      expect(dayjs(iso as string).format("YYYY-MM-DD")).toBe("2024-01-15");
+    });
+
+    it("不正な HH:mm 形式は null を返す", () => {
+      expect(parseTimeToISOOrNull("9:30", "2024-01-15")).toBeNull();
+      expect(parseTimeToISOOrNull("24:00", "2024-01-15")).toBeNull();
+    });
   });
 });
 
@@ -53,5 +70,27 @@ describe("formatMinutesToHHmm", () => {
   });
   it("負の値 → '0:00'", () => {
     expect(formatMinutesToHHmm(-15)).toBe("0:00");
+  });
+});
+
+describe("formatISOToTimeOrEmpty", () => {
+  it("未入力・不正値を空文字にする", () => {
+    expect(formatISOToTimeOrEmpty(undefined)).toBe("");
+    expect(formatISOToTimeOrEmpty(null)).toBe("");
+    expect(formatISOToTimeOrEmpty("invalid")).toBe("");
+  });
+});
+
+describe("normalizeTimeDraft / isCompleteTime", () => {
+  it("時刻下書きを正規化する", () => {
+    expect(normalizeTimeDraft("1234")).toBe("12:34");
+    expect(normalizeTimeDraft("12:3456")).toBe("12:34");
+    expect(normalizeTimeDraft("1a2b")).toBe("12");
+  });
+
+  it("HH:mm 完全入力のみ true", () => {
+    expect(isCompleteTime("09:30")).toBe(true);
+    expect(isCompleteTime("9:30")).toBe(false);
+    expect(isCompleteTime("24:00")).toBe(false);
   });
 });

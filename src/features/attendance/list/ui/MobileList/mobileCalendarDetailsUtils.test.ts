@@ -6,7 +6,6 @@ import {
   getRestTimes,
   getSelectedDateLabel,
   getSummaryText,
-  getSystemCommentTexts,
 } from "./mobileCalendarDetailsUtils";
 
 const baseAttendance = {
@@ -70,21 +69,6 @@ describe("getSummaryText", () => {
 
   it("フラグなしのとき空文字を返す", () => {
     expect(getSummaryText(baseAttendance)).toBe("");
-  });
-});
-
-describe("getSystemCommentTexts", () => {
-  it("システムコメントのテキスト配列を返す", () => {
-    const attendance = {
-      ...baseAttendance,
-      systemComments: [{ comment: "コメント1" }, null, { comment: "コメント2" }],
-    } as unknown as Attendance;
-    const result = getSystemCommentTexts(attendance);
-    expect(result).toEqual(["コメント1", "コメント2"]);
-  });
-
-  it("null を渡すと空配列を返す", () => {
-    expect(getSystemCommentTexts(null)).toEqual([]);
   });
 });
 

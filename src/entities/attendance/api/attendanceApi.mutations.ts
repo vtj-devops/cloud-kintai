@@ -318,10 +318,6 @@ export const attendanceApi = attendanceApiWithQueries.injectEndpoints({
               "changeRequests",
               sourceAttendance.changeRequests,
             ),
-            systemComments: resolveInputField(
-              "systemComments",
-              sourceAttendance.systemComments,
-            ),
             revision: expectedRevision + 1,
             staffWorkDateKey: buildStaffWorkDateKey(staffId, workDate),
           };

@@ -166,6 +166,15 @@ export default [
           message: "Use Object.hasOwn() instead of hasOwnProperty().",
         },
       ],
+      "max-lines-per-function": [
+        "warn",
+        {
+          max: 220,
+          skipBlankLines: true,
+          skipComments: true,
+          IIFEs: true,
+        },
+      ],
     },
   }),
   {

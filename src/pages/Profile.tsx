@@ -1,9 +1,10 @@
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
 import { roleLabelMap } from "@entities/staff/model/useStaffs/useStaffs";
 import { usePageLeaveGuard } from "@shared/ui/feedback/usePageLeaveGuard";
+import { AppTabs } from "@shared/ui/tabs";
 import { PageTitle } from "@shared/ui/typography";
 import dayjs from "dayjs";
-import { type SyntheticEvent, useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import { InfoCard } from "./profile/components/InfoCard";
 import { ProfileGeneralTab } from "./profile/components/ProfileGeneralTab";
@@ -24,12 +25,6 @@ const profileTabs: { value: ProfileTab; label: string }[] = [
   { value: "links", label: "個人リンク設定" },
   { value: "security", label: "セキュリティ" },
 ];
-
-const isProfileTab = (value: string): value is ProfileTab =>
-  value === "general" ||
-  value === "notifications" ||
-  value === "links" ||
-  value === "security";
 
 export default function Profile() {
   const {
@@ -68,17 +63,73 @@ export default function Profile() {
     return null;
   }
 
-  const handleTabChange = (_: SyntheticEvent, value: string) => {
-    if (isProfileTab(value)) {
-      setActiveTab(value);
-    }
-  };
-
   const profileName = `${cognitoUser.familyName} ${cognitoUser.givenName}`;
   const roleLabel = staff?.role ? roleLabelMap.get(staff.role) : "未設定";
   const usageStartDateLabel = staff?.usageStartDate
     ? dayjs(staff.usageStartDate).format(AttendanceDate.DisplayFormat)
     : "未設定";
+  const renderTabSection = (content: ReactNode) => (
+    <section className="min-w-0 w-full rounded-[1.5rem] border border-slate-200/80 bg-white/85 p-4 shadow-[0_24px_54px_-40px_rgba(15,23,42,0.35)] sm:rounded-[2rem] sm:p-6">
+      {content}
+    </section>
+  );
+  const profileTabItems = [
+    {
+      value: profileTabs[0].value,
+      label: profileTabs[0].label,
+      content: renderTabSection(
+        <ProfileGeneralTab
+          mailAddress={cognitoUser.mailAddress}
+          roleLabel={roleLabel ?? "未設定"}
+          usageStartDateLabel={usageStartDateLabel}
+          signOut={signOut}
+        />
+      ),
+    },
+    {
+      value: profileTabs[1].value,
+      label: profileTabs[1].label,
+      content: renderTabSection(
+        <ProfileNotificationsTab
+          notificationControl={notificationControl}
+          isAutoSaving={isAutoSaving}
+          isAutoSavePending={isAutoSavePending}
+          lastSavedAt={lastSavedAt}
+        />
+      ),
+    },
+    {
+      value: profileTabs[2].value,
+      label: profileTabs[2].label,
+      content: renderTabSection(
+        <ProfileLinksTab
+          linksControl={linksControl}
+          externalLinkFields={externalLinkFields}
+          handleAddLink={handleAddLink}
+          handleRemoveLink={handleRemoveLink}
+          canAddMoreLinks={canAddMoreLinks}
+          isAutoSaving={isAutoSaving}
+          isAutoSavePending={isAutoSavePending}
+          lastSavedAt={lastSavedAt}
+          hasPendingLinkInput={hasPendingLinkInput}
+        />
+      ),
+    },
+    {
+      value: profileTabs[3].value,
+      label: profileTabs[3].label,
+      content: renderTabSection(
+        <ProfileSecurityTab
+          passwordControl={passwordControl}
+          handlePasswordSubmit={handlePasswordSubmit}
+          getPasswordValues={getPasswordValues}
+          resetPasswordForm={resetPasswordForm}
+          isPasswordValid={isPasswordValid}
+          isPasswordSubmitting={isPasswordSubmitting}
+        />
+      ),
+    },
+  ];
 
   return (
     <div className="mx-auto w-full max-w-[1280px] overflow-x-hidden px-4 py-3 sm:px-8 sm:py-6 lg:px-12">
@@ -110,75 +161,14 @@ export default function Profile() {
           className="w-full rounded-[1.25rem] border border-emerald-100/80 bg-white/80 p-1.5 shadow-[0_18px_44px_-36px_rgba(15,23,42,0.35)] sm:rounded-[1.5rem] sm:p-2"
           style={{ maxWidth: PROFILE_CONTENT_MAX_WIDTH }}
         >
-          <div className="grid grid-cols-2 gap-1.5 sm:flex sm:min-w-0 sm:gap-2">
-            {profileTabs.map((tab) => {
-              const isActive = activeTab === tab.value;
-              return (
-                <button
-                  key={tab.value}
-                  type="button"
-                  onClick={() => handleTabChange({} as SyntheticEvent, tab.value)}
-                  className={[
-                    "min-w-0 rounded-[1rem] px-2.5 py-2 text-center text-[0.92rem] font-semibold leading-tight transition whitespace-normal break-words sm:shrink-0 sm:rounded-[1.1rem] sm:px-4 sm:py-2.5 sm:text-sm sm:whitespace-nowrap",
-                    isActive
-                      ? "bg-emerald-600 text-white shadow-[0_14px_30px_-20px_rgba(5,150,105,0.7)]"
-                      : "bg-transparent text-slate-600 hover:bg-emerald-50 hover:text-emerald-700",
-                  ].join(" ")}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
+          <AppTabs
+            value={activeTab}
+            onChange={setActiveTab}
+            items={profileTabItems}
+            panelPadding={0}
+            tabsProps={{ "aria-label": "プロフィール設定タブ" }}
+          />
         </div>
-
-        <section
-          className="min-w-0 w-full rounded-[1.5rem] border border-slate-200/80 bg-white/85 p-4 shadow-[0_24px_54px_-40px_rgba(15,23,42,0.35)] sm:rounded-[2rem] sm:p-6"
-          style={{ maxWidth: PROFILE_CONTENT_MAX_WIDTH }}
-        >
-          {activeTab === "general" ? (
-            <ProfileGeneralTab
-              mailAddress={cognitoUser.mailAddress}
-              roleLabel={roleLabel ?? "未設定"}
-              usageStartDateLabel={usageStartDateLabel}
-              signOut={signOut}
-            />
-          ) : null}
-
-          {activeTab === "notifications" ? (
-            <ProfileNotificationsTab
-              notificationControl={notificationControl}
-              isAutoSaving={isAutoSaving}
-              isAutoSavePending={isAutoSavePending}
-              lastSavedAt={lastSavedAt}
-            />
-          ) : null}
-
-          {activeTab === "links" ? (
-            <ProfileLinksTab
-              linksControl={linksControl}
-              externalLinkFields={externalLinkFields}
-              handleAddLink={handleAddLink}
-              handleRemoveLink={handleRemoveLink}
-              canAddMoreLinks={canAddMoreLinks}
-              isAutoSaving={isAutoSaving}
-              isAutoSavePending={isAutoSavePending}
-              lastSavedAt={lastSavedAt}
-              hasPendingLinkInput={hasPendingLinkInput}
-            />
-          ) : null}
-
-          {activeTab === "security" ? (
-            <ProfileSecurityTab
-              passwordControl={passwordControl}
-              handlePasswordSubmit={handlePasswordSubmit}
-              getPasswordValues={getPasswordValues}
-              resetPasswordForm={resetPasswordForm}
-              isPasswordValid={isPasswordValid}
-              isPasswordSubmitting={isPasswordSubmitting}
-            />
-          ) : null}
-        </section>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import "./MobileCalendar.scss";
 
 import { AttendanceStatus } from "@entities/attendance/lib/AttendanceState";
+import { getAttendanceStatusDayCellStyle } from "@entities/attendance/lib/statusPresentation";
 import { CSSProperties, ReactNode } from "react";
 
 type CalendarDayCellProps = {
@@ -40,40 +41,23 @@ export const CalendarDayCell = ({
   children,
   onClick,
 }: CalendarDayCellProps) => {
-  let backgroundColor = isCurrentMonth
-    ? "var(--mui-palette-background-paper)"
-    : "var(--mui-palette-grey-50)";
+  let backgroundColor = "var(--mui-palette-background-paper)";
   let borderColor = "var(--mui-palette-divider)";
-  let color = isCurrentMonth
-    ? "var(--mui-palette-text-primary)"
-    : "var(--mui-palette-text-secondary)";
+  let color = "var(--mui-palette-text-primary)";
 
   if (!isCurrentMonth) {
     backgroundColor = "var(--mui-palette-grey-100)";
     borderColor = "rgba(156, 163, 175, 0.4)";
     color = "var(--mui-palette-text-secondary)";
-  } else if (status === AttendanceStatus.Error || hasError) {
-    backgroundColor = "rgba(211, 47, 47, 0.14)";
-    borderColor = "var(--mui-palette-error-main)";
-    color = "#8f1d1d";
-  } else if (status === AttendanceStatus.Late) {
-    backgroundColor = "rgba(237, 108, 2, 0.18)";
-    borderColor = "var(--mui-palette-warning-main)";
-    color = "#8a3b00";
-  } else if (status === AttendanceStatus.Ok) {
-    backgroundColor = "rgba(46, 125, 50, 0.14)";
-    borderColor = "rgba(46, 125, 50, 0.32)";
-    color = "#1f5f24";
-  } else if (
-    status === AttendanceStatus.Requesting ||
-    status === AttendanceStatus.Working
-  ) {
-    backgroundColor = "rgba(2, 136, 209, 0.12)";
-    borderColor = "rgba(2, 136, 209, 0.34)";
-    color = "#0b5f8a";
-  } else if (isHolidayLike) {
-    backgroundColor = "rgba(237, 108, 2, 0.1)";
-    borderColor = "rgba(237, 108, 2, 0.28)";
+  } else {
+    const statusStyle = getAttendanceStatusDayCellStyle({
+      status,
+      hasError,
+      isHolidayLike,
+    });
+    backgroundColor = statusStyle.backgroundColor;
+    borderColor = statusStyle.borderColor;
+    color = statusStyle.color;
   }
 
   const classNames = ["mobile-calendar__day-cell"];

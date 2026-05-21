@@ -5,7 +5,6 @@ import { useWorkflowNotificationInbox } from "@features/workflow/notification/mo
 import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import {
-  Alert,
   Box,
   Chip,
   CircularProgress,
@@ -16,6 +15,11 @@ import {
   Typography,
 } from "@mui/material";
 import { AppButton } from "@shared/ui/button";
+import {
+  DataStateContainer,
+  EmptyState,
+  InlineAlert,
+} from "@shared/ui/feedback";
 import {
   DashboardInnerSurface,
   PageContent,
@@ -122,103 +126,110 @@ export default function WorkflowNotificationsPage() {
         <PageSection layoutVariant="dashboard">
           <DashboardInnerSurface>
             <Stack spacing={2}>
-            <Stack
-              direction={{ xs: "column", sm: "row" }}
-              spacing={1.5}
-              justifyContent="space-between"
-              alignItems={{ xs: "stretch", sm: "center" }}
-            >
-              <Stack direction="row" spacing={1} alignItems="center">
-                <SectionTitle as="h2">通知一覧</SectionTitle>
-                <Chip
-                  label={`未読 ${unreadCount} 件`}
-                  color="primary"
-                  variant="outlined"
-                />
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={1.5}
+                justifyContent="space-between"
+                alignItems={{ xs: "stretch", sm: "center" }}
+              >
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <SectionTitle as="h2">通知一覧</SectionTitle>
+                  <Chip
+                    label={`未読 ${unreadCount} 件`}
+                    color="primary"
+                    variant="outlined"
+                  />
+                </Stack>
+                <AppButton
+                  variant="outline"
+                  tone="neutral"
+                  size="sm"
+                  startIcon={<MarkEmailReadIcon />}
+                  disabled={unreadCount === 0 || loading}
+                  onClick={() => {
+                    void handleMarkAllAsRead();
+                  }}
+                >
+                  すべて既読にする
+                </AppButton>
               </Stack>
-              <AppButton
-                variant="outline"
-                tone="neutral"
-                size="sm"
-                startIcon={<MarkEmailReadIcon />}
-                disabled={unreadCount === 0 || loading}
-                onClick={() => {
-                  void handleMarkAllAsRead();
-                }}
-              >
-                すべて既読にする
-              </AppButton>
-            </Stack>
 
-            {error && <Alert severity="error">{error}</Alert>}
-            {actionError && <Alert severity="error">{actionError}</Alert>}
+              {error && <InlineAlert tone="error">{error}</InlineAlert>}
+              {actionError && (
+                <InlineAlert tone="error">{actionError}</InlineAlert>
+              )}
 
-            {loading ? (
-              <Box display="flex" justifyContent="center" py={6}>
-                <CircularProgress />
-              </Box>
-            ) : notifications.length === 0 ? (
-              <Box
-                sx={{
-                  py: 6,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 1,
-                }}
-              >
-                <NotificationsNoneIcon color="disabled" />
-                <Typography color="text.secondary">通知はありません</Typography>
-              </Box>
-            ) : (
-              <Box
-                sx={{ maxHeight: "65vh", overflowY: "auto", pr: 0.5 }}
-                onScroll={handleListScroll}
-              >
-                <List disablePadding>
-                  {notifications.map((notification) => (
-                    <ListItemButton
-                      key={notification.id}
-                      onClick={() => {
-                        void handleOpenNotification(
-                          notification.id,
-                          notification.workflowId,
-                        );
-                      }}
-                      sx={{
-                        borderRadius: 2,
-                        mb: 0.5,
-                        backgroundColor: notification.isRead
-                          ? "transparent"
-                          : "action.hover",
-                      }}
-                    >
-                      <ListItemText
-                        primary={notification.title}
-                        secondary={
-                          <Stack spacing={0.5} mt={0.5}>
-                            <Typography variant="body2" color="text.secondary">
-                              {notification.body}
-                            </Typography>
-                            <Typography variant="caption" color="text.disabled">
-                              {formatEventAt(notification.eventAt)}
-                            </Typography>
-                          </Stack>
-                        }
-                      />
-                      {!notification.isRead && (
-                        <Chip size="small" label="未読" color="primary" />
-                      )}
-                    </ListItemButton>
-                  ))}
-                </List>
-                {loadingMore && (
-                  <Box display="flex" justifyContent="center" py={1.5}>
-                    <CircularProgress size={20} />
+              <DataStateContainer
+                isLoading={loading}
+                hasData={notifications.length > 0}
+                loadingContent={
+                  <Box display="flex" justifyContent="center" py={6}>
+                    <CircularProgress />
                   </Box>
-                )}
-              </Box>
-            )}
+                }
+                emptyContent={
+                  <Box
+                    sx={{
+                      py: 6,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 1,
+                    }}
+                  >
+                    <NotificationsNoneIcon color="disabled" />
+                    <EmptyState message="通知はありません" />
+                  </Box>
+                }
+              >
+                <Box
+                  sx={{ maxHeight: "65vh", overflowY: "auto", pr: 0.5 }}
+                  onScroll={handleListScroll}
+                >
+                  <List disablePadding>
+                    {notifications.map((notification) => (
+                      <ListItemButton
+                        key={notification.id}
+                        onClick={() => {
+                          void handleOpenNotification(
+                            notification.id,
+                            notification.workflowId,
+                          );
+                        }}
+                        sx={{
+                          borderRadius: 2,
+                          mb: 0.5,
+                          backgroundColor: notification.isRead
+                            ? "transparent"
+                            : "action.hover",
+                        }}
+                      >
+                        <ListItemText
+                          primary={notification.title}
+                          secondary={
+                            <Stack spacing={0.5} mt={0.5}>
+                              <Typography variant="body2" color="text.secondary">
+                                {notification.body}
+                              </Typography>
+                              <Typography variant="caption" color="text.disabled">
+                                {formatEventAt(notification.eventAt)}
+                              </Typography>
+                            </Stack>
+                          }
+                        />
+                        {!notification.isRead && (
+                          <Chip size="small" label="未読" color="primary" />
+                        )}
+                      </ListItemButton>
+                    ))}
+                  </List>
+                  {loadingMore && (
+                    <Box display="flex" justifyContent="center" py={1.5}>
+                      <CircularProgress size={20} />
+                    </Box>
+                  )}
+                </Box>
+              </DataStateContainer>
             </Stack>
           </DashboardInnerSurface>
         </PageSection>

@@ -2,11 +2,14 @@
  * 共同編集シフト調整の型定義
  */
 
+import type { ShiftStateWithEmpty as ShiftState } from "@entities/shift/lib/statusMapping";
 import {
   ModelShiftRequestConditionInput,
   ShiftRequestStatus,
   UpdateShiftRequestInput,
 } from "@shared/api/graphql/types";
+
+export type { ShiftState };
 
 /**
  * データ同期ステータス
@@ -18,16 +21,6 @@ export type DataSyncStatus =
   | "saved"
   | "synced"
   | "error";
-
-/**
- * シフト状態（内部表現）
- */
-export type ShiftState =
-  | "work"
-  | "fixedOff"
-  | "requestedOff"
-  | "auto"
-  | "empty";
 
 /**
  * 参加ユーザー情報
@@ -179,40 +172,6 @@ export type ShiftRequestQueryArgs = {
 export type ShiftRequestUpdatePayload = {
   input: UpdateShiftRequestInput;
   condition?: ModelShiftRequestConditionInput;
-};
-
-export const shiftRequestStatusToShiftState = (
-  status?: ShiftRequestStatus | null,
-): ShiftState => {
-  switch (status) {
-    case ShiftRequestStatus.WORK:
-      return "work";
-    case ShiftRequestStatus.FIXED_OFF:
-      return "fixedOff";
-    case ShiftRequestStatus.REQUESTED_OFF:
-      return "requestedOff";
-    case ShiftRequestStatus.AUTO:
-      return "auto";
-    default:
-      return "empty";
-  }
-};
-
-export const shiftStateToShiftRequestStatus = (
-  state: ShiftState,
-): ShiftRequestStatus | null => {
-  switch (state) {
-    case "work":
-      return ShiftRequestStatus.WORK;
-    case "fixedOff":
-      return ShiftRequestStatus.FIXED_OFF;
-    case "requestedOff":
-      return ShiftRequestStatus.REQUESTED_OFF;
-    case "auto":
-      return ShiftRequestStatus.AUTO;
-    default:
-      return null;
-  }
 };
 
 /**

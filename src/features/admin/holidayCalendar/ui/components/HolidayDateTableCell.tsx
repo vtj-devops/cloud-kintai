@@ -1,15 +1,11 @@
-import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
-import { TableCell } from "@mui/material";
+import { CalendarDateTableCell } from "./CalendarTableCells";
 import { HolidayCalendar } from "@shared/api/graphql/types";
-import dayjs from "dayjs";
 
 export default function HolidayDateTableCell({
   holidayCalendar,
 }: {
   holidayCalendar: HolidayCalendar;
 }) {
-  const date = dayjs(holidayCalendar.holidayDate);
-  const holidayDate = date.format(AttendanceDate.DisplayFormat);
-
-  return <TableCell>{holidayDate}</TableCell>;
+  return <CalendarDateTableCell date={holidayCalendar.holidayDate} />;
 }
+

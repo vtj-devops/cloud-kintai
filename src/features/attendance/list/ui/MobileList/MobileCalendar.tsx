@@ -7,6 +7,7 @@ import {
   HolidayCalendar,
   Staff,
 } from "@shared/api/graphql/types";
+import { createMonthSearchParamsFromDate } from "@shared/lib/monthQuery";
 import dayjs, { Dayjs } from "dayjs";
 import { useState } from "react";
 
@@ -39,8 +40,6 @@ import {
   statusLabelMap,
   statusTextColorMap,
 } from "./mobileCalendarUtils";
-
-const MONTH_QUERY_KEY = "month";
 
 interface MobileCalendarProps {
   attendances?: Attendance[];
@@ -125,9 +124,7 @@ export default function MobileCalendar({
     const path = buildNavigatePath
       ? buildNavigatePath(dateStr)
       : `/attendance/${dateStr}/edit`;
-    const monthQuery = new URLSearchParams({
-      [MONTH_QUERY_KEY]: currentMonth.startOf("month").format("YYYY-MM"),
-    }).toString();
+    const monthQuery = createMonthSearchParamsFromDate(currentMonth).toString();
     navigate(`${path}?${monthQuery}`);
   };
 

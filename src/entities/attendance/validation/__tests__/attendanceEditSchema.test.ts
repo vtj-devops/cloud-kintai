@@ -19,7 +19,6 @@ describe("attendanceEditSchema", () => {
     remarkTags: [],
     rests: [],
     staffComment: "",
-    systemComments: [],
     revision: 1,
   };
 
@@ -499,45 +498,6 @@ describe("attendanceEditSchema", () => {
       const data = {
         ...baseValidData,
         workDate: "2024-01-15",
-      };
-
-      const result = attendanceEditSchema.safeParse(data);
-      expect(result.success).toBe(true);
-    });
-  });
-
-  describe("システムコメントのバリデーション", () => {
-    it("正常なシステムコメントの場合、バリデーションを通過する", () => {
-      const data = {
-        ...baseValidData,
-        systemComments: [
-          {
-            comment: "テストコメント",
-            confirmed: false,
-            createdAt: dayjs("2024-01-15T09:00:00+09:00").toISOString(),
-          },
-        ],
-      };
-
-      const result = attendanceEditSchema.safeParse(data);
-      expect(result.success).toBe(true);
-    });
-
-    it("複数のシステムコメントを設定できる", () => {
-      const data = {
-        ...baseValidData,
-        systemComments: [
-          {
-            comment: "コメント1",
-            confirmed: false,
-            createdAt: dayjs("2024-01-15T09:00:00+09:00").toISOString(),
-          },
-          {
-            comment: "コメント2",
-            confirmed: true,
-            createdAt: dayjs("2024-01-15T10:00:00+09:00").toISOString(),
-          },
-        ],
       };
 
       const result = attendanceEditSchema.safeParse(data);

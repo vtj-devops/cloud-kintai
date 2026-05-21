@@ -1,7 +1,6 @@
 import { AttendanceDaily } from "@entities/attendance/model/useAttendanceDaily";
-import { TableCell } from "@mui/material";
 import { Attendance } from "@shared/api/graphql/types";
-import dayjs from "dayjs";
+import { TimeDisplayCell } from "@shared/ui/table";
 
 export function StartTimeTableCell({
   row,
@@ -37,8 +36,12 @@ export function StartTimeTableCell({
     startTime = row.attendance.startTime;
   }
 
-  if (!startTime) return <TableCell />;
-
-  const date = dayjs(startTime).format("H:mm");
-  return <TableCell sx={{ textAlign: "right" }}>{date}</TableCell>;
+  return (
+    <TimeDisplayCell
+      time={startTime}
+      format="H:mm"
+      emptyLabel=""
+      sx={startTime ? { textAlign: "right" } : undefined}
+    />
+  );
 }

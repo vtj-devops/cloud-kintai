@@ -1,4 +1,5 @@
 import { createLogger } from "@shared/lib/logger";
+import { AppButton } from "@shared/ui/button";
 import { SubsectionTitle } from "@shared/ui/typography";
 import { updatePassword } from "aws-amplify/auth";
 import React, { useCallback, useState } from "react";
@@ -170,14 +171,15 @@ export const ProfileSecurityTab = React.memo(function ProfileSecurityTab({
             />
           </div>
           <div>
-            <button
+            <AppButton
               type="button"
               disabled={!isPasswordValid || isPasswordSubmitting}
               onClick={handlePasswordSubmit(onPasswordChange)}
-              className="inline-flex w-full items-center justify-center rounded-[1rem] bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+              tone="neutral"
+              className="w-full sm:w-auto"
             >
               {isPasswordSubmitting ? "変更中..." : "パスワードを変更"}
-            </button>
+            </AppButton>
           </div>
         </div>
       </div>

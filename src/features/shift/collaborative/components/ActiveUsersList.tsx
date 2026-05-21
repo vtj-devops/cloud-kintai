@@ -33,10 +33,12 @@ interface ActiveUsersListProps {
   compact?: boolean;
 }
 
+type UserPresenceStatus = "online" | "idle" | "offline";
+
 /**
  * アクティブユーザーのステータスを判定
  */
-const getUserStatus = (lastActivity: number): "online" | "idle" | "offline" => {
+const getUserStatus = (lastActivity: number): UserPresenceStatus => {
   const now = Date.now();
   const diffMs = now - lastActivity;
 
@@ -48,15 +50,13 @@ const getUserStatus = (lastActivity: number): "online" | "idle" | "offline" => {
 /**
  * ステータスに応じた色を返す
  */
-const getStatusColor = (status: "online" | "idle" | "offline"): string => {
-  switch (status) {
-    case "online":
-      return "#4caf50"; // green
-    case "idle":
-      return "#ff9800"; // orange
-    case "offline":
-      return "#9e9e9e"; // gray
-  }
+const USER_STATUS_META: Record<
+  UserPresenceStatus,
+  { label: string; chipColor: "success" | "warning" | "default"; dotColor: string }
+> = {
+  online: { label: "オンライン", chipColor: "success", dotColor: "#4caf50" },
+  idle: { label: "アイドル", chipColor: "warning", dotColor: "#ff9800" },
+  offline: { label: "オフライン", chipColor: "default", dotColor: "#9e9e9e" },
 };
 
 /**
@@ -82,7 +82,6 @@ const ActiveUsersListBase: React.FC<ActiveUsersListProps> = ({
   editingCells,
   compact = false,
 }) => {
-  const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -153,46 +152,7 @@ const ActiveUsersListBase: React.FC<ActiveUsersListProps> = ({
               key={user.userId}
               title={`${user.userName}${user.editingCount > 0 ? ` (${user.editingCount}箇所を編集中)` : ""}`}
             >
-              <Badge
-                overlap="circular"
-                anchorOrigin={{ vertical: "top", horizontal: "right" }}
-                badgeContent={user.editingCount > 0 ? user.editingCount : 0}
-                color="primary"
-                sx={{
-                  "& .MuiBadge-badge": {
-                    fontSize: "0.65rem",
-                    height: "16px",
-                    minWidth: "16px",
-                  },
-                }}
-              >
-                <Avatar
-                  sx={{
-                    bgcolor: user.color,
-                    width: 32,
-                    height: 32,
-                    fontSize: "0.875rem",
-                    position: "relative",
-                    "&::after": {
-                      content: '""',
-                      position: "absolute",
-                      bottom: 0,
-                      right: 0,
-                      width: 10,
-                      height: 10,
-                      borderRadius: "50%",
-                      bgcolor: getStatusColor(user.status),
-                      border: `2px solid ${theme.palette.background.paper}`,
-                      boxShadow:
-                        user.status === "online"
-                          ? `0 0 4px ${getStatusColor(user.status)}`
-                          : "none",
-                    },
-                  }}
-                >
-                  {user.userName.charAt(0)}
-                </Avatar>
-              </Badge>
+              <UserStatusAvatar user={user} size={32} fontSize="0.875rem" />
             </Tooltip>
           ))}
         </AvatarGroup>
@@ -222,7 +182,7 @@ export const ActiveUsersList = memo(ActiveUsersListBase);
 interface UserDetailListProps {
   users: Array<
     CollaborativeUser & {
-      status: "online" | "idle" | "offline";
+      status: UserPresenceStatus;
       editingCount: number;
     }
   >;
@@ -242,64 +202,16 @@ const UserDetailList: React.FC<UserDetailListProps> = ({ users }) => {
         {users.map((user) => (
           <ListItem key={user.userId}>
             <ListItemAvatar>
-              <Badge
-                overlap="circular"
-                anchorOrigin={{ vertical: "top", horizontal: "right" }}
-                badgeContent={user.editingCount > 0 ? user.editingCount : 0}
-                color="primary"
-                sx={{
-                  "& .MuiBadge-badge": {
-                    fontSize: "0.65rem",
-                    height: "16px",
-                    minWidth: "16px",
-                  },
-                }}
-              >
-                <Avatar
-                  sx={{
-                    bgcolor: user.color,
-                    position: "relative",
-                    "&::after": {
-                      content: '""',
-                      position: "absolute",
-                      bottom: 2,
-                      right: 2,
-                      width: 10,
-                      height: 10,
-                      borderRadius: "50%",
-                      bgcolor: getStatusColor(user.status),
-                      border: `2px solid ${theme.palette.background.paper}`,
-                      boxShadow:
-                        user.status === "online"
-                          ? `0 0 4px ${getStatusColor(user.status)}`
-                          : "none",
-                    },
-                  }}
-                >
-                  {user.userName.charAt(0)}
-                </Avatar>
-              </Badge>
+              <UserStatusAvatar user={user} dotOffset={2} />
             </ListItemAvatar>
             <ListItemText
               primary={
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <Typography variant="body1">{user.userName}</Typography>
                   <Chip
-                    label={
-                      user.status === "online"
-                        ? "オンライン"
-                        : user.status === "idle"
-                          ? "アイドル"
-                          : "オフライン"
-                    }
+                    label={USER_STATUS_META[user.status].label}
                     size="small"
-                    color={
-                      user.status === "online"
-                        ? "success"
-                        : user.status === "idle"
-                          ? "warning"
-                          : "default"
-                    }
+                    color={USER_STATUS_META[user.status].chipColor}
                     sx={{ height: 20 }}
                   />
                 </Box>
@@ -327,5 +239,61 @@ const UserDetailList: React.FC<UserDetailListProps> = ({ users }) => {
         ))}
       </List>
     </Paper>
+  );
+};
+
+interface UserStatusAvatarProps {
+  user: CollaborativeUser & { status: UserPresenceStatus; editingCount: number };
+  size?: number;
+  fontSize?: string;
+  dotOffset?: number;
+}
+
+const UserStatusAvatar: React.FC<UserStatusAvatarProps> = ({
+  user,
+  size,
+  fontSize,
+  dotOffset = 0,
+}) => {
+  const theme = useTheme();
+  const dotColor = USER_STATUS_META[user.status].dotColor;
+
+  return (
+    <Badge
+      overlap="circular"
+      anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      badgeContent={user.editingCount > 0 ? user.editingCount : 0}
+      color="primary"
+      sx={{
+        "& .MuiBadge-badge": {
+          fontSize: "0.65rem",
+          height: "16px",
+          minWidth: "16px",
+        },
+      }}
+    >
+      <Avatar
+        sx={{
+          bgcolor: user.color,
+          ...(size ? { width: size, height: size } : {}),
+          ...(fontSize ? { fontSize } : {}),
+          position: "relative",
+          "&::after": {
+            content: '""',
+            position: "absolute",
+            bottom: dotOffset,
+            right: dotOffset,
+            width: 10,
+            height: 10,
+            borderRadius: "50%",
+            bgcolor: dotColor,
+            border: `2px solid ${theme.palette.background.paper}`,
+            boxShadow: user.status === "online" ? `0 0 4px ${dotColor}` : "none",
+          },
+        }}
+      >
+        {user.userName.charAt(0)}
+      </Avatar>
+    </Badge>
   );
 };

@@ -4,6 +4,7 @@ import {
   useLazyGetAttendanceByStaffAndDateQuery,
 } from "@entities/attendance/api/attendanceApi";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
+import { getAttendanceMonthRangeInput } from "@entities/attendance/lib/attendanceQueryRange";
 import { graphqlClient } from "@shared/api/amplify/graphqlClient";
 import {
   onCreateAttendance,
@@ -86,23 +87,14 @@ export default function useAttendanceDaily({
   }, []);
 
   /**
-   * 指定日付から月の最初の日を取得
-   */
-  const getFirstDayOfMonth = useCallback((dateStr: string) => {
-    return dayjs(dateStr).startOf("month").format(AttendanceDate.DataFormat);
-  }, []);
-
-  /**
    * 指定月のデータをロード（複数月対応）
    * まだロードされていない月があれば追加ロード
    */
   const loadAttendanceDataByMonth = useCallback(
     async (targetDate: string, options?: { forceRefresh?: boolean }) => {
       const monthKey = getMonthKey(targetDate);
-      const firstDayOfMonth = getFirstDayOfMonth(targetDate);
-      const lastDayOfMonth = dayjs(targetDate)
-        .endOf("month")
-        .format(AttendanceDate.DataFormat);
+      const { startDate: firstDayOfMonth, endDate: lastDayOfMonth } =
+        getAttendanceMonthRangeInput(targetDate);
       const shouldUseCache = !options?.forceRefresh;
 
       // キャッシュに存在するかチェック
@@ -239,7 +231,7 @@ export default function useAttendanceDaily({
         setLoading(false);
       }
     },
-    [staffs, triggerGetAttendance, getMonthKey, getFirstDayOfMonth],
+    [staffs, triggerGetAttendance, getMonthKey],
   );
 
   useEffect(() => {

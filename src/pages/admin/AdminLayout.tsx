@@ -23,10 +23,9 @@ import {
   Skeleton,
   Stack,
   Typography,
-  useMediaQuery,
-  useTheme,
 } from "@mui/material";
 import { designTokenVar } from "@shared/designSystem";
+import { useIsMobile } from "@shared/lib/hooks/useIsMobile";
 import { PageSection } from "@shared/ui/layout";
 import React, { memo, Suspense, useCallback, useMemo } from "react";
 import { Group, Panel, Separator } from "react-resizable-panels";
@@ -518,8 +517,7 @@ function AdminLayoutContent() {
     setLeftPanel,
     setRightPanel,
   } = useSplitView();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useIsMobile();
   const [isMobileRailOpen, setIsMobileRailOpen] = React.useState(false);
 
   const handleSelect = useCallback(

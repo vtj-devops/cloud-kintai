@@ -1,5 +1,6 @@
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import { AppIconButton } from "@shared/ui/button";
 import React from "react";
 
 interface PasswordFieldProps {
@@ -46,18 +47,20 @@ export const PasswordField = React.memo(function PasswordField({
             "min-h-[52px]",
           ].join(" ")}
         />
-        <button
+        <AppIconButton
           type="button"
           onClick={onToggleVisibility}
           aria-label="パスワードの表示切り替え"
-          className="inline-flex h-[52px] w-12 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-slate-400 transition hover:text-slate-700"
+          tone="neutral"
+          size="sm"
+          className="mr-2 shrink-0 border-0 bg-transparent text-slate-400 shadow-none hover:bg-transparent hover:text-slate-700"
         >
           {showPassword ? (
             <VisibilityOffIcon fontSize="small" />
           ) : (
             <VisibilityIcon fontSize="small" />
           )}
-        </button>
+        </AppIconButton>
       </div>
       {error || helperText ? (
         <p

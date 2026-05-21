@@ -1,8 +1,7 @@
 import type { StaffType } from "@entities/staff/model/useStaffs/useStaffs";
-import { graphqlClient } from "@shared/api/amplify/graphqlClient";
-import { sendMail } from "@shared/api/graphql/documents/queries";
 import type { DailyReport } from "@shared/api/graphql/types";
 import { formatStaffDisplayName } from "@shared/lib/mail/adminNotification";
+import { sendMailNotification } from "@shared/lib/notification/sendMailNotification";
 import dayjs from "dayjs";
 
 import * as MESSAGE_CODE from "@/errors";
@@ -69,14 +68,5 @@ export const sendDailyReportCommentNotification = async ({
     "",
   ].join("\n");
 
-  await graphqlClient.graphql({
-    query: sendMail,
-    variables: {
-      data: {
-        to: [toAddress],
-        subject,
-        body,
-      },
-    },
-  });
+  await sendMailNotification({ to: [toAddress], subject, body });
 };

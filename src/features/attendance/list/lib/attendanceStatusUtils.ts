@@ -22,6 +22,7 @@ import {
   HolidayCalendar,
   Staff,
 } from "@shared/api/graphql/types";
+import { formatISOTimeRange } from "@shared/lib/time";
 import dayjs, { Dayjs } from "dayjs";
 
 /**
@@ -79,18 +80,11 @@ export function getTotalRestHours(attendance: Attendance | undefined) {
  */
 export function formatTimeRange(attendance: Attendance | undefined) {
   if (!attendance) return undefined;
-
-  const format = (value?: string | null) =>
-    value ? dayjs(value).format("HH:mm") : undefined;
-
-  const start = format(attendance.startTime || undefined);
-  const end = format(attendance.endTime || undefined);
-
-  if (!start && !end) {
-    return undefined;
-  }
-
-  return `${start ?? ""} - ${end ?? ""}`.trim();
+  return formatISOTimeRange(attendance.startTime, attendance.endTime, {
+    separator: " - ",
+    missingTimeLabel: "",
+    emptyAsUndefined: true,
+  });
 }
 
 /**
@@ -203,13 +197,6 @@ export const getCalendarDaySurfaceState = ({
   };
 };
 
-export const hasSystemComment = (attendance: Attendance | undefined): boolean =>
-  Boolean(
-    attendance &&
-    Array.isArray(attendance.systemComments) &&
-    attendance.systemComments.length > 0,
-  );
-
 /**
  * 指定日付の勤怠ステータスを判定
  */
@@ -251,10 +238,6 @@ export const getStatus = (
     }
 
     // 過去の営業日で打刻データなし → Error
-    return AttendanceStatus.Error;
-  }
-
-  if (hasSystemComment(attendance)) {
     return AttendanceStatus.Error;
   }
 

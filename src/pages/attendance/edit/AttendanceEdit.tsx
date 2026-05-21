@@ -59,6 +59,9 @@ export default function AttendanceEdit() {
     isOnBreak,
     dialog,
     runWithoutGuard,
+    submitErrorMessage,
+    setSubmitError,
+    clearSubmitError,
   } = useAttendanceForm({
     attendance,
     targetWorkDate,
@@ -74,6 +77,8 @@ export default function AttendanceEdit() {
     targetWorkDate,
     attendanceListPath,
     runWithoutGuard,
+    setSubmitError,
+    clearSubmitError,
   });
 
   const changeRequests = attendance?.changeRequests
@@ -129,13 +134,13 @@ export default function AttendanceEdit() {
     isDirty,
     isValid,
     isSubmitting,
+    submitErrorMessage,
     restFields,
     restAppend,
     restRemove,
     restUpdate,
     restReplace,
     changeRequests,
-    systemCommentFields: [],
     hourlyPaidHolidayTimeFields,
     hourlyPaidHolidayTimeAppend,
     hourlyPaidHolidayTimeRemove,

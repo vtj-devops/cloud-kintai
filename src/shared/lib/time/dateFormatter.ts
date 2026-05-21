@@ -1,5 +1,7 @@
 import dayjs, { type Dayjs } from "dayjs";
 
+import { formatISOToTimeOrEmpty } from "./timeConverter";
+
 export function formatDateSlash(d?: string | null) {
   if (!d) return "";
   return d.replace(/-/g, "/");
@@ -10,11 +12,42 @@ export function isoDateFromTimestamp(ts?: string | null) {
   return ts.split("T")[0];
 }
 
-export function formatDateTimeReadable(value?: string | null) {
-  if (!value) return "";
+export function formatDateTimeReadable(
+  value?: string | null,
+  emptyValueFallback = "",
+) {
+  if (!value) return emptyValueFallback;
   const parsed = dayjs(value);
   if (!parsed.isValid()) return value;
   return parsed.format("YYYY/MM/DD HH:mm");
+}
+
+type FormatISOTimeRangeOptions = {
+  separator?: string;
+  emptyLabel?: string;
+  missingTimeLabel?: string;
+  emptyAsUndefined?: boolean;
+};
+
+export function formatISOTimeRange(
+  startTime?: string | null,
+  endTime?: string | null,
+  options: FormatISOTimeRangeOptions = {},
+): string | undefined {
+  const {
+    separator = " 〜 ",
+    emptyLabel = "--:--",
+    missingTimeLabel = "--:--",
+    emptyAsUndefined = false,
+  } = options;
+
+  if (!startTime && !endTime) {
+    return emptyAsUndefined ? undefined : emptyLabel;
+  }
+
+  const start = formatISOToTimeOrEmpty(startTime) || missingTimeLabel;
+  const end = formatISOToTimeOrEmpty(endTime) || missingTimeLabel;
+  return `${start}${separator}${end}`.trim();
 }
 
 export function formatRelativeDateTime(value?: string | null, now?: Dayjs) {

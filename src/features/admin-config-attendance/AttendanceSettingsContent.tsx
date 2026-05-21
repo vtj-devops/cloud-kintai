@@ -119,7 +119,7 @@ function AutoSaveStatus({ saving }: { saving: boolean }) {
   );
 }
 
-function useAutoSave({
+function useAutoSaveAction({
   enabled = true,
   validate,
   onSave,
@@ -199,7 +199,7 @@ function WorkingTimePanel() {
       lunchRestEndTime: lunchRestEndTime?.format("HH:mm"),
     });
   }, [endTime, lunchRestEndTime, lunchRestStartTime, save, startTime]);
-  const { saving: autoSaving, queueSave } = useAutoSave({
+  const { saving: autoSaving, queueSave } = useAutoSaveAction({
     validate: isValid,
     onSave: persist,
     onInvalid: () => notifyValidationError(),
@@ -318,7 +318,7 @@ function AmPmHolidayPanel() {
     pmHolidayStartTime,
     save,
   ]);
-  const { saving: autoSaving, queueSave } = useAutoSave({
+  const { saving: autoSaving, queueSave } = useAutoSaveAction({
     validate: isValid,
     onSave: persist,
     onInvalid: () => notifyValidationError(),
@@ -419,7 +419,7 @@ function OfficeModePanel() {
       hourlyPaidHolidayEnabled,
     });
   }, [hourlyPaidHolidayEnabled, officeMode, save]);
-  const { saving: autoSaving, queueSave } = useAutoSave({
+  const { saving: autoSaving, queueSave } = useAutoSaveAction({
     onSave: persist,
   });
 
@@ -445,114 +445,46 @@ function OfficeModePanel() {
   );
 }
 
-function SpecialHolidayPanel() {
-  const { getSpecialHolidayEnabled = () => false } =
-    useContext(AppConfigContext);
+function useToggleSetting(getter: () => boolean, saveKey: string) {
   const { save } = useAppConfigSaveAction();
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
-    setEnabled(getSpecialHolidayEnabled());
-  }, [getSpecialHolidayEnabled]);
-  const persist = useCallback(async () => {
-    await save({
-      specialHolidayEnabled: enabled,
-    });
-  }, [enabled, save]);
-  const { saving: autoSaving, queueSave } = useAutoSave({
-    onSave: persist,
-  });
+    setEnabled(getter());
+  }, [getter]);
 
-  return (
-    <AdminSettingsSection
-      title="特別休暇"
-      description="忌引きなどの特別休暇を勤怠編集で扱えるようにします。"
-      actions={<AutoSaveStatus saving={autoSaving} />}
-    >
-      <div className="flex flex-col gap-4">
-        <div>
-          <SettingsSwitch
-            checked={enabled}
-            onChange={(checked) => {
-              setEnabled(checked);
-              queueSave();
-            }}
-            label={enabled ? "有効" : "無効"}
-          />
-        </div>
-        <p className="text-sm text-slate-500">
-          特別休暇を有効化すると、勤怠編集画面で申請や編集ができるようになります。
-        </p>
-      </div>
-    </AdminSettingsSection>
-  );
+  const persist = useCallback(async () => {
+    await save({ [saveKey]: enabled });
+  }, [enabled, save, saveKey]);
+
+  const { saving, queueSave } = useAutoSaveAction({ onSave: persist });
+
+  return { enabled, setEnabled, saving, queueSave };
 }
 
-function AbsentPanel() {
-  const { getAbsentEnabled = () => false } = useContext(AppConfigContext);
-  const { save } = useAppConfigSaveAction();
-  const [enabled, setEnabled] = useState(false);
-
-  useEffect(() => {
-    setEnabled(getAbsentEnabled());
-  }, [getAbsentEnabled]);
-  const persist = useCallback(async () => {
-    await save({
-      absentEnabled: enabled,
-    });
-  }, [enabled, save]);
-  const { saving: autoSaving, queueSave } = useAutoSave({
-    onSave: persist,
-  });
-
-  return (
-    <AdminSettingsSection
-      title="欠勤"
-      description="欠勤を勤怠編集画面で扱えるようにします。"
-      actions={<AutoSaveStatus saving={autoSaving} />}
-    >
-      <div className="flex flex-col gap-4">
-        <div>
-          <SettingsSwitch
-            checked={enabled}
-            onChange={(checked) => {
-              setEnabled(checked);
-              queueSave();
-            }}
-            label={enabled ? "有効" : "無効"}
-          />
-        </div>
-        <p className="text-sm text-slate-500">
-          欠勤設定を有効にすると、勤怠編集画面で欠勤の管理が可能になります。
-        </p>
-      </div>
-    </AdminSettingsSection>
+function ToggleSettingPanel({
+  title,
+  description,
+  helperText,
+  getter,
+  saveKey,
+}: {
+  title: string;
+  description: string;
+  helperText: string;
+  getter: () => boolean;
+  saveKey: string;
+}) {
+  const { enabled, setEnabled, saving, queueSave } = useToggleSetting(
+    getter,
+    saveKey,
   );
-}
-
-function OvertimeConfirmationPanel() {
-  const { getOverTimeCheckEnabled = () => false } =
-    useContext(AppConfigContext);
-  const { save } = useAppConfigSaveAction();
-  const [enabled, setEnabled] = useState(false);
-
-  useEffect(() => {
-    setEnabled(getOverTimeCheckEnabled());
-  }, [getOverTimeCheckEnabled]);
-  const persist = useCallback(async () => {
-    await save({
-      overTimeCheckEnabled: enabled,
-    });
-  }, [enabled, save]);
-  const { saving: autoSaving, queueSave } = useAutoSave({
-    onSave: persist,
-  });
 
   return (
     <AdminSettingsSection
-      title="残業確認"
-      description="残業確認メッセージの表示可否を切り替えます。"
-      actions={<AutoSaveStatus saving={autoSaving} />}
+      title={title}
+      description={description}
+      actions={<AutoSaveStatus saving={saving} />}
     >
       <div className="flex flex-col gap-4">
         <div>
@@ -565,9 +497,7 @@ function OvertimeConfirmationPanel() {
             label={enabled ? "有効" : "無効"}
           />
         </div>
-        <p className="text-sm text-slate-500">
-          勤怠編集画面で、残業申請がない場合や承認時間を超えた場合に確認メッセージを表示するかどうかを切り替えます。
-        </p>
+        <p className="text-sm text-slate-500">{helperText}</p>
       </div>
     </AdminSettingsSection>
   );
@@ -612,7 +542,7 @@ function QuickInputPanel() {
       })),
     });
   }, [quickInputEndTimes, quickInputStartTimes, save]);
-  const { saving: autoSaving, queueSave } = useAutoSave({
+  const { saving: autoSaving, queueSave } = useAutoSaveAction({
     onSave: persist,
   });
 
@@ -697,6 +627,11 @@ function QuickInputPanel() {
 
 export default function AttendanceSettingsContent() {
   const [activeTab, setActiveTab] = useState<AttendanceSettingsTabKey>("rules");
+  const {
+    getSpecialHolidayEnabled = () => false,
+    getAbsentEnabled = () => false,
+    getOverTimeCheckEnabled = () => false,
+  } = useContext(AppConfigContext);
   const tabs = [
     {
       value: "rules" as const,
@@ -709,8 +644,20 @@ export default function AttendanceSettingsContent() {
           <WorkingTimePanel />
           <AmPmHolidayPanel />
           <OfficeModePanel />
-          <SpecialHolidayPanel />
-          <AbsentPanel />
+          <ToggleSettingPanel
+            title="特別休暇"
+            description="忌引きなどの特別休暇を勤怠編集で扱えるようにします。"
+            helperText="特別休暇を有効化すると、勤怠編集画面で申請や編集ができるようになります。"
+            getter={getSpecialHolidayEnabled}
+            saveKey="specialHolidayEnabled"
+          />
+          <ToggleSettingPanel
+            title="欠勤"
+            description="欠勤を勤怠編集画面で扱えるようにします。"
+            helperText="欠勤設定を有効にすると、勤怠編集画面で欠勤の管理が可能になります。"
+            getter={getAbsentEnabled}
+            saveKey="absentEnabled"
+          />
         </div>
       ),
     },
@@ -722,7 +669,13 @@ export default function AttendanceSettingsContent() {
           <SettingsAlert>
             申請時の確認挙動や、勤怠入力の補助設定をこのタブで管理します。
           </SettingsAlert>
-          <OvertimeConfirmationPanel />
+          <ToggleSettingPanel
+            title="残業確認"
+            description="残業確認メッセージの表示可否を切り替えます。"
+            helperText="勤怠編集画面で、残業申請がない場合や承認時間を超えた場合に確認メッセージを表示するかどうかを切り替えます。"
+            getter={getOverTimeCheckEnabled}
+            saveKey="overTimeCheckEnabled"
+          />
           <QuickInputPanel />
         </div>
       ),
@@ -735,7 +688,7 @@ export default function AttendanceSettingsContent() {
         value={activeTab}
         onChange={setActiveTab}
         items={tabs}
-        appearance="mui-standard"
+        appearance="underline"
         panelPadding={3}
         tabsProps={{
           "aria-label": "勤怠設定タブ",

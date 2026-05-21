@@ -1,4 +1,5 @@
 import { type DuplicateAttendanceInfo, useListAttendancesByDateRangeQuery, useUpdateAttendanceMutation, } from "@entities/attendance/api/attendanceApi";
+import { getAttendancePreviousMonthToCurrentMonthRangeInput } from "@entities/attendance/lib/attendanceQueryRange";
 import { ChangeRequest, hasUnapprovedChangeRequest, } from "@entities/attendance/lib/ChangeRequest";
 import useCloseDates from "@entities/attendance/model/useCloseDates";
 import { AttendanceRowVariant, getAttendanceRowVariant, } from "@entities/attendance/ui/rowVariant";
@@ -30,13 +31,7 @@ export const useAdminStaffAttendanceListViewModel = (staffId?: string, currentMo
     // 例：今日が1月1日で1月を表示している場合 → 12月1日～1月31日のデータを取得
     // 例：2月を表示している場合 → 1月1日～2月28日のデータを取得
     const dateRange = useMemo(() => {
-        const month = currentMonth ?? dayjs().startOf("month");
-        const startDate = month.subtract(1, "month").startOf("month");
-        const endDate = month.endOf("month");
-        return {
-            startDate: startDate.format("YYYY-MM-DD"),
-            endDate: endDate.format("YYYY-MM-DD"),
-        };
+        return getAttendancePreviousMonthToCurrentMonthRangeInput(currentMonth);
     }, [currentMonth]);
     const shouldFetchAttendances = Boolean(staffId);
     const queryResult = useListAttendancesByDateRangeQuery({

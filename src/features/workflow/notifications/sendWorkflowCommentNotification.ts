@@ -3,10 +3,9 @@ import type {
   NotificationStaff,
   WorkflowData,
 } from "@features/workflow/notification/model/workflowNotificationEventService";
-import { graphqlClient } from "@shared/api/amplify/graphqlClient";
-import { sendMail } from "@shared/api/graphql/documents/queries";
 import { formatStaffDisplayName } from "@shared/lib/mail/adminNotification";
-import dayjs from "dayjs";
+import { sendMailNotification } from "@shared/lib/notification/sendMailNotification";
+import { formatDateTimeReadable } from "@shared/lib/time";
 
 import * as MESSAGE_CODE from "@/errors";
 
@@ -31,14 +30,6 @@ const isAdminRole = (role?: string | null) => {
     normalized === "STAFFADMIN" ||
     normalized === "OWNER"
   );
-};
-
-const formatDateTime = (value?: string | null) => {
-  if (!value) {
-    return "-";
-  }
-  const parsed = dayjs(value);
-  return parsed.isValid() ? parsed.format("YYYY/MM/DD HH:mm") : value;
 };
 
 const parseAdminOverrideRecipients = () => {
@@ -71,7 +62,10 @@ const createEmailPayload = (
 ) => {
   const { workflow, actorDisplayName, commentText } = args;
   const categoryLabel = getWorkflowCategoryLabel(workflow);
-  const submittedAt = formatDateTime(workflow.updatedAt || workflow.createdAt);
+  const submittedAt = formatDateTimeReadable(
+    workflow.updatedAt || workflow.createdAt,
+    "-",
+  );
   const safeCommentText = commentText.trim() || "(コメント本文なし)";
 
   return {
@@ -128,15 +122,10 @@ export const sendWorkflowCommentNotification = async (
   }
 
   const payload = createEmailPayload(args, recipients, reviewUrl);
-  await graphqlClient.graphql({
-    query: sendMail,
-    variables: {
-      data: {
-        to: payload.to,
-        subject: payload.subject,
-        body: payload.body,
-      },
-    },
+  await sendMailNotification({
+    to: payload.to,
+    subject: payload.subject,
+    body: payload.body,
   });
 };
 

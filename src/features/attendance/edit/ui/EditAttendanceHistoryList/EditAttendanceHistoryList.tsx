@@ -71,11 +71,7 @@ export default function EditAttendanceHistoryList() {
         type="button"
         onClick={handleClickOpen}
         className="inline-flex w-fit items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
-        disabled={
-          !attendance ||
-          !attendance.histories ||
-          attendance.histories.filter((item) => item !== null).length === 0
-        }
+        disabled={!attendance}
       >
         <HistoryIcon />
         変更履歴

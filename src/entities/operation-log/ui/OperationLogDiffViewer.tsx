@@ -180,11 +180,7 @@ export function OperationLogDiffViewer({
               {changedCount}件変更
             </span>
           )}
-          {addedCount > 0 && (
-            <span className="rounded bg-green-100 px-1.5 py-0.5 font-medium text-green-700">
-              {addedCount}件追加
-            </span>
-          )}
+
           {removedCount > 0 && (
             <span className="rounded bg-red-100 px-1.5 py-0.5 font-medium text-red-700">
               {removedCount}件削除

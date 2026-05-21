@@ -26,8 +26,6 @@ jest.mock("../attendanceEditUtils", () => ({
 const mockSetValue = jest.fn();
 const mockReset = jest.fn();
 const mockGetValues = jest.fn();
-const mockRestReplace = jest.fn();
-const mockHourlyPaidHolidayTimeReplace = jest.fn();
 const mockGetStartTime = jest.fn(() => dayjs("2024-01-01T09:00:00"));
 const mockGetEndTime = jest.fn(() => dayjs("2024-01-01T18:00:00"));
 const mockGetLunchRestStartTime = jest.fn(() => dayjs("2024-01-01T12:00:00"));
@@ -78,8 +76,6 @@ function setup(initialProps: SetupProps = {}) {
         setValue: mockSetValue,
         getValues: mockGetValues,
         reset: mockReset,
-        restReplace: mockRestReplace,
-        hourlyPaidHolidayTimeReplace: mockHourlyPaidHolidayTimeReplace,
         attendance: props.attendance ?? null,
         targetWorkDate: props.targetWorkDate,
         targetWorkDateISO: props.targetWorkDateISO ?? null,
@@ -155,53 +151,66 @@ describe("useAttendanceEditFormSync", () => {
   // -------------------------------------------------------------------------
 
   describe("attendance sync effect", () => {
-    it("calls mockSetValue for all 10 fields when attendance.workDate === targetWorkDateISO", () => {
+    it("calls mockReset with all fields when attendance.workDate === targetWorkDateISO", () => {
       const attendance = makeAttendance({ workDate: "2024-06-01" });
       setup({ attendance, targetWorkDateISO: "2024-06-01", staffId: "staff-1" });
 
-      expect(mockSetValue).toHaveBeenCalledWith("startTime", attendance.startTime);
-      expect(mockSetValue).toHaveBeenCalledWith("endTime", attendance.endTime);
-      expect(mockSetValue).toHaveBeenCalledWith("paidHolidayFlag", false);
-      expect(mockSetValue).toHaveBeenCalledWith("specialHolidayFlag", false);
-      expect(mockSetValue).toHaveBeenCalledWith("goDirectlyFlag", false);
-      expect(mockSetValue).toHaveBeenCalledWith("substituteHolidayDate", null);
-      expect(mockSetValue).toHaveBeenCalledWith("returnDirectlyFlag", false);
-      expect(mockSetValue).toHaveBeenCalledWith("remarkTags", []);
-      expect(mockSetValue).toHaveBeenCalledWith("remarks", "");
-      expect(mockSetValue).toHaveBeenCalledWith("rests", attendance.rests);
-      expect(mockSetValue).toHaveBeenCalledWith("hourlyPaidHolidayTimes", attendance.hourlyPaidHolidayTimes);
+      expect(mockReset).toHaveBeenCalledWith(
+        expect.objectContaining({
+          startTime: attendance.startTime,
+          endTime: attendance.endTime,
+          paidHolidayFlag: false,
+          specialHolidayFlag: false,
+          goDirectlyFlag: false,
+          substituteHolidayDate: null,
+          returnDirectlyFlag: false,
+          remarkTags: [],
+          remarks: "",
+        }),
+      );
     });
 
-    it("does NOT call mockSetValue when attendance is null", () => {
+    it("does NOT call mockReset (for attendance sync) when attendance is null", () => {
       setup({ attendance: null, targetWorkDateISO: "2024-06-01", staffId: "staff-1" });
-      expect(mockSetValue).not.toHaveBeenCalled();
+      // reset() is called from staffId+targetWorkDateISO effect, but NOT from attendance sync
+      const resetCallsWithObjectArg = mockReset.mock.calls.filter(
+        (call) => call.length > 0 && call[0] !== undefined,
+      );
+      expect(resetCallsWithObjectArg).toHaveLength(0);
     });
 
-    it("does NOT call mockSetValue when attendance.workDate !== targetWorkDateISO", () => {
+    it("does NOT call mockReset (for attendance sync) when attendance.workDate !== targetWorkDateISO", () => {
       const attendance = makeAttendance({ workDate: "2024-06-02" });
       setup({ attendance, targetWorkDateISO: "2024-06-01", staffId: "staff-1" });
-      expect(mockSetValue).not.toHaveBeenCalled();
+      const resetCallsWithObjectArg = mockReset.mock.calls.filter(
+        (call) => call.length > 0 && call[0] !== undefined,
+      );
+      expect(resetCallsWithObjectArg).toHaveLength(0);
     });
 
-    it("does NOT call mockSetValue when targetWorkDateISO is null", () => {
+    it("does NOT call mockReset (for attendance sync) when targetWorkDateISO is null", () => {
       const attendance = makeAttendance({ workDate: "2024-06-01" });
       setup({ attendance, targetWorkDateISO: null, staffId: "staff-1" });
-      expect(mockSetValue).not.toHaveBeenCalled();
+      expect(mockReset).not.toHaveBeenCalled();
     });
 
-    it("sets paidHolidayFlag to true when attendance has paidHolidayFlag true", () => {
+    it("sets paidHolidayFlag to true in reset call when attendance has paidHolidayFlag true", () => {
       const attendance = makeAttendance({ workDate: "2024-06-01", paidHolidayFlag: true });
       setup({ attendance, targetWorkDateISO: "2024-06-01", staffId: "staff-1" });
-      expect(mockSetValue).toHaveBeenCalledWith("paidHolidayFlag", true);
+      expect(mockReset).toHaveBeenCalledWith(
+        expect.objectContaining({ paidHolidayFlag: true }),
+      );
     });
 
-    it("calls mockSetValue again on attendance change when workDate matches", () => {
+    it("calls mockReset again on attendance change when workDate matches", () => {
       const { rerender } = setup({ attendance: null, targetWorkDateISO: "2024-06-01", staffId: "staff-1" });
-      expect(mockSetValue).not.toHaveBeenCalled();
+      mockReset.mockClear();
 
       const attendance = makeAttendance({ workDate: "2024-06-01" });
       rerender({ attendance, targetWorkDateISO: "2024-06-01", staffId: "staff-1" });
-      expect(mockSetValue).toHaveBeenCalledWith("startTime", attendance.startTime);
+      expect(mockReset).toHaveBeenCalledWith(
+        expect.objectContaining({ startTime: attendance.startTime }),
+      );
     });
   });
 
@@ -218,7 +227,7 @@ describe("useAttendanceEditFormSync", () => {
         result.current.form.setValue("absentFlag", true);
       });
 
-      expect(mockSetValue).toHaveBeenCalledWith("remarkTags", ["欠勤"]);
+      expect(mockSetValue).toHaveBeenCalledWith("remarkTags", ["欠勤"], { shouldDirty: false });
     });
 
     it("does NOT call mockSetValue for remarkTags again when absentFlag is true and '欠勤' is already present", async () => {
@@ -249,7 +258,7 @@ describe("useAttendanceEditFormSync", () => {
         result.current.form.setValue("absentFlag", false);
       });
 
-      expect(mockSetValue).toHaveBeenCalledWith("remarkTags", []);
+      expect(mockSetValue).toHaveBeenCalledWith("remarkTags", [], { shouldDirty: false });
     });
 
     it("does NOT call mockSetValue for remarkTags when absentFlag is false and '欠勤' is NOT present", async () => {
@@ -280,7 +289,7 @@ describe("useAttendanceEditFormSync", () => {
         result.current.form.setValue("absentFlag", false);
       });
 
-      expect(mockSetValue).toHaveBeenCalledWith("remarkTags", ["有給休暇"]);
+      expect(mockSetValue).toHaveBeenCalledWith("remarkTags", ["有給休暇"], { shouldDirty: false });
     });
   });
 
@@ -394,7 +403,7 @@ describe("useAttendanceEditFormSync", () => {
         result.current.form.setValue("specialHolidayFlag", true);
       });
 
-      expect(mockSetValue).toHaveBeenCalledWith("remarkTags", ["特別休暇"]);
+      expect(mockSetValue).toHaveBeenCalledWith("remarkTags", ["特別休暇"], { shouldDirty: false });
     });
 
     it("calls mockSetValue('paidHolidayFlag', false) when paidHolidayFlag is true at the time specialHolidayFlag becomes true", async () => {
@@ -426,7 +435,7 @@ describe("useAttendanceEditFormSync", () => {
         result.current.form.setValue("specialHolidayFlag", false);
       });
 
-      expect(mockSetValue).toHaveBeenCalledWith("remarkTags", []);
+      expect(mockSetValue).toHaveBeenCalledWith("remarkTags", [], { shouldDirty: false });
     });
 
     it("does NOT call applyConfiguredWorkAndLunchRest when specialHolidayFlag becomes false", async () => {
@@ -440,8 +449,9 @@ describe("useAttendanceEditFormSync", () => {
         result.current.form.setValue("specialHolidayFlag", false);
       });
 
-      // restReplace should NOT be called (restReplace is only called from applyConfiguredWorkAndLunchRest)
-      expect(mockRestReplace).not.toHaveBeenCalled();
+      // setValue("rests", ...) should NOT be called (only called from applyConfiguredWorkAndLunchRest)
+      const restsSetCalls = mockSetValue.mock.calls.filter((call) => call[0] === "rests");
+      expect(restsSetCalls).toHaveLength(0);
     });
   });
 
@@ -480,7 +490,7 @@ describe("useAttendanceEditFormSync", () => {
         result.current.form.setValue("paidHolidayFlag", true);
       });
 
-      expect(mockSetValue).toHaveBeenCalledWith("remarkTags", ["有給休暇"]);
+      expect(mockSetValue).toHaveBeenCalledWith("remarkTags", ["有給休暇"], { shouldDirty: false });
     });
 
     it("calls mockSetValue('specialHolidayFlag', false) when specialHolidayFlag is true at the time paidHolidayFlag becomes true", async () => {
@@ -512,10 +522,10 @@ describe("useAttendanceEditFormSync", () => {
         result.current.form.setValue("paidHolidayFlag", false);
       });
 
-      expect(mockSetValue).toHaveBeenCalledWith("remarkTags", []);
+      expect(mockSetValue).toHaveBeenCalledWith("remarkTags", [], { shouldDirty: false });
     });
 
-    it("calls applyConfiguredWorkAndLunchRest (via restReplace) when paidHolidayFlag becomes true", async () => {
+    it("calls applyConfiguredWorkAndLunchRest (via setValue('rests', ...)) when paidHolidayFlag becomes true", async () => {
       mockGetValues.mockImplementation(makeGetValuesImpl());
       const { result } = setup({
         staffId: "staff-1",
@@ -530,7 +540,8 @@ describe("useAttendanceEditFormSync", () => {
         result.current.form.setValue("paidHolidayFlag", true);
       });
 
-      expect(mockRestReplace).toHaveBeenCalled();
+      const restsSetCalls = mockSetValue.mock.calls.filter((call) => call[0] === "rests");
+      expect(restsSetCalls.length).toBeGreaterThan(0);
     });
 
     it("clears hourlyPaidHolidayTimes when paidHolidayFlag becomes true and there are existing times", async () => {
@@ -556,7 +567,7 @@ describe("useAttendanceEditFormSync", () => {
         result.current.form.setValue("paidHolidayFlag", true);
       });
 
-      expect(mockHourlyPaidHolidayTimeReplace).toHaveBeenCalledWith([]);
+      expect(mockSetValue).toHaveBeenCalledWith("hourlyPaidHolidayTimes", [], { shouldDirty: false });
     });
   });
 });

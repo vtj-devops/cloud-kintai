@@ -1,9 +1,9 @@
-import { getOperationLogDisplaySummary } from "@entities/operation-log/lib/operationLogDisplay";
 import { getOperationLogLabel } from "@entities/operation-log/lib/operationLogLabels";
 import fetchOperationLogs from "@entities/operation-log/model/fetchOperationLogs";
-import { OperationLogJsonDetails } from "@entities/operation-log/ui/OperationLogJsonDetails";
+import { OperationLogDetailDialog } from "@entities/operation-log/ui/OperationLogDetailDialog";
 import fetchStaff from "@entities/staff/model/useStaff/fetchStaff";
 import { Attendance, OperationLog, Staff } from "@shared/api/graphql/types";
+import { AppButton } from "@shared/ui/button";
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 
@@ -72,6 +72,7 @@ export default function AttendanceOperationLogHistory({
     error: null,
   });
   const [staffMap, setStaffMap] = useState<Record<string, Staff | null>>({});
+  const [selectedLog, setSelectedLog] = useState<OperationLog | null>(null);
   const activeAttendanceId = attendance?.id;
   const isCanonicalLogsCurrent =
     Boolean(activeAttendanceId) && canonicalLogsState.attendanceId === activeAttendanceId;
@@ -170,36 +171,45 @@ export default function AttendanceOperationLogHistory({
 
   if (canonicalLogs.length > 0) {
     return (
-      <div className="flex flex-col gap-4">
-        {canonicalLogs.map((log) => (
-          <article
-            key={log.id}
-            data-testid="attendance-operation-log-item"
-            className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm"
-          >
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+      <>
+        <div className="flex flex-col divide-y divide-slate-100 overflow-auto rounded-2xl border border-slate-200 bg-white">
+          {canonicalLogs.map((log) => (
+            <div
+              key={log.id}
+              data-testid="attendance-operation-log-item"
+              className="flex items-center gap-3 px-4 py-3"
+            >
+              <span className="inline-flex shrink-0 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">
                 {getOperationLogLabel(log.action)}
               </span>
-              <span className="text-sm text-slate-500">
+              <span className="shrink-0 text-xs text-slate-500">
                 {dayjs(log.timestamp ?? log.createdAt).format("YYYY/MM/DD HH:mm:ss")}
               </span>
+              <span className="min-w-0 flex-1 truncate text-xs text-slate-600">
+                {resolveStaffLabel(staffMap, log.staffId)}
+                {log.targetStaffId && log.targetStaffId !== log.staffId && (
+                  <> → {resolveStaffLabel(staffMap, log.targetStaffId)}</>
+                )}
+              </span>
+              <AppButton
+                size="sm"
+                variant="outline"
+                tone="neutral"
+                onClick={() => setSelectedLog(log)}
+              >
+                詳細
+              </AppButton>
             </div>
-            <div className="mt-3 text-sm font-semibold text-slate-900">
-              {getOperationLogDisplaySummary(log)}
-            </div>
-            <div className="mt-2 text-sm text-slate-600">
-              Actor: {resolveStaffLabel(staffMap, log.staffId)}
-            </div>
-            <div className="text-sm text-slate-600">
-              Target: {resolveStaffLabel(staffMap, log.targetStaffId)}
-            </div>
-            <div className="mt-4 flex flex-col gap-2">
-              <OperationLogJsonDetails log={log} />
-            </div>
-          </article>
-        ))}
-      </div>
+          ))}
+        </div>
+
+        <OperationLogDetailDialog
+          open={selectedLog !== null}
+          log={selectedLog}
+          onClose={() => setSelectedLog(null)}
+          staffMap={staffMap}
+        />
+      </>
     );
   }
 

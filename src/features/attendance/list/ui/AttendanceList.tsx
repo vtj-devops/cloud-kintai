@@ -19,6 +19,7 @@ import {
   Staff,
 } from "@shared/api/graphql/types";
 import { Logger } from "@shared/lib/logger";
+import { formatMonthQueryValue } from "@shared/lib/monthQuery";
 import { pushNotification } from "@shared/lib/store/notificationSlice";
 import dayjs, { Dayjs } from "dayjs";
 import { Loader2 } from "lucide-react";
@@ -66,7 +67,7 @@ export default function AttendanceTable() {
     (nextMonth: Dayjs) => {
       const normalizedMonth = nextMonth.startOf("month");
       const nextParams = new URLSearchParams(searchParams);
-      nextParams.set(MONTH_QUERY_KEY, normalizedMonth.format("YYYY-MM"));
+      nextParams.set(MONTH_QUERY_KEY, formatMonthQueryValue(normalizedMonth));
       setSearchParams(nextParams, { replace: true });
     },
     [searchParams, setSearchParams],

@@ -1,19 +1,24 @@
 import { AttendanceErrorSummary } from "@features/attendance/edit/ui/components/AttendanceErrorSummary";
 import { InlineAlert } from "@shared/ui/feedback/InlineAlert";
+import { FormErrorMessage } from "@shared/ui/form";
 
 type AttendanceEditorAlertsProps = {
   errorMessages: string[];
+  submitErrorMessage?: string | null;
   overtimeError: string | null;
   showNoDataAlert: boolean;
 };
 
 export function AttendanceEditorAlerts({
   errorMessages,
+  submitErrorMessage,
   overtimeError,
   showNoDataAlert,
 }: AttendanceEditorAlertsProps) {
   return (
     <>
+      <FormErrorMessage message={submitErrorMessage} />
+
       {errorMessages.length > 0 && (
         <AttendanceErrorSummary messages={errorMessages} />
       )}

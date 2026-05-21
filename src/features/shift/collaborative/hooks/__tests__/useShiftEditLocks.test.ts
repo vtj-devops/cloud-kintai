@@ -1,6 +1,10 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 
 import { useShiftEditLocks } from "../useShiftEditLocks";
+import {
+  createGraphqlQueryRouter,
+  createSubscriptionMockHarness,
+} from "./subscriptionMockHarness";
 
 type HookProps = {
   targetMonth?: string;
@@ -31,6 +35,98 @@ describe("useShiftEditLocks", () => {
     updatedAt: "2026-03-01T10:00:00.000Z",
   };
 
+  type ShiftEditLockSubscriptionEvents = {
+    onCreateShiftEditLock: typeof activeLock;
+    onUpdateShiftEditLock: typeof activeLock;
+    onDeleteShiftEditLock: typeof activeLock;
+  };
+
+  const createEditLockSubscriptionHarness = () =>
+    createSubscriptionMockHarness<ShiftEditLockSubscriptionEvents>(
+      mockUnsubscribe,
+    );
+
+  const setupEditLockGraphqlMock = ({
+    subscriptionHarness,
+    listItems = [],
+    getShiftEditLockResponse = null,
+    captureCreateEvent = false,
+    captureDeleteEvent = false,
+    deleteShiftEditLockBase,
+  }: {
+    subscriptionHarness: ReturnType<typeof createEditLockSubscriptionHarness>;
+    listItems?: Array<typeof activeLock>;
+    getShiftEditLockResponse?: typeof activeLock | null;
+    captureCreateEvent?: boolean;
+    captureDeleteEvent?: boolean;
+    deleteShiftEditLockBase?: typeof activeLock;
+  }) => {
+    mockGraphql.mockImplementation(
+      createGraphqlQueryRouter(
+        [
+          {
+            contains: "ListShiftEditLocks",
+            resolve: () =>
+              Promise.resolve({
+                data: {
+                  listShiftEditLocks: {
+                    items: listItems,
+                    nextToken: null,
+                  },
+                },
+              }),
+          },
+          {
+            contains: "GetShiftEditLock",
+            resolve: () =>
+              Promise.resolve({
+                data: { getShiftEditLock: getShiftEditLockResponse },
+              }),
+          },
+          {
+            contains: "OnCreateShiftEditLock",
+            resolve: () =>
+              captureCreateEvent
+                ? subscriptionHarness.buildSubscriptionResponse(
+                    "onCreateShiftEditLock",
+                  )
+                : subscriptionHarness.buildPassiveSubscriptionResponse(),
+          },
+          {
+            contains: "OnUpdateShiftEditLock",
+            resolve: () => subscriptionHarness.buildPassiveSubscriptionResponse(),
+          },
+          {
+            contains: "OnDeleteShiftEditLock",
+            resolve: () =>
+              captureDeleteEvent
+                ? subscriptionHarness.buildSubscriptionResponse(
+                    "onDeleteShiftEditLock",
+                  )
+                : subscriptionHarness.buildPassiveSubscriptionResponse(),
+          },
+          {
+            contains: "DeleteShiftEditLock",
+            resolve: ({ variables }) =>
+              Promise.resolve({
+                data: {
+                  deleteShiftEditLock: deleteShiftEditLockBase
+                    ? {
+                        ...deleteShiftEditLockBase,
+                        ...(variables?.input as
+                          | Record<string, unknown>
+                          | undefined),
+                      }
+                    : null,
+                },
+              }),
+          },
+        ],
+        () => Promise.resolve({ data: {} }),
+      ),
+    );
+  };
+
   beforeEach(() => {
     jest.useFakeTimers();
     mockGraphql.mockReset();
@@ -42,38 +138,10 @@ describe("useShiftEditLocks", () => {
   });
 
   it("他ユーザーがロック中のセルは取得失敗として返す", async () => {
-    mockGraphql.mockImplementation(({ query }: { query: string }) => {
-      if (query.includes("ListShiftEditLocks")) {
-        return Promise.resolve({
-          data: { listShiftEditLocks: { items: [], nextToken: null } },
-        });
-      }
-
-      if (query.includes("GetShiftEditLock")) {
-        return Promise.resolve({
-          data: { getShiftEditLock: activeLock },
-        });
-      }
-
-      if (query.includes("OnCreateShiftEditLock")) {
-        return {
-          subscribe: jest.fn(() => ({ unsubscribe: mockUnsubscribe })),
-        };
-      }
-
-      if (query.includes("OnUpdateShiftEditLock")) {
-        return {
-          subscribe: jest.fn(() => ({ unsubscribe: mockUnsubscribe })),
-        };
-      }
-
-      if (query.includes("OnDeleteShiftEditLock")) {
-        return {
-          subscribe: jest.fn(() => ({ unsubscribe: mockUnsubscribe })),
-        };
-      }
-
-      return Promise.resolve({ data: {} });
+    const subscriptionHarness = createEditLockSubscriptionHarness();
+    setupEditLockGraphqlMock({
+      subscriptionHarness,
+      getShiftEditLockResponse: activeLock,
     });
 
     const { result } = renderHook(() =>
@@ -102,45 +170,11 @@ describe("useShiftEditLocks", () => {
   });
 
   it("subscriptionイベントでロック状態を即時反映する", async () => {
-    let createNext:
-      | ((value: { data?: { onCreateShiftEditLock?: typeof activeLock } }) => void)
-      | undefined;
-    let deleteNext:
-      | ((value: { data?: { onDeleteShiftEditLock?: typeof activeLock } }) => void)
-      | undefined;
-
-    mockGraphql.mockImplementation(({ query }: { query: string }) => {
-      if (query.includes("ListShiftEditLocks")) {
-        return Promise.resolve({
-          data: { listShiftEditLocks: { items: [], nextToken: null } },
-        });
-      }
-
-      if (query.includes("OnCreateShiftEditLock")) {
-        return {
-          subscribe: jest.fn((handlers: { next: typeof createNext }) => {
-            createNext = handlers.next;
-            return { unsubscribe: mockUnsubscribe };
-          }),
-        };
-      }
-
-      if (query.includes("OnUpdateShiftEditLock")) {
-        return {
-          subscribe: jest.fn(() => ({ unsubscribe: mockUnsubscribe })),
-        };
-      }
-
-      if (query.includes("OnDeleteShiftEditLock")) {
-        return {
-          subscribe: jest.fn((handlers: { next: typeof deleteNext }) => {
-            deleteNext = handlers.next;
-            return { unsubscribe: mockUnsubscribe };
-          }),
-        };
-      }
-
-      return Promise.resolve({ data: {} });
+    const subscriptionHarness = createEditLockSubscriptionHarness();
+    setupEditLockGraphqlMock({
+      subscriptionHarness,
+      captureCreateEvent: true,
+      captureDeleteEvent: true,
     });
 
     const { result } = renderHook(() =>
@@ -151,15 +185,15 @@ describe("useShiftEditLocks", () => {
       }),
     );
 
-    await waitFor(() => expect(createNext).toBeDefined());
-    expect(deleteNext).toBeDefined();
+    await waitFor(() =>
+      expect(
+        subscriptionHarness.hasHandler("onCreateShiftEditLock"),
+      ).toBeTruthy(),
+    );
+    expect(subscriptionHarness.hasHandler("onDeleteShiftEditLock")).toBeTruthy();
 
     act(() => {
-      createNext?.({
-        data: {
-          onCreateShiftEditLock: activeLock,
-        },
-      });
+      subscriptionHarness.emit("onCreateShiftEditLock", activeLock);
     });
 
     await waitFor(() =>
@@ -167,11 +201,7 @@ describe("useShiftEditLocks", () => {
     );
 
     act(() => {
-      deleteNext?.({
-        data: {
-          onDeleteShiftEditLock: activeLock,
-        },
-      });
+      subscriptionHarness.emit("onDeleteShiftEditLock", activeLock);
     });
 
     await waitFor(() =>
@@ -180,34 +210,10 @@ describe("useShiftEditLocks", () => {
   });
 
   it("targetMonth がないときは公開状態を空として扱う", async () => {
-    const listShiftEditLocksResponse = {
-      data: { listShiftEditLocks: { items: [activeLock], nextToken: null } },
-    };
-
-    mockGraphql.mockImplementation(({ query }: { query: string }) => {
-      if (query.includes("ListShiftEditLocks")) {
-        return Promise.resolve(listShiftEditLocksResponse);
-      }
-
-      if (query.includes("OnCreateShiftEditLock")) {
-        return {
-          subscribe: jest.fn(() => ({ unsubscribe: mockUnsubscribe })),
-        };
-      }
-
-      if (query.includes("OnUpdateShiftEditLock")) {
-        return {
-          subscribe: jest.fn(() => ({ unsubscribe: mockUnsubscribe })),
-        };
-      }
-
-      if (query.includes("OnDeleteShiftEditLock")) {
-        return {
-          subscribe: jest.fn(() => ({ unsubscribe: mockUnsubscribe })),
-        };
-      }
-
-      return Promise.resolve({ data: {} });
+    const subscriptionHarness = createEditLockSubscriptionHarness();
+    setupEditLockGraphqlMock({
+      subscriptionHarness,
+      listItems: [activeLock],
     });
 
     const initialProps: HookProps = { targetMonth: "2026-03" };
@@ -242,58 +248,12 @@ describe("useShiftEditLocks", () => {
       holderUserName: "User One",
     };
 
-    mockGraphql.mockImplementation(
-      ({
-        query,
-        variables,
-      }: {
-        query: string;
-        variables?: Record<string, unknown>;
-      }) => {
-        if (query.includes("ListShiftEditLocks")) {
-          return Promise.resolve({
-            data: { listShiftEditLocks: { items: [], nextToken: null } },
-          });
-        }
-
-        if (query.includes("GetShiftEditLock")) {
-          return Promise.resolve({
-            data: { getShiftEditLock: ownLock },
-          });
-        }
-
-        if (query.includes("OnCreateShiftEditLock")) {
-          return {
-            subscribe: jest.fn(() => ({ unsubscribe: mockUnsubscribe })),
-          };
-        }
-
-        if (query.includes("OnUpdateShiftEditLock")) {
-          return {
-            subscribe: jest.fn(() => ({ unsubscribe: mockUnsubscribe })),
-          };
-        }
-
-        if (query.includes("OnDeleteShiftEditLock")) {
-          return {
-            subscribe: jest.fn(() => ({ unsubscribe: mockUnsubscribe })),
-          };
-        }
-
-        if (query.includes("DeleteShiftEditLock")) {
-          return Promise.resolve({
-            data: {
-              deleteShiftEditLock: {
-                ...ownLock,
-                ...(variables?.input as Record<string, unknown> | undefined),
-              },
-            },
-          });
-        }
-
-        return Promise.resolve({ data: {} });
-      },
-    );
+    const subscriptionHarness = createEditLockSubscriptionHarness();
+    setupEditLockGraphqlMock({
+      subscriptionHarness,
+      getShiftEditLockResponse: ownLock,
+      deleteShiftEditLockBase: ownLock,
+    });
 
     const { result } = renderHook(() =>
       useShiftEditLocks({
@@ -324,58 +284,12 @@ describe("useShiftEditLocks", () => {
   });
 
   it("forceReleaseLock は deleteShiftEditLock に id のみを渡す", async () => {
-    mockGraphql.mockImplementation(
-      ({
-        query,
-        variables,
-      }: {
-        query: string;
-        variables?: Record<string, unknown>;
-      }) => {
-        if (query.includes("ListShiftEditLocks")) {
-          return Promise.resolve({
-            data: { listShiftEditLocks: { items: [], nextToken: null } },
-          });
-        }
-
-        if (query.includes("GetShiftEditLock")) {
-          return Promise.resolve({
-            data: { getShiftEditLock: activeLock },
-          });
-        }
-
-        if (query.includes("OnCreateShiftEditLock")) {
-          return {
-            subscribe: jest.fn(() => ({ unsubscribe: mockUnsubscribe })),
-          };
-        }
-
-        if (query.includes("OnUpdateShiftEditLock")) {
-          return {
-            subscribe: jest.fn(() => ({ unsubscribe: mockUnsubscribe })),
-          };
-        }
-
-        if (query.includes("OnDeleteShiftEditLock")) {
-          return {
-            subscribe: jest.fn(() => ({ unsubscribe: mockUnsubscribe })),
-          };
-        }
-
-        if (query.includes("DeleteShiftEditLock")) {
-          return Promise.resolve({
-            data: {
-              deleteShiftEditLock: {
-                ...activeLock,
-                ...(variables?.input as Record<string, unknown> | undefined),
-              },
-            },
-          });
-        }
-
-        return Promise.resolve({ data: {} });
-      },
-    );
+    const subscriptionHarness = createEditLockSubscriptionHarness();
+    setupEditLockGraphqlMock({
+      subscriptionHarness,
+      getShiftEditLockResponse: activeLock,
+      deleteShiftEditLockBase: activeLock,
+    });
 
     const { result } = renderHook(() =>
       useShiftEditLocks({

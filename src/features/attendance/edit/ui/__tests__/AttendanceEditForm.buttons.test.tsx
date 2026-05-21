@@ -69,9 +69,6 @@ describe("AttendanceEditForm buttons", () => {
       watch: watchMock as unknown as UseFormWatch<AttendanceEditInputs>,
       handleSubmit:
         jest.fn() as unknown as UseFormHandleSubmit<AttendanceEditInputs>,
-      systemCommentFields: [],
-      systemCommentUpdate: undefined,
-      systemCommentReplace: undefined,
       hourlyPaidHolidayTimeFields: [],
       hourlyPaidHolidayTimeAppend: () => {},
       hourlyPaidHolidayTimeRemove: () => {},

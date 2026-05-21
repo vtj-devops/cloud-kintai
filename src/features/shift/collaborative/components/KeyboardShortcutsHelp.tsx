@@ -99,7 +99,7 @@ export const KeyboardShortcutsHelpBase = ({
                     <Typography
                       variant="body2"
                       sx={{
-                        fontFamily: "monospace",
+                        fontFamily: "monospace", // Keyboard key display - monospace for visual clarity
                         backgroundColor: "action.hover",
                         px: 1,
                         py: 0.5,

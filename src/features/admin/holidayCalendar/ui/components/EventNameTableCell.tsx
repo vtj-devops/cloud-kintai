@@ -1,4 +1,4 @@
-import { TableCell } from "@mui/material";
+import { CalendarNameTableCell } from "./CalendarTableCells";
 import { EventCalendar } from "@shared/api/graphql/types";
 
 export default function EventNameTableCell({
@@ -6,5 +6,6 @@ export default function EventNameTableCell({
 }: {
   eventCalendar: EventCalendar;
 }) {
-  return <TableCell>{eventCalendar.name}</TableCell>;
+  return <CalendarNameTableCell name={eventCalendar.name} />;
 }
+

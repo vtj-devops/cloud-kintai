@@ -1,3 +1,4 @@
+import { shiftRequestStatusToShiftStateWithEmpty } from "@entities/shift/lib/statusMapping";
 import { graphqlClient } from "@shared/api/amplify/graphqlClient";
 import { updateShiftRequest } from "@shared/api/graphql/documents/mutations";
 import React, {
@@ -27,7 +28,6 @@ import {
   ShiftCellUpdate,
   ShiftRequestCommentData,
   ShiftRequestData,
-  shiftRequestStatusToShiftState,
   ShiftState,
 } from "../types/collaborative.types";
 
@@ -103,7 +103,7 @@ export const CollaborativeShiftProvider: React.FC<
       for (const entry of entries) {
         const dayKey = entry.date.slice(-2);
         const previousCell = currentStaffData?.get(dayKey);
-        const newState = shiftRequestStatusToShiftState(entry.status);
+        const newState = shiftRequestStatusToShiftStateWithEmpty(entry.status);
         const previousState = previousCell?.state;
 
         // 変化があった場合のみ記録

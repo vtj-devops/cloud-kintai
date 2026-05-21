@@ -1,23 +1,17 @@
 import { TableHead } from "@aws-amplify/ui-react";
 import { AttendanceDate } from "@entities/attendance/lib/AttendanceDate";
-import { CreatedAtTableCell } from "@entities/attendance/ui/adminStaffAttendance/CreatedAtTableCell";
-import { RestTimeTableCell } from "@entities/attendance/ui/adminStaffAttendance/RestTimeTableCell";
-import { SummaryTableCell } from "@entities/attendance/ui/adminStaffAttendance/SummaryTableCell";
-import { UpdatedAtTableCell } from "@entities/attendance/ui/adminStaffAttendance/UpdatedAtTableCell";
-import { WorkDateTableCell } from "@entities/attendance/ui/adminStaffAttendance/WorkDateTableCell";
-import { WorkTimeTableCell } from "@entities/attendance/ui/adminStaffAttendance/WorkTimeTableCell";
+import { AttendanceRecordTableRow } from "@entities/attendance/ui/adminStaffAttendance/AttendanceRecordTableRow";
 import {
   AttendanceRowVariant,
-  attendanceRowVariantStyles,
   getAttendanceRowVariant,
 } from "@entities/attendance/ui/rowVariant";
+import { AttendanceRecordActionCell } from "@features/attendance/list/ui/AttendanceRecordActionCell";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   Alert,
   AlertTitle,
   Box,
-  Stack,
   Table,
   TableBody,
   TableCell,
@@ -26,14 +20,12 @@ import {
   Typography,
 } from "@mui/material";
 import { Attendance } from "@shared/api/graphql/types";
+import { createMonthSearchParamsFromDate } from "@shared/lib/monthQuery";
 import { AppButton } from "@shared/ui/button";
-import { AppEditIconButton } from "@shared/ui/button/AppActionIconButton";
 import dayjs from "dayjs";
 import { useMemo, useState } from "react";
 
 import { useAttendanceListContext } from "./AttendanceListContext";
-import { MONTH_QUERY_KEY } from "./attendanceListUtils";
-import { AttendanceStatusTooltip } from "./AttendanceStatusTooltip";
 import DesktopCalendarView from "./DesktopCalendarView";
 import { useErrorAttendances } from "./useErrorAttendances";
 
@@ -96,9 +88,7 @@ export default function DesktopList() {
   };
 
   const buildNavigatePath = (formattedWorkDate: string) => {
-    const monthQuery = new URLSearchParams({
-      [MONTH_QUERY_KEY]: currentMonth.startOf("month").format("YYYY-MM"),
-    }).toString();
+    const monthQuery = createMonthSearchParamsFromDate(currentMonth).toString();
     return `/attendance/${formattedWorkDate}/edit?${monthQuery}`;
   };
 
@@ -236,61 +226,23 @@ export default function DesktopList() {
                   {visibleErrorAttendances.map((attendance, index) => {
                     const rowVariant = getRowVariant(attendance);
                     return (
-                      <TableRow
+                      <AttendanceRecordTableRow
                         key={`error-${index}`}
-                        sx={attendanceRowVariantStyles[rowVariant]}
-                      >
-                        <TableCell>
-                          <Stack
-                            direction="row"
+                        attendance={attendance}
+                        rowVariant={rowVariant}
+                        holidayCalendars={holidayCalendars}
+                        companyHolidayCalendars={companyHolidayCalendars}
+                        actionCell={
+                          <AttendanceRecordActionCell
+                            staff={staff}
+                            attendance={attendance}
+                            holidayCalendars={holidayCalendars}
+                            companyHolidayCalendars={companyHolidayCalendars}
+                            onEdit={() => handleEdit(attendance)}
                             spacing={0}
-                            alignItems="center"
-                          >
-                            <AttendanceStatusTooltip
-                              staff={staff}
-                              attendance={attendance}
-                              holidayCalendars={holidayCalendars}
-                              companyHolidayCalendars={companyHolidayCalendars}
-                            />
-                            <AppEditIconButton
-                              onClick={() => handleEdit(attendance)}
-                              aria-label="編集"
-                              size="sm"
-                            />
-                          </Stack>
-                        </TableCell>
-
-                        {/* 勤務日 */}
-                        <WorkDateTableCell
-                          workDate={attendance.workDate}
-                          holidayCalendars={holidayCalendars}
-                          companyHolidayCalendars={companyHolidayCalendars}
-                        />
-
-                        {/* 勤務時間 */}
-                        <WorkTimeTableCell attendance={attendance} />
-
-                        {/* 休憩時間(最近) */}
-                        <RestTimeTableCell attendance={attendance} />
-
-                        {/* 摘要 */}
-                        <SummaryTableCell
-                          substituteHolidayDate={
-                            attendance.substituteHolidayDate
-                          }
-                          specialHolidayFlag={attendance.specialHolidayFlag}
-                          paidHolidayFlag={attendance.paidHolidayFlag}
-                          absentFlag={attendance.absentFlag}
-                        />
-
-                        {/* 作成日時 */}
-                        <CreatedAtTableCell createdAt={attendance.createdAt} />
-
-                        {/* 更新日時 */}
-                        <UpdatedAtTableCell updatedAt={attendance.updatedAt} />
-
-                        <TableCell sx={{ width: 1 }} />
-                      </TableRow>
+                          />
+                        }
+                      />
                     );
                   })}
                 </TableBody>

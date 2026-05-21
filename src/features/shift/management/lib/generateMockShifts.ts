@@ -1,3 +1,4 @@
+import type { ShiftState } from "@entities/shift/lib/statusMapping";
 import dayjs from "dayjs";
 
 function hashString(s: string) {
@@ -9,7 +10,7 @@ function hashString(s: string) {
   return Math.abs(h);
 }
 
-export type ShiftState = "work" | "fixedOff" | "requestedOff" | "auto";
+export type { ShiftState };
 
 const getOffState = (seed: number): ShiftState =>
   seed % 2 === 0 ? "fixedOff" : "requestedOff";

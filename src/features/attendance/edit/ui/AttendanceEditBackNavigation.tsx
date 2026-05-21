@@ -1,14 +1,11 @@
 import { useAttendanceEditData } from "@features/attendance/edit/model/AttendanceEditProvider";
+import { createMonthSearchParams,MONTH_QUERY_KEY } from "@shared/lib/monthQuery";
 import Link from "@shared/ui/link/Link";
 import { useSearchParams } from "react-router-dom";
 
-const MONTH_QUERY_KEY = "month";
-
 const buildAttendanceListHref = (month: string | null) =>
   month
-    ? `/attendance/list?${new URLSearchParams({
-        [MONTH_QUERY_KEY]: month,
-      }).toString()}`
+    ? `/attendance/list?${createMonthSearchParams(month).toString()}`
     : "/attendance/list";
 
 export function AttendanceEditBackNavigation() {

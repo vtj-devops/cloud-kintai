@@ -74,6 +74,8 @@ type UseAttendanceSubmitProps = {
   overtimeError: string | null;
   logger: Logger;
   navigateToAttendanceList: () => void;
+  setSubmitError: (message: string) => void;
+  clearSubmitError: () => void;
 };
 
 export function useAttendanceSubmit({
@@ -91,11 +93,15 @@ export function useAttendanceSubmit({
   overtimeError,
   logger,
   navigateToAttendanceList,
+  setSubmitError,
+  clearSubmitError,
 }: UseAttendanceSubmitProps) {
   const dispatch = useDispatch();
 
   const onSubmit = useCallback(
     async (data: AttendanceEditInputs) => {
+      clearSubmitError();
+
       if (overtimeError) {
         dispatch(
           pushNotification({
@@ -144,13 +150,6 @@ export function useAttendanceSubmit({
                 startTime: rest.startTime,
                 endTime: rest.endTime,
               })),
-          systemComments: (data.systemComments || []).map(
-            ({ comment, confirmed, createdAt }) => ({
-              comment,
-              confirmed,
-              createdAt,
-            }),
-          ),
           hourlyPaidHolidayTimes: data.paidHolidayFlag
             ? []
             : buildHourlyPaidHolidayTimes(data.hourlyPaidHolidayTimes),
@@ -180,6 +179,7 @@ export function useAttendanceSubmit({
           );
           navigateToAttendanceList();
         } catch (error) {
+          setSubmitError(MESSAGE_CODE.E04001);
           logger.error("Update attendance error:", error);
           const errorMessage =
             error instanceof Error ? error.message : String(error);
@@ -195,6 +195,7 @@ export function useAttendanceSubmit({
       }
 
       if (!targetStaffId || !targetWorkDate) {
+        setSubmitError(MESSAGE_CODE.E04001);
         dispatch(
           pushNotification({
             tone: "error",
@@ -238,13 +239,6 @@ export function useAttendanceSubmit({
                 startTime: rest.startTime,
                 endTime: rest.endTime,
               })),
-          systemComments: (data.systemComments || []).map(
-            ({ comment, confirmed, createdAt }) => ({
-              comment,
-              confirmed,
-              createdAt,
-            }),
-          ),
           hourlyPaidHolidayTimes: data.paidHolidayFlag
             ? []
             : buildHourlyPaidHolidayTimes(data.hourlyPaidHolidayTimes),
@@ -277,6 +271,7 @@ export function useAttendanceSubmit({
         );
         navigateToAttendanceList();
       } catch (error) {
+        setSubmitError(MESSAGE_CODE.E04001);
         logger.error("Create attendance error:", error);
         const errorMessage =
           error instanceof Error ? error.message : String(error);
@@ -302,6 +297,8 @@ export function useAttendanceSubmit({
       logger,
       navigateToAttendanceList,
       overtimeError,
+      setSubmitError,
+      clearSubmitError,
       staff,
       targetStaffId,
       targetWorkDate,

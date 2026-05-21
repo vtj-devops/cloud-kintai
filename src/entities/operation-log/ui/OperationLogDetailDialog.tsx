@@ -1,7 +1,6 @@
 import {
   formatOperationLogInlineValue,
   getOperationLogDisplaySummary,
-  getOperationLogResourceDisplay,
 } from "@entities/operation-log/lib/operationLogDisplay";
 import { getOperationLogLabel } from "@entities/operation-log/lib/operationLogLabels";
 import CloseIcon from "@mui/icons-material/Close";
@@ -53,12 +52,12 @@ export function OperationLogDetailDialog({
 }: OperationLogDetailDialogProps) {
   if (!log) return null;
 
-  const resourceLabel = getOperationLogResourceDisplay({
-    resource: log.resource as unknown,
-    resourceId: log.resourceId as unknown,
-    resourceKey: log.resourceKey as unknown,
-  });
+  const actionLabel = getOperationLogLabel(log.action);
   const summary = getOperationLogDisplaySummary(log);
+  const summaryIsDistinct = summary !== actionLabel;
+  const workDate =
+    (log.resolvedWorkDate as string | null | undefined) ??
+    (log.metadata as Record<string, unknown> | null | undefined)?.["workDate"] as string | null | undefined;
   const actorText = staffLabel("操作者", log.staffId as unknown, staffMap);
   const targetText = staffLabel(
     "対象スタッフ",
@@ -77,7 +76,7 @@ export function OperationLogDetailDialog({
             ? dayjs(log.timestamp).format("YYYY-MM-DD HH:mm:ss")
             : "-"}
         </Typography>
-        <Chip size="small" label={getOperationLogLabel(log.action)} />
+        <Chip size="small" label={actionLabel} />
         <AppIconButton
           aria-label="閉じる"
           onClick={onClose}
@@ -97,13 +96,21 @@ export function OperationLogDetailDialog({
 
           <Divider />
 
-          {/* Resource + Summary */}
-          <Box>
-            <Typography variant="subtitle2">{resourceLabel}</Typography>
-            <Typography variant="body2" color="text.secondary">
-              {summary}
-            </Typography>
-          </Box>
+          {/* Work date / Summary — only shown when there is meaningful info */}
+          {(workDate || summaryIsDistinct) && (
+            <Box>
+              {workDate && (
+                <Typography variant="body2">
+                  勤務日: {dayjs(workDate).format("YYYY/MM/DD")}
+                </Typography>
+              )}
+              {summaryIsDistinct && (
+                <Typography variant="body2" color="text.secondary">
+                  操作内容: {summary}
+                </Typography>
+              )}
+            </Box>
+          )}
 
           {/* IP / UserAgent */}
           {(isNonEmptyString(log.ipAddress) ||
@@ -120,7 +127,10 @@ export function OperationLogDetailDialog({
                   <Typography
                     variant="caption"
                     display="block"
-                    sx={{ fontFamily: "monospace", wordBreak: "break-all" }}
+                    sx={{
+                      fontFamily: "monospace", // User agent string display - monospace for readability
+                      wordBreak: "break-all",
+                    }}
                   >
                     ユーザーエージェント: {log.userAgent}
                   </Typography>
