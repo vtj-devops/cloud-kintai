@@ -27,16 +27,6 @@ export const getSummaryText = (selectedAttendance: Attendance | null) => {
   return labels.join(" ");
 };
 
-export const getSystemCommentTexts = (
-  selectedAttendance: Attendance | null,
-) => {
-  return (
-    selectedAttendance?.systemComments
-      ?.filter((comment): comment is NonNullable<typeof comment> => !!comment)
-      .map((comment) => comment.comment) ?? []
-  );
-};
-
 const toReferenceClockTime = (reference: Dayjs, clockTime: Dayjs) =>
   reference
     .startOf("day")

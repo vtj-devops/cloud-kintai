@@ -10,7 +10,6 @@ import { UseFieldArrayReplace } from "react-hook-form";
 // eslint-disable-next-line import/no-cycle
 import EditAttendanceHistoryList from "../EditAttendanceHistoryList/EditAttendanceHistoryList";
 import QuickInputButtons from "../QuickInputButtons";
-import { SystemCommentList } from "../SystemCommentList";
 
 type AttendanceEditorEditActionsProps = {
   readOnly?: boolean;
@@ -40,7 +39,6 @@ export function AttendanceEditorEditActions({
     <>
       <div className="flex gap-1">
         <EditAttendanceHistoryList />
-        <SystemCommentList />
       </div>
 
       <GroupContainer hideAccent hideBorder>

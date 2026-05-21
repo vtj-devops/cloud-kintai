@@ -35,15 +35,6 @@ export function useAttendanceEditForm() {
   });
 
   const {
-    fields: systemCommentFields,
-    update: systemCommentUpdate,
-    replace: systemCommentReplace,
-  } = useFieldArray({
-    control,
-    name: "systemComments",
-  });
-
-  const {
     fields: hourlyPaidHolidayTimeFields,
     append: hourlyPaidHolidayTimeAppend,
     remove: hourlyPaidHolidayTimeRemove,
@@ -90,9 +81,6 @@ export function useAttendanceEditForm() {
     restRemove,
     restUpdate,
     restReplace,
-    systemCommentFields,
-    systemCommentUpdate,
-    systemCommentReplace,
     hourlyPaidHolidayTimeFields,
     hourlyPaidHolidayTimeAppend,
     hourlyPaidHolidayTimeRemove,

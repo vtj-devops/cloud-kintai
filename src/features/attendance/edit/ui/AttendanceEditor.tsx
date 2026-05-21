@@ -123,9 +123,6 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
     restAppend,
     restReplace,
     restUpdate,
-    systemCommentFields,
-    systemCommentUpdate,
-    systemCommentReplace,
     hourlyPaidHolidayTimeFields,
     hourlyPaidHolidayTimeRemove,
     hourlyPaidHolidayTimeAppend,
@@ -153,8 +150,6 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
     reset,
     restReplace,
     hourlyPaidHolidayTimeReplace,
-    systemCommentReplace,
-    getValues,
     logger,
   });
   const { overtimeRequestEndTime, hasOvertimeRequest } = useOvertimeRequest({
@@ -331,9 +326,6 @@ export default function AttendanceEditor({ readOnly }: { readOnly?: boolean }) {
         restReplace,
         register,
         control,
-        systemCommentFields,
-        systemCommentUpdate,
-        systemCommentReplace,
         hourlyPaidHolidayTimeFields,
         hourlyPaidHolidayTimeAppend,
         hourlyPaidHolidayTimeRemove,

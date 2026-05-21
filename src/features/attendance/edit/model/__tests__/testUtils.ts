@@ -1,7 +1,5 @@
-import type { SystemCommentInput } from "@shared/api/graphql/types";
 import { Logger } from "@shared/lib/logger";
 import type {
-  UseFormGetValues,
   UseFormReset,
   UseFormSetValue,
 } from "react-hook-form";
@@ -22,8 +20,6 @@ export type MockAttendanceRecordParams = {
   reset: UseFormReset<AttendanceEditInputs>;
   restReplace: ReplaceFn<RestInputs>;
   hourlyPaidHolidayTimeReplace: ReplaceFn<HourlyPaidHolidayTimeInputs>;
-  systemCommentReplace: ReplaceFn<SystemCommentInput>;
-  getValues: UseFormGetValues<AttendanceEditInputs>;
   logger: Logger;
 };
 
@@ -46,8 +42,6 @@ export const createMockAttendanceRecordParams = (
   restReplace: jest.fn() as unknown as ReplaceFn<RestInputs>,
   hourlyPaidHolidayTimeReplace:
     jest.fn() as unknown as ReplaceFn<HourlyPaidHolidayTimeInputs>,
-  systemCommentReplace: jest.fn() as unknown as ReplaceFn<SystemCommentInput>,
-  getValues: jest.fn() as unknown as UseFormGetValues<AttendanceEditInputs>,
   logger: createMockLogger(),
   ...overrides,
 });

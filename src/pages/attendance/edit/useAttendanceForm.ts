@@ -66,8 +66,6 @@ export function useAttendanceForm({
     setValue,
     getValues,
     reset,
-    restReplace,
-    hourlyPaidHolidayTimeReplace,
     attendance,
     targetWorkDate,
     targetWorkDateISO,
